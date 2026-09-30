@@ -3,17 +3,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "Tallyo",
+    name: "Solvry",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "tallyo-site", targets: ["TallyoSite"])
+        .executable(name: "solvry-site", targets: ["SolvrySite"])
     ],
     targets: [
         .executableTarget(
-            name: "TallyoSite",
-            path: "Sources/TallyoSite"
+            name: "SolvrySite",
+            path: "Sources/SolvrySite"
         )
     ]
 )

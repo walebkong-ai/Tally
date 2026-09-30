@@ -1,7 +1,7 @@
 import Foundation
 
 @main
-struct TallyoSite {
+struct SolvrySite {
     static func main() throws {
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let dist = root.appending(path: "dist", directoryHint: .isDirectory)
@@ -15,7 +15,7 @@ struct TallyoSite {
         try write(styles, to: dist.appending(path: "styles.css"))
         try write(appScript, to: dist.appending(path: "app.js"))
 
-        print("Tallyo built at \(dist.path)")
+        print("Solvry built at \(dist.path)")
     }
 
     private static func write(_ content: String, to url: URL) throws {
@@ -29,10 +29,10 @@ let html = #"""
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tallyo</title>
+    <title>Solvry</title>
     <meta
       name="description"
-      content="Tallyo is a social hub for tracking daily word and puzzle games with friends."
+      content="Solvry is a social hub for tracking daily word and puzzle games with friends."
     />
     <link
       rel="icon"
@@ -44,16 +44,17 @@ let html = #"""
   <body>
     <div class="app" id="app">
       <header class="topbar">
-        <a class="brand" href="#today" aria-label="Tallyo home">
-          <span class="brand-mark" aria-hidden="true">TY</span>
+        <a class="brand" href="#today" aria-label="Solvry home">
+          <span class="brand-mark" aria-hidden="true">SV</span>
           <span>
-            <strong>Tallyo</strong>
+            <strong>Solvry</strong>
             <small>Daily games with friends</small>
           </span>
         </a>
         <nav class="topnav" aria-label="Primary">
           <a href="#today">Today</a>
           <a href="#friends">Friends</a>
+          <a href="#import">Import</a>
           <a href="#answers">Answers</a>
         </nav>
         <label class="date-control">
@@ -80,6 +81,7 @@ let html = #"""
             <div class="status-stack">
               <span class="pill" id="friendCompletion">0 friends done</span>
               <span class="pill accent" id="privacyState">Answers hidden</span>
+              <a class="official-link" id="officialLink" href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener">Play official</a>
             </div>
           </div>
 
@@ -117,6 +119,24 @@ let html = #"""
                 <button class="primary-button" type="submit">Save result</button>
               </div>
             </form>
+          </div>
+
+          <div class="import-surface" id="import">
+            <div>
+              <p class="eyebrow">Official results</p>
+              <h2>Import a share result</h2>
+            </div>
+            <p class="import-copy">Play on the official site, use its Share button, then import the copied result here.</p>
+            <div class="import-actions">
+              <button class="primary-button" id="importClipboardButton" type="button">Import copied result</button>
+              <button class="ghost-button" id="importPasteButton" type="button">Import pasted text</button>
+            </div>
+            <label>
+              Paste fallback
+              <textarea id="shareTextInput" class="share-input" rows="6" placeholder="Wordle 1,234 4/6&#10;&#10;⬛🟨⬛🟩⬛&#10;🟩🟩🟩🟩🟩"></textarea>
+            </label>
+            <div class="import-status" id="importStatus" role="status">Ready for a Wordle share result.</div>
+            <div class="share-preview" id="sharePreview" hidden></div>
           </div>
 
           <div class="metrics" aria-label="Summary">
@@ -237,6 +257,7 @@ body {
 
 button,
 input,
+textarea,
 select {
   font: inherit;
 }
@@ -336,6 +357,7 @@ a {
 
 .date-control input,
 input,
+textarea,
 select {
   width: 100%;
   min-width: 0;
@@ -345,6 +367,11 @@ select {
   background: var(--panel);
   color: var(--ink);
   padding: 10px 12px;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.45;
 }
 
 .workspace {
@@ -521,6 +548,26 @@ h2 {
   background: rgba(242, 109, 91, 0.12);
 }
 
+.official-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.official-link.disabled {
+  pointer-events: none;
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+
 .play-surface {
   margin-top: 22px;
   padding: clamp(16px, 3vw, 24px);
@@ -529,6 +576,77 @@ h2 {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
     repeating-linear-gradient(45deg, rgba(20, 23, 25, 0.04) 0 1px, transparent 1px 16px);
+}
+
+.import-surface {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 22px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.76);
+}
+
+.import-surface h2 {
+  font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+}
+
+.import-copy {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.import-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.share-input {
+  min-height: 132px;
+}
+
+.import-status {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(20, 23, 25, 0.06);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.import-status.success {
+  background: rgba(16, 167, 122, 0.12);
+  color: #087255;
+}
+
+.import-status.error {
+  background: rgba(242, 109, 91, 0.12);
+  color: #9f3427;
+}
+
+.share-preview {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.share-preview[hidden] {
+  display: none;
+}
+
+.share-grid {
+  white-space: pre-line;
+  font-size: 1.2rem;
+  line-height: 1.25;
 }
 
 .letter-board {
@@ -858,6 +976,7 @@ label {
   }
 
   .field-grid,
+  .import-actions,
   .metrics {
     grid-template-columns: 1fr;
   }
@@ -880,18 +999,19 @@ label {
 """#
 
 let appScript = #"""
-const STORAGE_KEY = "tallyo-state-v1";
+const STORAGE_KEY = "solvry-state-v1";
+const LEGACY_STORAGE_KEY = "tallyo-state-v1";
 const today = new Date().toISOString().slice(0, 10);
 
 const starterState = {
   activeGameId: "wordle",
   selectedDate: today,
-  profile: { name: "You", handle: "@tallyo" },
+  profile: { name: "You", handle: "@solvry" },
   games: [
-    { id: "wordle", name: "Wordle", type: "guesses" },
-    { id: "zip", name: "Zip", type: "time" },
-    { id: "krillion", name: "Krillion", type: "complete" },
-    { id: "queens", name: "Queens", type: "mistakes" }
+    { id: "wordle", name: "Wordle", type: "guesses", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
+    { id: "zip", name: "Zip", type: "time", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "krillion", name: "Krillion", type: "complete", officialUrl: "" },
+    { id: "queens", name: "Queens", type: "mistakes", officialUrl: "https://www.linkedin.com/games/" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -945,6 +1065,12 @@ const elements = {
   friendHandleInput: document.querySelector("#friendHandleInput"),
   answerFeed: document.querySelector("#answerFeed"),
   copyButton: document.querySelector("#copyButton"),
+  officialLink: document.querySelector("#officialLink"),
+  importClipboardButton: document.querySelector("#importClipboardButton"),
+  importPasteButton: document.querySelector("#importPasteButton"),
+  shareTextInput: document.querySelector("#shareTextInput"),
+  importStatus: document.querySelector("#importStatus"),
+  sharePreview: document.querySelector("#sharePreview"),
   resetButton: document.querySelector("#resetButton"),
   addGameButton: document.querySelector("#addGameButton"),
   gameDialog: document.querySelector("#gameDialog"),
@@ -999,7 +1125,7 @@ elements.gameForm.addEventListener("submit", (event) => {
   const name = elements.gameNameInput.value.trim();
   if (!name) return;
   const id = uniqueId(slugify(name), state.games.map((game) => game.id));
-  state.games.push({ id, name, type: elements.gameTypeInput.value });
+  state.games.push({ id, name, type: elements.gameTypeInput.value, officialUrl: "" });
   state.activeGameId = id;
   saveState();
   elements.gameDialog.close();
@@ -1010,8 +1136,8 @@ elements.copyButton.addEventListener("click", async () => {
   const activeGame = getActiveGame();
   const mine = getGameEntries(state.selectedDate, state.activeGameId).you;
   const recap = mine
-    ? `Tallyo: ${activeGame.name} ${state.selectedDate} - ${mine.result}, ${mine.score}${mine.answer && mine.reveal ? `, answer ${mine.answer}` : ""}`
-    : `Tallyo: ${activeGame.name} ${state.selectedDate} - no result yet`;
+    ? `Solvry: ${activeGame.name} ${state.selectedDate} - ${mine.result}, ${mine.score}${mine.answer && mine.reveal ? `, answer ${mine.answer}` : ""}`
+    : `Solvry: ${activeGame.name} ${state.selectedDate} - no result yet`;
 
   try {
     await navigator.clipboard.writeText(recap);
@@ -1019,6 +1145,20 @@ elements.copyButton.addEventListener("click", async () => {
   } catch {
     flashButton(elements.copyButton, "Copy failed", "Copy recap");
   }
+});
+
+elements.importClipboardButton.addEventListener("click", async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    elements.shareTextInput.value = text;
+    importShareText(text);
+  } catch {
+    setImportStatus("Clipboard access was blocked. Paste the result below instead.", "error");
+  }
+});
+
+elements.importPasteButton.addEventListener("click", () => {
+  importShareText(elements.shareTextInput.value);
 });
 
 elements.resetButton.addEventListener("click", () => {
@@ -1040,6 +1180,7 @@ function render() {
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
 
   renderGameList();
+  renderOfficialLink(activeGame);
   renderBoard(activeGame.name);
   renderForm(myEntry);
   renderMetrics();
@@ -1072,8 +1213,22 @@ function renderGameList() {
   });
 }
 
+function renderOfficialLink(game) {
+  if (game?.officialUrl) {
+    elements.officialLink.href = game.officialUrl;
+    elements.officialLink.textContent = `Play ${game.name}`;
+    elements.officialLink.classList.remove("disabled");
+    elements.officialLink.removeAttribute("aria-disabled");
+  } else {
+    elements.officialLink.href = "#";
+    elements.officialLink.textContent = "No official link";
+    elements.officialLink.classList.add("disabled");
+    elements.officialLink.setAttribute("aria-disabled", "true");
+  }
+}
+
 function renderBoard(seedText) {
-  const letters = (seedText.toUpperCase().replace(/[^A-Z]/g, "") + "TALLYO").slice(0, 10);
+  const letters = (seedText.toUpperCase().replace(/[^A-Z]/g, "") + "SOLVRY").slice(0, 10);
   const classes = ["hit", "warn", "miss", "", "hit", "", "warn", "hit", "miss", ""];
   elements.letterBoard.innerHTML = "";
   letters.split("").forEach((letter, index) => {
@@ -1168,11 +1323,77 @@ function renderAnswers() {
             <span class="pill">${entry.reveal ? "Shown" : "Hidden"}</span>
           </header>
           <div class="answer-value${canShow && entry.answer ? "" : " locked"}">${answer}</div>
+          ${entry.grid?.length ? `<div class="share-grid">${escapeHtml(entry.grid.join("\n"))}</div>` : ""}
           ${entry.note ? `<small>${escapeHtml(entry.note)}</small>` : ""}
         </article>
       `;
     })
     .join("");
+}
+
+function importShareText(text) {
+  const parsed = parseShareText(text);
+  if (!parsed) {
+    setImportStatus("Could not read that result yet. Wordle share text works best right now.", "error");
+    return;
+  }
+
+  const game = state.games.find((item) => item.id === parsed.gameId) || state.games[0];
+  state.activeGameId = game.id;
+  const gameEntries = getGameEntries(state.selectedDate, game.id);
+  gameEntries.you = {
+    result: parsed.result,
+    score: parsed.score,
+    answer: "",
+    note: parsed.note,
+    reveal: false,
+    source: "official-share",
+    grid: parsed.grid
+  };
+
+  saveState();
+  render();
+  renderSharePreview(parsed, game);
+  setImportStatus(`Imported ${game.name}: ${parsed.score}.`, "success");
+}
+
+function parseShareText(text) {
+  const cleaned = String(text || "").trim();
+  if (!cleaned) return null;
+
+  const lines = cleaned.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const wordleLine = lines.find((line) => /^Wordle\s+[\d,]+\s+[1-6X]\/6\*?$/i.test(line));
+  if (!wordleLine) return null;
+
+  const scoreMatch = wordleLine.match(/^Wordle\s+([\d,]+)\s+([1-6X])\/6\*?$/i);
+  if (!scoreMatch) return null;
+
+  const gridPattern = /^[\u{1F7E9}\u{1F7E8}\u{2B1B}\u{2B1C}\u{1F7E6}]+$/u;
+  const grid = lines.filter((line) => gridPattern.test(line));
+  const rawScore = scoreMatch[2].toUpperCase();
+  const score = `${rawScore}/6`;
+
+  return {
+    gameId: "wordle",
+    score,
+    result: rawScore === "X" ? "missed" : "solved",
+    note: `Imported official Wordle #${scoreMatch[1]}${grid.length ? ` with ${grid.length} rows` : ""}`,
+    grid
+  };
+}
+
+function renderSharePreview(parsed, game) {
+  elements.sharePreview.hidden = false;
+  elements.sharePreview.innerHTML = `
+    <strong>${escapeHtml(game.name)} imported</strong>
+    <small>${escapeHtml(parsed.score)} · saved for ${escapeHtml(state.selectedDate)}</small>
+    ${parsed.grid.length ? `<div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div>` : ""}
+  `;
+}
+
+function setImportStatus(message, tone = "") {
+  elements.importStatus.textContent = message;
+  elements.importStatus.className = `import-status${tone ? ` ${tone}` : ""}`;
 }
 
 function getActiveGame() {
@@ -1234,19 +1455,27 @@ function defaultScoreLabel(result) {
 
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved ? mergeState(starterState, saved) : structuredClone(starterState);
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY));
+    const nextState = saved ? mergeState(starterState, saved) : structuredClone(starterState);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    return nextState;
   } catch {
     return structuredClone(starterState);
   }
 }
 
 function mergeState(base, saved) {
+  const baseGamesById = Object.fromEntries(base.games.map((game) => [game.id, game]));
+  const mergedGames = (saved.games?.length ? saved.games : base.games).map((game) => ({
+    ...baseGamesById[game.id],
+    ...game
+  }));
+
   return {
     ...structuredClone(base),
     ...saved,
     profile: { ...base.profile, ...saved.profile },
-    games: saved.games?.length ? saved.games : base.games,
+    games: mergedGames,
     friends: saved.friends || base.friends,
     entries: { ...base.entries, ...saved.entries }
   };
