@@ -92,6 +92,8 @@ let html = #"""
             </div>
           </div>
 
+          <div class="dashboard-strip" id="quickGames" aria-label="Pinned games"></div>
+
           <div class="play-surface" aria-live="polite">
             <div class="current-result" id="currentResult"></div>
             <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
@@ -292,6 +294,7 @@ let styles = #"""
   --violet: #5f5bd7;
   --aqua: #bdeee2;
   --shadow: 0 22px 60px rgba(20, 23, 25, 0.12);
+  --display: Georgia, "Times New Roman", ui-serif, serif;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -373,7 +376,9 @@ a {
 }
 
 .brand strong {
+  font-family: var(--display);
   font-size: 1rem;
+  letter-spacing: 0;
 }
 
 .brand small {
@@ -661,7 +666,9 @@ textarea {
 }
 
 h1,
-h2 {
+h2,
+h3 {
+  font-family: var(--display);
   margin: 0;
   letter-spacing: 0;
 }
@@ -673,6 +680,49 @@ h1 {
 
 h2 {
   font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.dashboard-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.quick-game {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.82);
+  text-align: left;
+}
+
+.quick-game.active {
+  border-color: var(--ink);
+  box-shadow: 0 8px 22px rgba(20, 23, 25, 0.08);
+}
+
+.quick-game .game-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.quick-game strong,
+.quick-game span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-game span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
 }
 
 .score-hint {
@@ -1327,6 +1377,10 @@ label {
     grid-template-columns: 1fr;
   }
 
+  .dashboard-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .current-result {
     align-items: flex-start;
   }
@@ -1340,6 +1394,10 @@ label {
 @media (max-width: 480px) {
   .game-list {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .letter-board {
@@ -1443,6 +1501,7 @@ const elements = {
   navLinks: [...document.querySelectorAll(".topnav a")],
   playDate: document.querySelector("#playDate"),
   gameList: document.querySelector("#gameList"),
+  quickGames: document.querySelector("#quickGames"),
   activeGameTitle: document.querySelector("#activeGameTitle"),
   scoreHint: document.querySelector("#scoreHint"),
   friendCompletion: document.querySelector("#friendCompletion"),
@@ -1628,6 +1687,7 @@ function render() {
 
   renderNav();
   renderAccount();
+  renderQuickGames();
   renderGameList();
   renderOfficialLink(activeGame);
   renderCurrentResult(activeGame, myEntry);
@@ -1694,6 +1754,36 @@ function renderCurrentResult(game, entry) {
     </span>
     <span class="pill">${entry ? "Saved" : "Open"}</span>
   `;
+}
+
+function renderQuickGames() {
+  const pinned = state.games.filter((game) => state.pinnedGameIds.includes(game.id));
+  const games = [...pinned, ...state.games.filter((game) => !state.pinnedGameIds.includes(game.id))].slice(0, 4);
+  elements.quickGames.innerHTML = games
+    .map((game) => {
+      const entries = getGameEntries(state.selectedDate, game.id);
+      const mine = entries.you;
+      const friendCount = Object.keys(entries).filter((id) => id !== "you").length;
+      const status = mine ? mine.score || defaultScoreLabel(mine.result) : `${friendCount} friend${friendCount === 1 ? "" : "s"}`;
+      return `
+        <button class="quick-game${game.id === state.activeGameId ? " active" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
+          ${gameLogo(game)}
+          <span>
+            <strong>${escapeHtml(game.name)}</strong>
+            <span>${escapeHtml(status)}</span>
+          </span>
+        </button>
+      `;
+    })
+    .join("");
+
+  elements.quickGames.querySelectorAll("[data-game-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeGameId = button.dataset.gameId;
+      saveState();
+      render();
+    });
+  });
 }
 
 function renderGameList() {
