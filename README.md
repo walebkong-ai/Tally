@@ -15,6 +15,7 @@ The build writes the deployable site to `dist/`.
 - Daily game tracker for games like Wordle, Zip, Krillion, and Queens
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
+- Individual game scoreboards plus a combined Solvry leaderboard
 - Prototype login/sign-up flow with Apple and Google account options
 - Friend leaderboard
 - Spoiler-safe answer sharing

@@ -166,11 +166,26 @@ let html = #"""
           <div class="section-head compact">
             <div>
               <p class="eyebrow">Circle</p>
-              <h2>Friend leaderboard</h2>
+              <h2>Scoreboards</h2>
             </div>
             <button class="ghost-button" id="resetButton" type="button">Reset demo</button>
           </div>
-          <div class="leaderboard" id="leaderboard"></div>
+          <div class="scoreboard-stack">
+            <section class="scoreboard-block" aria-labelledby="overallScoreboardTitle">
+              <div class="scoreboard-head">
+                <h3 id="overallScoreboardTitle">Solvry overall</h3>
+                <span>Combined points</span>
+              </div>
+              <div class="leaderboard" id="overallLeaderboard"></div>
+            </section>
+            <section class="scoreboard-block" aria-labelledby="gameScoreboardTitle">
+              <div class="scoreboard-head">
+                <h3 id="gameScoreboardTitle">Wordle scoreboard</h3>
+                <span id="gameScoreboardMeta">Fewest guesses</span>
+              </div>
+              <div class="leaderboard" id="gameLeaderboard"></div>
+            </section>
+          </div>
           <form class="friend-form" id="friendForm">
             <label>
               Friend name
@@ -976,6 +991,35 @@ label {
   gap: 10px;
 }
 
+.scoreboard-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.scoreboard-block {
+  display: grid;
+  gap: 10px;
+}
+
+.scoreboard-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scoreboard-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.scoreboard-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-align: right;
+}
+
 .rank-row {
   display: grid;
   grid-template-columns: 36px 1fr auto;
@@ -1010,6 +1054,13 @@ label {
 .points {
   color: var(--green);
   font-weight: 950;
+  text-align: right;
+}
+
+.points small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .friend-form {
@@ -1305,7 +1356,10 @@ const elements = {
   playedMetric: document.querySelector("#playedMetric"),
   solvedMetric: document.querySelector("#solvedMetric"),
   streakMetric: document.querySelector("#streakMetric"),
-  leaderboard: document.querySelector("#leaderboard"),
+  overallLeaderboard: document.querySelector("#overallLeaderboard"),
+  gameLeaderboard: document.querySelector("#gameLeaderboard"),
+  gameScoreboardTitle: document.querySelector("#gameScoreboardTitle"),
+  gameScoreboardMeta: document.querySelector("#gameScoreboardMeta"),
   friendForm: document.querySelector("#friendForm"),
   friendNameInput: document.querySelector("#friendNameInput"),
   friendHandleInput: document.querySelector("#friendHandleInput"),
@@ -1470,7 +1524,7 @@ function render() {
   renderBoard(activeGame.name);
   renderForm(myEntry);
   renderMetrics();
-  renderLeaderboard();
+  renderScoreboards(activeGame);
   renderAnswers();
 }
 
@@ -1640,29 +1694,171 @@ function renderMetrics() {
   elements.streakMetric.textContent = calculateStreak();
 }
 
-function renderLeaderboard() {
-  const rows = [state.profile, ...state.friends]
-    .map((person) => ({
-      ...person,
-      points: calculatePoints(person.id || "you"),
-      completed: calculateCompleted(person.id || "you")
-    }))
-    .sort((a, b) => b.points - a.points || b.completed - a.completed);
+function renderScoreboards(activeGame) {
+  elements.gameScoreboardTitle.textContent = `${activeGame.name} scoreboard`;
+  elements.gameScoreboardMeta.textContent = scoreStyleLabel(activeGame);
 
-  elements.leaderboard.innerHTML = rows
+  const overallRows = buildOverallLeaderboard();
+  const gameRows = buildGameLeaderboard(activeGame);
+  elements.overallLeaderboard.innerHTML = renderRankRows(overallRows, "No scores yet");
+  elements.gameLeaderboard.innerHTML = renderRankRows(gameRows, `No ${activeGame.name} scores yet`);
+}
+
+function renderRankRows(rows, emptyText) {
+  if (!rows.length) {
+    return `<article class="rank-row"><span class="rank">-</span><span><strong>${escapeHtml(emptyText)}</strong><small>Import or save a result to start ranking.</small></span><span class="points">0 pts</span></article>`;
+  }
+
+  return rows
     .map(
       (person, index) => `
       <article class="rank-row">
         <span class="rank">${index + 1}</span>
         <span>
           <strong>${escapeHtml(person.name)}</strong>
-          <small>${escapeHtml(person.handle)} · ${person.completed} today</small>
+          <small>${escapeHtml(person.detail)}</small>
         </span>
-        <span class="points">${person.points} pts</span>
+        <span class="points">${escapeHtml(person.value)}${person.subvalue ? `<small>${escapeHtml(person.subvalue)}</small>` : ""}</span>
       </article>
     `
     )
     .join("");
+}
+
+function buildOverallLeaderboard() {
+  const totals = new Map(
+    getPeople().map((person) => [
+      person.id,
+      { ...person, solvryPoints: 0, completed: 0, wins: 0 }
+    ])
+  );
+
+  state.games.forEach((game) => {
+    const rows = buildGameLeaderboard(game).filter((row) => row.hasEntry && Number.isFinite(row.score.value) && resultWeight(row.entry?.result) > 0);
+    rows.forEach((row, index) => {
+      const total = totals.get(row.id);
+      if (!total) return;
+      const placementPoints = placementScore(index);
+      total.solvryPoints += placementPoints;
+      total.completed += 1;
+      if (index === 0 && placementPoints > 0) total.wins += 1;
+    });
+  });
+
+  return [...totals.values()]
+    .filter((person) => person.completed > 0)
+    .sort((a, b) => b.solvryPoints - a.solvryPoints || b.wins - a.wins || b.completed - a.completed || a.name.localeCompare(b.name))
+    .map((person) => ({
+      ...person,
+      detail: `${person.completed} game${person.completed === 1 ? "" : "s"} scored · ${person.wins} win${person.wins === 1 ? "" : "s"}`,
+      value: `${person.solvryPoints} pts`,
+      subvalue: "Solvry"
+    }));
+}
+
+function buildGameLeaderboard(game) {
+  const entries = state.entries[state.selectedDate]?.[game.id] || {};
+  return getPeople()
+    .map((person) => {
+      const entry = entries[person.id];
+      const score = scoreEntryForGame(entry, game);
+      return {
+        ...person,
+        entry,
+        hasEntry: Boolean(entry),
+        score,
+        detail: entry ? `${score.detail} · ${entry.result}` : "Not played",
+        value: entry ? score.label : "-",
+        subvalue: entry ? scoreStyleLabel(game) : ""
+      };
+    })
+    .filter((person) => person.hasEntry)
+    .sort((a, b) => compareScoreRows(a, b, game));
+}
+
+function compareScoreRows(a, b, game) {
+  const aValid = Number.isFinite(a.score.value);
+  const bValid = Number.isFinite(b.score.value);
+  if (aValid && bValid && a.score.value !== b.score.value) {
+    return gameScoreDirection(game) === "high" ? b.score.value - a.score.value : a.score.value - b.score.value;
+  }
+  if (aValid !== bValid) return aValid ? -1 : 1;
+  return resultWeight(b.entry?.result) - resultWeight(a.entry?.result) || a.name.localeCompare(b.name);
+}
+
+function scoreEntryForGame(entry, game) {
+  if (!entry) {
+    return { value: Number.POSITIVE_INFINITY, label: "-", detail: "Not played" };
+  }
+
+  const score = String(entry.score || "").trim();
+  const type = game.type;
+  if (type === "time") return parseTimeScore(score);
+  if (type === "guesses") return parseGuessScore(score, entry.result);
+  if (type === "mistakes") return parseNumberScore(score, "mistakes");
+  if (type === "rank") return parseRankScore(score);
+  if (type === "points" || type === "depth") return parseNumberScore(score, type === "depth" ? "depth points" : "points", "high");
+  if (type === "complete") {
+    return {
+      value: resultWeight(entry.result),
+      label: score || defaultScoreLabel(entry.result),
+      detail: entry.result === "solved" ? "Completed" : "Played"
+    };
+  }
+  return parseNumberScore(score, "score");
+}
+
+function parseGuessScore(score, result) {
+  const miss = /x\/6/i.test(score) || result === "missed";
+  const match = score.match(/([1-6])\s*\/\s*6/i);
+  return {
+    value: miss ? Number.POSITIVE_INFINITY : Number(match?.[1] || Number.POSITIVE_INFINITY),
+    label: score || defaultScoreLabel(result),
+    detail: miss ? "Missed" : "Fewest guesses"
+  };
+}
+
+function parseTimeScore(score) {
+  const parts = score.split(":").map((part) => Number(part));
+  const valid = parts.length >= 2 && parts.length <= 3 && parts.every((part) => Number.isFinite(part));
+  const seconds = valid ? parts.reduce((total, part) => total * 60 + part, 0) : Number.POSITIVE_INFINITY;
+  return {
+    value: seconds,
+    label: score || "-",
+    detail: valid ? "Fastest time" : "Time needed"
+  };
+}
+
+function parseNumberScore(score, unit) {
+  const match = score.match(/-?\d+(\.\d+)?/);
+  const value = match ? Number(match[0]) : Number.POSITIVE_INFINITY;
+  return {
+    value,
+    label: score || "-",
+    detail: Number.isFinite(value) ? unit : "Score needed"
+  };
+}
+
+function parseRankScore(score) {
+  const rankMap = {
+    beginner: 1,
+    "good start": 2,
+    moving: 3,
+    good: 4,
+    solid: 5,
+    nice: 6,
+    great: 7,
+    amazing: 8,
+    genius: 9,
+    "queen bee": 10
+  };
+  const normalized = score.toLowerCase();
+  const key = Object.keys(rankMap).find((rank) => normalized.includes(rank));
+  return {
+    value: key ? rankMap[key] : Number.NEGATIVE_INFINITY,
+    label: score || "-",
+    detail: key ? "Best rank" : "Rank needed"
+  };
 }
 
 function renderAnswers() {
@@ -1810,15 +2006,25 @@ function getGameEntries(date, gameId) {
   return state.entries[date][gameId];
 }
 
-function calculatePoints(personId) {
-  const dayEntries = state.entries[state.selectedDate] || {};
-  return Object.values(dayEntries).reduce((total, gameEntries) => {
-    const entry = gameEntries[personId];
-    if (!entry) return total;
-    if (entry.result === "solved") return total + 3;
-    if (entry.result === "played") return total + 1;
-    return total;
-  }, 0);
+function getPeople() {
+  return [state.profile, ...state.friends].map((person) => ({
+    id: person.id || "you",
+    name: person.name,
+    handle: person.handle
+  }));
+}
+
+function placementScore(index) {
+  return [10, 7, 5, 3, 2, 1][index] || 1;
+}
+
+function gameScoreDirection(game) {
+  if (["points", "depth", "rank", "complete"].includes(game.type)) return "high";
+  return "low";
+}
+
+function resultWeight(result) {
+  return { solved: 3, played: 2, missed: 0 }[result] ?? 1;
 }
 
 function calculateCompleted(personId) {
