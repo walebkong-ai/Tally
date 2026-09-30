@@ -57,10 +57,16 @@ let html = #"""
           <a href="#import">Import</a>
           <a href="#answers">Answers</a>
         </nav>
-        <label class="date-control">
-          Date
-          <input id="playDate" type="date" />
-        </label>
+        <div class="top-actions">
+          <label class="date-control">
+            Date
+            <input id="playDate" type="date" />
+          </label>
+          <div class="account-controls" id="accountControls">
+            <button class="ghost-button compact-button" type="button" data-account-action="login">Log in</button>
+            <button class="primary-button compact-button" type="button" data-account-action="signup">Sign up</button>
+          </div>
+        </div>
       </header>
 
       <main class="workspace">
@@ -77,6 +83,7 @@ let html = #"""
             <div>
               <p class="eyebrow">Today’s tally</p>
               <h1 id="activeGameTitle">Wordle</h1>
+              <p class="score-hint" id="scoreHint">Fewest guesses wins.</p>
             </div>
             <div class="status-stack">
               <span class="pill" id="friendCompletion">0 friends done</span>
@@ -135,7 +142,7 @@ let html = #"""
               Paste fallback
               <textarea id="shareTextInput" class="share-input" rows="6" placeholder="Wordle 1,234 4/6&#10;&#10;⬛🟨⬛🟩⬛&#10;🟩🟩🟩🟩🟩"></textarea>
             </label>
-            <div class="import-status" id="importStatus" role="status">Ready for a Wordle share result.</div>
+            <div class="import-status" id="importStatus" role="status">Ready for a Wordle or Krillion share result.</div>
             <div class="share-preview" id="sharePreview" hidden></div>
           </div>
 
@@ -208,10 +215,35 @@ let html = #"""
               <option value="guesses">Guesses</option>
               <option value="time">Time</option>
               <option value="mistakes">Mistakes</option>
+              <option value="points">Points</option>
+              <option value="depth">Depth</option>
+              <option value="rank">Rank</option>
               <option value="complete">Complete</option>
             </select>
           </label>
           <button class="primary-button" value="default" type="submit">Add game</button>
+        </form>
+      </dialog>
+
+      <dialog class="modal" id="accountDialog">
+        <form method="dialog" class="modal-content account-modal" id="accountForm">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Account</p>
+              <h2 id="accountTitle">Create your Solvry account</h2>
+            </div>
+            <button class="icon-button" id="closeAccountDialogButton" type="button" aria-label="Close">x</button>
+          </div>
+          <p class="account-copy">Save your profile and get ready to sync scores with friends.</p>
+          <button class="provider-button" type="button" data-provider="Apple">
+            <span class="provider-mark">A</span>
+            <span>Continue with Apple</span>
+          </button>
+          <button class="provider-button" type="button" data-provider="Google">
+            <span class="provider-mark google">G</span>
+            <span>Continue with Google</span>
+          </button>
+          <p class="account-note">For now this creates a prototype account on this device. Real Apple and Google sign-in can be connected when Solvry gets production OAuth credentials.</p>
         </form>
       </dialog>
     </div>
@@ -280,7 +312,7 @@ a {
   top: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto minmax(170px, 0.5fr);
+  grid-template-columns: minmax(180px, 1fr) auto minmax(250px, 0.6fr);
   gap: 18px;
   align-items: center;
   padding: 16px clamp(16px, 4vw, 42px);
@@ -345,14 +377,44 @@ a {
   color: var(--paper);
 }
 
-.date-control {
+.top-actions {
   justify-self: end;
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.date-control {
   display: grid;
   gap: 4px;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.account-controls {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 42px;
+}
+
+.account-name {
+  display: grid;
+  max-width: 150px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.account-name small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .date-control input,
@@ -422,12 +484,11 @@ textarea {
 
 .game-card {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  gap: 8px;
   align-items: center;
   width: 100%;
-  padding: 12px;
-  text-align: left;
+  padding: 10px;
   border-color: transparent;
 }
 
@@ -437,38 +498,76 @@ textarea {
   background: var(--panel);
 }
 
-.game-icon {
+.game-card.pinned {
+  border-color: rgba(16, 167, 122, 0.45);
+}
+
+.game-select {
   display: grid;
-  width: 40px;
-  height: 40px;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
+.game-logo {
+  display: grid;
+  width: 46px;
+  height: 46px;
   place-items: center;
   border-radius: 8px;
-  color: var(--ink);
-  font-weight: 900;
-}
-
-.game-card:nth-child(4n + 1) .game-icon {
   background: var(--aqua);
+  color: var(--ink);
+  overflow: hidden;
 }
 
-.game-card:nth-child(4n + 2) .game-icon {
-  background: #ffe28a;
-}
-
-.game-card:nth-child(4n + 3) .game-icon {
-  background: #ffb1a7;
-}
-
-.game-card:nth-child(4n + 4) .game-icon {
-  background: #c9c7ff;
-}
-
-.game-card strong,
-.game-card span {
+.game-logo svg {
+  width: 34px;
+  height: 34px;
   display: block;
 }
 
-.game-card span {
+.game-logo.connections,
+.game-logo.pinpoint,
+.game-logo.krillion {
+  background: #ffe28a;
+}
+
+.game-logo.strands,
+.game-logo.queens {
+  background: #ffb1a7;
+}
+
+.game-logo.mini-crossword,
+.game-logo.crossclimb {
+  background: #c9c7ff;
+}
+
+.game-logo.sudoku,
+.game-logo.zip {
+  background: #bdeee2;
+}
+
+.game-meta {
+  min-width: 0;
+}
+
+.game-meta strong,
+.game-meta span {
+  display: block;
+}
+
+.game-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-meta span {
   color: var(--muted);
   font-size: 0.8rem;
 }
@@ -477,6 +576,29 @@ textarea {
   font-size: 0.78rem;
   font-weight: 900;
   color: var(--green);
+}
+
+.pin-button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.pin-button:hover,
+.pin-button.active {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pin-button svg {
+  width: 18px;
+  height: 18px;
 }
 
 .panel {
@@ -520,6 +642,15 @@ h1 {
 
 h2 {
   font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.score-hint {
+  max-width: 560px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .status-stack {
@@ -794,6 +925,12 @@ label {
   padding: 10px 14px;
 }
 
+.compact-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
 .icon-button {
   display: grid;
   width: 42px;
@@ -928,6 +1065,58 @@ label {
   background: var(--paper);
 }
 
+.account-modal {
+  gap: 12px;
+}
+
+.account-copy,
+.account-note {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.account-note {
+  font-size: 0.78rem;
+}
+
+.provider-button {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 900;
+  text-align: left;
+}
+
+.provider-button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.provider-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.provider-mark.google {
+  background: conic-gradient(from 45deg, #4285f4, #34a853, #fbbc05, #ea4335, #4285f4);
+}
+
 @media (max-width: 1080px) {
   .workspace {
     grid-template-columns: 210px 1fr;
@@ -944,12 +1133,23 @@ label {
   }
 
   .topnav,
+  .top-actions,
   .date-control {
     justify-self: stretch;
   }
 
   .topnav {
     overflow-x: auto;
+  }
+
+  .top-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .account-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .workspace {
@@ -1001,24 +1201,65 @@ label {
 let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
-const DEPRECATED_DEFAULT_GAME_IDS = new Set(["krillion"]);
+const DEPRECATED_DEFAULT_GAME_IDS = new Set();
 const today = new Date().toISOString().slice(0, 10);
+
+const SCORING_STYLES = {
+  guesses: {
+    label: "Fewest guesses",
+    helper: "Lower guess counts win. Use a score like 4/6; X/6 means missed.",
+    example: "4/6"
+  },
+  time: {
+    label: "Fastest time",
+    helper: "Fastest completion time wins. Use mm:ss or hh:mm:ss.",
+    example: "01:48"
+  },
+  mistakes: {
+    label: "Fewest mistakes",
+    helper: "Lower mistake counts win. Use a number or a label like 0 mistakes.",
+    example: "0 mistakes"
+  },
+  rank: {
+    label: "Best rank",
+    helper: "Best rank wins. Use the rank shown by the official game.",
+    example: "Genius"
+  },
+  complete: {
+    label: "Completion",
+    helper: "Track whether the game was completed today.",
+    example: "Complete"
+  },
+  points: {
+    label: "Most points",
+    helper: "Higher point totals win.",
+    example: "110"
+  },
+  depth: {
+    label: "Highest depth",
+    helper: "Higher depth or rarity score wins. Krillion shares this as a total like 110.",
+    example: "110"
+  }
+};
 
 const starterState = {
   activeGameId: "wordle",
   selectedDate: today,
   profile: { name: "You", handle: "@solvry" },
+  account: { signedIn: false, provider: "", email: "" },
+  pinnedGameIds: [],
   games: [
-    { id: "wordle", name: "Wordle", type: "guesses", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
-    { id: "connections", name: "Connections", type: "mistakes", officialUrl: "https://www.nytimes.com/games/connections" },
-    { id: "strands", name: "Strands", type: "complete", officialUrl: "https://www.nytimes.com/games/strands" },
-    { id: "mini-crossword", name: "Mini Crossword", type: "time", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
-    { id: "spelling-bee", name: "Spelling Bee", type: "rank", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
-    { id: "sudoku", name: "Sudoku", type: "time", officialUrl: "https://www.nytimes.com/puzzles/sudoku" },
-    { id: "queens", name: "Queens", type: "mistakes", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "zip", name: "Zip", type: "time", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "crossclimb", name: "Crossclimb", type: "time", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "pinpoint", name: "Pinpoint", type: "guesses", officialUrl: "https://www.linkedin.com/games/" }
+    { id: "wordle", name: "Wordle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Guess count out of 6. Lower is better; X/6 is a miss.", example: "4/6" }, logo: "wordle", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
+    { id: "connections", name: "Connections", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Mistakes before solving. Lower is better, with 0 mistakes as perfect.", example: "0 mistakes" }, logo: "connections", officialUrl: "https://www.nytimes.com/games/connections" },
+    { id: "strands", name: "Strands", type: "complete", scoring: { label: "Completion", helper: "Track completion, then use notes for hints, theme words, or spangram details.", example: "Complete" }, logo: "strands", officialUrl: "https://www.nytimes.com/games/strands" },
+    { id: "mini-crossword", name: "Mini Crossword", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "00:54" }, logo: "mini-crossword", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
+    { id: "spelling-bee", name: "Spelling Bee", type: "rank", scoring: { label: "Best rank", helper: "Official rank wins. Queen Bee beats Genius, which beats lower ranks.", example: "Genius" }, logo: "spelling-bee", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
+    { id: "sudoku", name: "Sudoku", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "05:21" }, logo: "sudoku", officialUrl: "https://www.nytimes.com/puzzles/sudoku" },
+    { id: "queens", name: "Queens", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Mistakes before finishing. Lower is better.", example: "0 mistakes" }, logo: "queens", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "zip", name: "Zip", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "01:48" }, logo: "zip", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "crossclimb", name: "Crossclimb", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "02:04" }, logo: "crossclimb", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "pinpoint", name: "Pinpoint", type: "guesses", scoring: { label: "Fewest guesses", helper: "Fewer clues or guesses wins.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "krillion", name: "Krillion", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -1051,6 +1292,7 @@ const elements = {
   playDate: document.querySelector("#playDate"),
   gameList: document.querySelector("#gameList"),
   activeGameTitle: document.querySelector("#activeGameTitle"),
+  scoreHint: document.querySelector("#scoreHint"),
   friendCompletion: document.querySelector("#friendCompletion"),
   privacyState: document.querySelector("#privacyState"),
   letterBoard: document.querySelector("#letterBoard"),
@@ -1081,7 +1323,12 @@ const elements = {
   gameDialog: document.querySelector("#gameDialog"),
   gameForm: document.querySelector("#gameForm"),
   gameNameInput: document.querySelector("#gameNameInput"),
-  gameTypeInput: document.querySelector("#gameTypeInput")
+  gameTypeInput: document.querySelector("#gameTypeInput"),
+  accountControls: document.querySelector("#accountControls"),
+  accountDialog: document.querySelector("#accountDialog"),
+  accountForm: document.querySelector("#accountForm"),
+  accountTitle: document.querySelector("#accountTitle"),
+  closeAccountDialogButton: document.querySelector("#closeAccountDialogButton")
 };
 
 elements.playDate.value = state.selectedDate;
@@ -1134,11 +1381,39 @@ elements.gameForm.addEventListener("submit", (event) => {
   const name = elements.gameNameInput.value.trim();
   if (!name) return;
   const id = uniqueId(slugify(name), state.games.map((game) => game.id));
-  state.games.push({ id, name, type: elements.gameTypeInput.value, officialUrl: "" });
+  const type = elements.gameTypeInput.value;
+  state.games.push({ id, name, type, scoring: scoringForType(type), logo: "custom", officialUrl: "" });
   state.activeGameId = id;
   saveState();
   elements.gameDialog.close();
   render();
+});
+
+elements.accountControls.addEventListener("click", (event) => {
+  const actionButton = event.target.closest("[data-account-action]");
+  if (!actionButton) return;
+  const action = actionButton.dataset.accountAction;
+  if (action === "signout") {
+    state.account = { signedIn: false, provider: "", email: "" };
+    saveState();
+    render();
+    return;
+  }
+  openAccountDialog(action);
+});
+
+elements.closeAccountDialogButton.addEventListener("click", () => {
+  elements.accountDialog.close();
+});
+
+elements.accountForm.addEventListener("click", (event) => {
+  const providerButton = event.target.closest("[data-provider]");
+  if (!providerButton) return;
+  createPrototypeAccount(providerButton.dataset.provider);
+});
+
+elements.accountForm.addEventListener("submit", (event) => {
+  event.preventDefault();
 });
 
 elements.copyButton.addEventListener("click", async () => {
@@ -1185,9 +1460,11 @@ function render() {
   const friendEntries = state.friends.filter((friend) => gameEntries[friend.id]);
 
   elements.activeGameTitle.textContent = activeGame.name;
+  elements.scoreHint.textContent = scoreStyleHelp(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
 
+  renderAccount();
   renderGameList();
   renderOfficialLink(activeGame);
   renderBoard(activeGame.name);
@@ -1197,29 +1474,117 @@ function render() {
   renderAnswers();
 }
 
+function renderAccount() {
+  if (state.account?.signedIn) {
+    elements.accountControls.innerHTML = `
+      <span class="account-name">
+        ${escapeHtml(state.profile.name)}
+        <small>${escapeHtml(state.account.provider)} account</small>
+      </span>
+      <button class="ghost-button compact-button" type="button" data-account-action="signout">Sign out</button>
+    `;
+    return;
+  }
+
+  elements.accountControls.innerHTML = `
+    <button class="ghost-button compact-button" type="button" data-account-action="login">Log in</button>
+    <button class="primary-button compact-button" type="button" data-account-action="signup">Sign up</button>
+  `;
+}
+
+function openAccountDialog(mode) {
+  elements.accountTitle.textContent = mode === "login" ? "Log in to Solvry" : "Create your Solvry account";
+  elements.accountDialog.showModal();
+}
+
+function createPrototypeAccount(provider) {
+  state.account = {
+    signedIn: true,
+    provider,
+    email: provider === "Google" ? "google-account@solvry.local" : "apple-account@solvry.local"
+  };
+  saveState();
+  elements.accountDialog.close();
+  render();
+}
+
 function renderGameList() {
   elements.gameList.innerHTML = "";
-  state.games.forEach((game) => {
+  getSortedGames().forEach((game) => {
     const entries = getGameEntries(state.selectedDate, game.id);
     const playedCount = Object.keys(entries).length;
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = `game-card${game.id === state.activeGameId ? " active" : ""}`;
+    const isPinned = state.pinnedGameIds.includes(game.id);
+    const card = document.createElement("article");
+    card.className = `game-card${game.id === state.activeGameId ? " active" : ""}${isPinned ? " pinned" : ""}`;
     card.innerHTML = `
-      <span class="game-icon">${game.name.slice(0, 1).toUpperCase()}</span>
-      <span>
-        <strong>${escapeHtml(game.name)}</strong>
-        <span>${scoreStyleLabel(game.type)}</span>
-      </span>
-      <span class="game-score">${playedCount}</span>
+      <button class="game-select" type="button" aria-label="Select ${escapeHtml(game.name)}">
+        ${gameLogo(game)}
+        <span class="game-meta">
+          <strong>${escapeHtml(game.name)}</strong>
+          <span>${scoreStyleLabel(game)}</span>
+        </span>
+        <span class="game-score">${playedCount}</span>
+      </button>
+      <button class="pin-button${isPinned ? " active" : ""}" type="button" aria-pressed="${isPinned}" title="${isPinned ? "Unpin" : "Pin"} ${escapeHtml(game.name)}" aria-label="${isPinned ? "Unpin" : "Pin"} ${escapeHtml(game.name)}">
+        ${pinIcon(isPinned)}
+      </button>
     `;
-    card.addEventListener("click", () => {
+    card.querySelector(".game-select").addEventListener("click", () => {
       state.activeGameId = game.id;
       saveState();
       render();
     });
+    card.querySelector(".pin-button").addEventListener("click", () => {
+      togglePin(game.id);
+    });
     elements.gameList.append(card);
   });
+}
+
+function getSortedGames() {
+  const pinned = new Set(state.pinnedGameIds);
+  return [...state.games].sort((a, b) => {
+    const pinDelta = Number(pinned.has(b.id)) - Number(pinned.has(a.id));
+    if (pinDelta) return pinDelta;
+    return state.games.findIndex((game) => game.id === a.id) - state.games.findIndex((game) => game.id === b.id);
+  });
+}
+
+function togglePin(gameId) {
+  if (state.pinnedGameIds.includes(gameId)) {
+    state.pinnedGameIds = state.pinnedGameIds.filter((id) => id !== gameId);
+  } else {
+    state.pinnedGameIds = [...state.pinnedGameIds, gameId];
+  }
+  saveState();
+  render();
+}
+
+function gameLogo(game) {
+  const logo = game.logo || game.id || "custom";
+  const className = escapeHtml(slugify(logo));
+  const initial = escapeHtml(game.name.slice(0, 1).toUpperCase());
+  const icons = {
+    wordle: `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="2" fill="#141719"/><rect x="16" y="5" width="9" height="9" rx="2" fill="#10a77a"/><rect x="27" y="5" width="9" height="9" rx="2" fill="#efbd3a"/><rect x="5" y="16" width="9" height="9" rx="2" fill="#515957"/><rect x="16" y="16" width="9" height="9" rx="2" fill="#10a77a"/><rect x="27" y="16" width="9" height="9" rx="2" fill="#141719"/><rect x="5" y="27" width="9" height="9" rx="2" fill="#efbd3a"/><rect x="16" y="27" width="9" height="9" rx="2" fill="#141719"/><rect x="27" y="27" width="9" height="9" rx="2" fill="#10a77a"/></svg>`,
+    connections: `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="3" fill="#141719"/><rect x="22" y="6" width="12" height="12" rx="3" fill="#10a77a"/><rect x="6" y="22" width="12" height="12" rx="3" fill="#f26d5b"/><rect x="22" y="22" width="12" height="12" rx="3" fill="#5f5bd7"/></svg>`,
+    strands: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 28c6-18 18 12 24-6" fill="none" stroke="#141719" stroke-width="4" stroke-linecap="round"/><circle cx="9" cy="28" r="4" fill="#10a77a"/><circle cx="20" cy="19" r="4" fill="#efbd3a"/><circle cx="32" cy="22" r="4" fill="#141719"/></svg>`,
+    "mini-crossword": `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="6" width="28" height="28" rx="4" fill="#fffefa"/><path d="M6 15h28M6 25h28M15 6v28M25 6v28" stroke="#141719" stroke-width="2"/><rect x="15" y="15" width="10" height="10" fill="#141719"/></svg>`,
+    "spelling-bee": `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l8 5v9l-8 5-8-5V9z" fill="#efbd3a" stroke="#141719" stroke-width="2"/><path d="M12 22l8 5 8-5v9l-8 5-8-5z" fill="#ffe28a" stroke="#141719" stroke-width="2"/></svg>`,
+    sudoku: `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="6" width="28" height="28" rx="3" fill="#fffefa"/><path d="M15 6v28M25 6v28M6 15h28M6 25h28" stroke="#141719" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="14" font-weight="900" fill="#10a77a">9</text></svg>`,
+    queens: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 30h24l-3-16-6 7-3-10-3 10-6-7z" fill="#efbd3a" stroke="#141719" stroke-width="2" stroke-linejoin="round"/><path d="M12 34h16" stroke="#141719" stroke-width="3" stroke-linecap="round"/></svg>`,
+    zip: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 30L16 12l8 18 8-20" fill="none" stroke="#141719" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="30" r="4" fill="#f26d5b"/><circle cx="16" cy="12" r="4" fill="#efbd3a"/><circle cx="24" cy="30" r="4" fill="#10a77a"/><circle cx="32" cy="10" r="4" fill="#5f5bd7"/></svg>`,
+    crossclimb: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 33V7M27 33V7M13 14h14M13 22h14M13 30h14" stroke="#141719" stroke-width="4" stroke-linecap="round"/><path d="M10 30l20-16" stroke="#10a77a" stroke-width="3" stroke-linecap="round"/></svg>`,
+    pinpoint: `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="#fffefa" stroke="#141719" stroke-width="3"/><circle cx="20" cy="20" r="8" fill="none" stroke="#f26d5b" stroke-width="3"/><circle cx="20" cy="20" r="3" fill="#141719"/></svg>`,
+    krillion: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5c5 5 9 12 9 19a9 9 0 0 1-18 0c0-7 4-14 9-19z" fill="#10a77a" stroke="#141719" stroke-width="2"/><path d="M13 23h14M15 29h10" stroke="#fffefa" stroke-width="3" stroke-linecap="round"/><text x="20" y="20" text-anchor="middle" font-size="12" font-weight="900" fill="#141719">K</text></svg>`
+  };
+
+  return `<span class="game-logo ${className}">${icons[logo] || `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="7" width="26" height="26" rx="7" fill="#fffefa" stroke="#141719" stroke-width="3"/><text x="20" y="25" text-anchor="middle" font-size="16" font-weight="900" fill="#141719">${initial}</text></svg>`}</span>`;
+}
+
+function pinIcon(isPinned) {
+  return isPinned
+    ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-2 7 4 4v2h-6v5l-1 1-1-1v-5H5v-2l4-4z" fill="currentColor"/></svg>`
+    : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l-2 7 4 4v2h-5v5l-1 1-1-1v-5H6v-2l4-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
 }
 
 function renderOfficialLink(game) {
@@ -1249,8 +1614,10 @@ function renderBoard(seedText) {
 }
 
 function renderForm(entry) {
+  const activeGame = getActiveGame();
   elements.resultInput.value = entry?.result || "solved";
   elements.scoreInput.value = entry?.score || "";
+  elements.scoreInput.placeholder = scoreStyleExample(activeGame);
   elements.answerInput.value = entry?.answer || "";
   elements.noteInput.value = entry?.note || "";
   elements.revealInput.checked = Boolean(entry?.reveal);
@@ -1345,7 +1712,7 @@ function importShareText(text) {
   if (!parsed) {
     elements.sharePreview.hidden = true;
     elements.sharePreview.innerHTML = "";
-    setImportStatus("Could not read that result yet. Wordle share text works best right now.", "error");
+    setImportStatus("Could not read that result yet. Wordle and Krillion share text work right now.", "error");
     return;
   }
 
@@ -1373,6 +1740,10 @@ function parseShareText(text) {
   if (!cleaned) return null;
 
   const lines = cleaned.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return parseWordleShare(lines) || parseKrillionShare(lines);
+}
+
+function parseWordleShare(lines) {
   const wordleLine = lines.find((line) => /^Wordle\s+[\d,]+\s+[1-6X]\/6\*?$/i.test(line));
   if (!wordleLine) return null;
 
@@ -1389,6 +1760,28 @@ function parseShareText(text) {
     score,
     result: rawScore === "X" ? "missed" : "solved",
     note: `Imported official Wordle #${scoreMatch[1]}${grid.length ? ` with ${grid.length} rows` : ""}`,
+    grid
+  };
+}
+
+function parseKrillionShare(lines) {
+  const header = lines.find((line) => /^Krillion\s+#?[\d,]+/i.test(line));
+  if (!header) return null;
+
+  const headerIndex = lines.indexOf(header);
+  const scoreLine = lines.slice(headerIndex + 1).find((line) => /^\d{1,4}$/.test(line));
+  if (!scoreLine) return null;
+
+  const numberMatch = header.match(/^Krillion\s+#?([\d,]+)/i);
+  const grid = lines
+    .slice(lines.indexOf(scoreLine) + 1)
+    .filter((line) => !/^https?:\/\//i.test(line));
+
+  return {
+    gameId: "krillion",
+    score: scoreLine,
+    result: Number(scoreLine) > 0 ? "played" : "missed",
+    note: `Imported official Krillion #${numberMatch?.[1] || "daily dive"} with ${scoreLine} depth points`,
     grid
   };
 }
@@ -1452,13 +1845,20 @@ function calculateStreak() {
 }
 
 function scoreStyleLabel(type) {
-  return {
-    guesses: "Fewest guesses",
-    time: "Fastest time",
-    mistakes: "Fewest mistakes",
-    rank: "Best rank",
-    complete: "Completion"
-  }[type];
+  const game = typeof type === "object" ? type : { type };
+  return game.scoring?.label || SCORING_STYLES[game.type]?.label || "Score";
+}
+
+function scoreStyleHelp(game) {
+  return game.scoring?.helper || SCORING_STYLES[game.type]?.helper || "Track the score shown by the official game.";
+}
+
+function scoreStyleExample(game) {
+  return game.scoring?.example || SCORING_STYLES[game.type]?.example || "Score";
+}
+
+function scoringForType(type) {
+  return { ...(SCORING_STYLES[type] || SCORING_STYLES.complete) };
 }
 
 function defaultScoreLabel(result) {
@@ -1479,12 +1879,24 @@ function loadState() {
 function mergeState(base, saved) {
   const baseGamesById = Object.fromEntries(base.games.map((game) => [game.id, game]));
   const savedGamesById = Object.fromEntries((saved.games || []).map((game) => [game.id, game]));
-  const mergedDefaults = base.games.map((game) => ({
-    ...game,
-    ...savedGamesById[game.id]
-  }));
-  const customGames = (saved.games || []).filter((game) => !baseGamesById[game.id] && !DEPRECATED_DEFAULT_GAME_IDS.has(game.id));
+  const mergedDefaults = base.games.map((game) => {
+    const savedGame = savedGamesById[game.id] || {};
+    return {
+      ...game,
+      ...savedGame,
+      scoring: { ...scoringForType(game.type), ...game.scoring, ...savedGame.scoring },
+      logo: savedGame.logo || game.logo,
+      officialUrl: savedGame.officialUrl || game.officialUrl
+    };
+  });
+  const customGames = (saved.games || [])
+    .filter((game) => !baseGamesById[game.id] && !DEPRECATED_DEFAULT_GAME_IDS.has(game.id))
+    .map((game) => ({
+      ...game,
+      scoring: { ...scoringForType(game.type), ...game.scoring }
+    }));
   const mergedGames = [...mergedDefaults, ...customGames];
+  const mergedGameIds = new Set(mergedGames.map((game) => game.id));
   const entries = Object.fromEntries(
     Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
       date,
@@ -1496,7 +1908,9 @@ function mergeState(base, saved) {
     ...structuredClone(base),
     ...saved,
     profile: { ...base.profile, ...saved.profile },
+    account: { ...base.account, ...saved.account },
     games: mergedGames,
+    pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds).filter((id) => mergedGameIds.has(id)),
     friends: saved.friends || base.friends,
     entries
   };

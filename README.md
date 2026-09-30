@@ -13,9 +13,12 @@ The build writes the deployable site to `dist/`.
 ## What is in this version
 
 - Daily game tracker for games like Wordle, Zip, Krillion, and Queens
+- Logo-style game cards with pinned favorites
+- Per-game scoring rules and score hints
+- Prototype login/sign-up flow with Apple and Google account options
 - Friend leaderboard
 - Spoiler-safe answer sharing
 - Official game links
-- Clipboard and paste import for official Wordle share results
+- Clipboard and paste import for official Wordle and Krillion share results
 - Add-friend and add-game flows
 - Browser-local saved data for the first prototype
