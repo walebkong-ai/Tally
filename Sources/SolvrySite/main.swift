@@ -196,7 +196,7 @@ let html = #"""
               <p class="eyebrow">Track anything</p>
               <h2>Add a daily game</h2>
             </div>
-            <button class="icon-button" value="cancel" type="submit" aria-label="Close">x</button>
+            <button class="icon-button" id="closeGameDialogButton" type="button" aria-label="Close">x</button>
           </div>
           <label>
             Game name
@@ -1073,6 +1073,7 @@ const elements = {
   sharePreview: document.querySelector("#sharePreview"),
   resetButton: document.querySelector("#resetButton"),
   addGameButton: document.querySelector("#addGameButton"),
+  closeGameDialogButton: document.querySelector("#closeGameDialogButton"),
   gameDialog: document.querySelector("#gameDialog"),
   gameForm: document.querySelector("#gameForm"),
   gameNameInput: document.querySelector("#gameNameInput"),
@@ -1118,6 +1119,10 @@ elements.friendForm.addEventListener("submit", (event) => {
 elements.addGameButton.addEventListener("click", () => {
   elements.gameForm.reset();
   elements.gameDialog.showModal();
+});
+
+elements.closeGameDialogButton.addEventListener("click", () => {
+  elements.gameDialog.close();
 });
 
 elements.gameForm.addEventListener("submit", (event) => {
@@ -1334,6 +1339,8 @@ function renderAnswers() {
 function importShareText(text) {
   const parsed = parseShareText(text);
   if (!parsed) {
+    elements.sharePreview.hidden = true;
+    elements.sharePreview.innerHTML = "";
     setImportStatus("Could not read that result yet. Wordle share text works best right now.", "error");
     return;
   }
