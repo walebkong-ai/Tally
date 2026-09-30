@@ -93,6 +93,7 @@ let html = #"""
           </div>
 
           <div class="play-surface" aria-live="polite">
+            <div class="current-result" id="currentResult"></div>
             <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
             <form class="entry-form" id="entryForm">
               <div class="field-grid">
@@ -107,10 +108,12 @@ let html = #"""
                 <label>
                   Score
                   <input id="scoreInput" type="text" placeholder="4/6, 01:12, 3 mistakes" autocomplete="off" />
+                  <small class="field-help" id="scoreHelp">Example: 4/6</small>
                 </label>
                 <label>
                   Answer
                   <input id="answerInput" type="text" placeholder="Optional" autocomplete="off" />
+                  <small class="field-help">Only shared when reveal is on.</small>
                 </label>
               </div>
               <label class="wide-label">
@@ -125,6 +128,7 @@ let html = #"""
                 </label>
                 <button class="primary-button" type="submit">Save result</button>
               </div>
+              <div class="save-status" id="saveStatus" role="status"></div>
             </form>
           </div>
 
@@ -134,6 +138,11 @@ let html = #"""
               <h2>Import a share result</h2>
             </div>
             <p class="import-copy">Play on the official site, use its Share button, then import the copied result here.</p>
+            <div class="support-row">
+              <span>Wordle import</span>
+              <span>Krillion import</span>
+              <span>More games soon</span>
+            </div>
             <div class="import-actions">
               <button class="primary-button" id="importClipboardButton" type="button">Import copied result</button>
               <button class="ghost-button" id="importPasteButton" type="button">Import pasted text</button>
@@ -176,6 +185,7 @@ let html = #"""
                 <h3 id="overallScoreboardTitle">Solvry overall</h3>
                 <span>Combined points</span>
               </div>
+              <p class="scoreboard-note">Overall points come from each game’s daily ranking.</p>
               <div class="leaderboard" id="overallLeaderboard"></div>
             </section>
             <section class="scoreboard-block" aria-labelledby="gameScoreboardTitle">
@@ -183,6 +193,7 @@ let html = #"""
                 <h3 id="gameScoreboardTitle">Wordle scoreboard</h3>
                 <span id="gameScoreboardMeta">Fewest guesses</span>
               </div>
+              <p class="scoreboard-note" id="gameScoreboardNote">Lower guess counts rank higher.</p>
               <div class="leaderboard" id="gameLeaderboard"></div>
             </section>
           </div>
@@ -388,6 +399,11 @@ a {
 }
 
 .topnav a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.topnav a.active {
   background: var(--ink);
   color: var(--paper);
 }
@@ -745,6 +761,25 @@ h2 {
   line-height: 1.45;
 }
 
+.support-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.support-row span {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
 .import-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -831,6 +866,39 @@ h2 {
   color: white;
 }
 
+.current-result {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.74);
+}
+
+.current-result strong,
+.current-result span {
+  display: block;
+}
+
+.current-result span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.current-result .game-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.current-result .game-logo svg {
+  width: 32px;
+  height: 32px;
+}
+
 .entry-form,
 .friend-form,
 .modal-content {
@@ -853,6 +921,13 @@ label {
   font-weight: 900;
 }
 
+.field-help {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
 .wide-label {
   margin-top: 12px;
 }
@@ -863,6 +938,17 @@ label {
   align-items: center;
   justify-content: space-between;
   margin-top: 14px;
+}
+
+.save-status {
+  min-height: 24px;
+  color: #087255;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.save-status:empty {
+  display: none;
 }
 
 .switch-row {
@@ -1018,6 +1104,14 @@ label {
   font-size: 0.78rem;
   font-weight: 900;
   text-align: right;
+}
+
+.scoreboard-note {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .rank-row {
@@ -1228,8 +1322,13 @@ label {
 
   .field-grid,
   .import-actions,
-  .metrics {
+  .metrics,
+  .current-result {
     grid-template-columns: 1fr;
+  }
+
+  .current-result {
+    align-items: flex-start;
   }
 
   .primary-button,
@@ -1338,21 +1437,26 @@ const starterState = {
 };
 
 let state = loadState();
+let saveStatusTimers = new WeakMap();
 
 const elements = {
+  navLinks: [...document.querySelectorAll(".topnav a")],
   playDate: document.querySelector("#playDate"),
   gameList: document.querySelector("#gameList"),
   activeGameTitle: document.querySelector("#activeGameTitle"),
   scoreHint: document.querySelector("#scoreHint"),
   friendCompletion: document.querySelector("#friendCompletion"),
   privacyState: document.querySelector("#privacyState"),
+  currentResult: document.querySelector("#currentResult"),
   letterBoard: document.querySelector("#letterBoard"),
   entryForm: document.querySelector("#entryForm"),
   resultInput: document.querySelector("#resultInput"),
   scoreInput: document.querySelector("#scoreInput"),
+  scoreHelp: document.querySelector("#scoreHelp"),
   answerInput: document.querySelector("#answerInput"),
   noteInput: document.querySelector("#noteInput"),
   revealInput: document.querySelector("#revealInput"),
+  saveStatus: document.querySelector("#saveStatus"),
   playedMetric: document.querySelector("#playedMetric"),
   solvedMetric: document.querySelector("#solvedMetric"),
   streakMetric: document.querySelector("#streakMetric"),
@@ -1360,6 +1464,7 @@ const elements = {
   gameLeaderboard: document.querySelector("#gameLeaderboard"),
   gameScoreboardTitle: document.querySelector("#gameScoreboardTitle"),
   gameScoreboardMeta: document.querySelector("#gameScoreboardMeta"),
+  gameScoreboardNote: document.querySelector("#gameScoreboardNote"),
   friendForm: document.querySelector("#friendForm"),
   friendNameInput: document.querySelector("#friendNameInput"),
   friendHandleInput: document.querySelector("#friendHandleInput"),
@@ -1387,6 +1492,8 @@ const elements = {
 
 elements.playDate.value = state.selectedDate;
 
+window.addEventListener("hashchange", renderNav);
+
 elements.playDate.addEventListener("change", (event) => {
   state.selectedDate = event.target.value || today;
   saveState();
@@ -1405,6 +1512,7 @@ elements.entryForm.addEventListener("submit", (event) => {
   };
   saveState();
   render();
+  flashStatus(elements.saveStatus, "Saved. Scoreboards updated.");
 });
 
 elements.friendForm.addEventListener("submit", (event) => {
@@ -1518,9 +1626,11 @@ function render() {
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
 
+  renderNav();
   renderAccount();
   renderGameList();
   renderOfficialLink(activeGame);
+  renderCurrentResult(activeGame, myEntry);
   renderBoard(activeGame.name);
   renderForm(myEntry);
   renderMetrics();
@@ -1546,6 +1656,13 @@ function renderAccount() {
   `;
 }
 
+function renderNav() {
+  const activeHash = window.location.hash || "#today";
+  elements.navLinks.forEach((link) => {
+    link.classList.toggle("active", link.getAttribute("href") === activeHash);
+  });
+}
+
 function openAccountDialog(mode) {
   elements.accountTitle.textContent = mode === "login" ? "Log in to Solvry" : "Create your Solvry account";
   elements.accountDialog.showModal();
@@ -1560,6 +1677,23 @@ function createPrototypeAccount(provider) {
   saveState();
   elements.accountDialog.close();
   render();
+}
+
+function renderCurrentResult(game, entry) {
+  const summary = entry
+    ? `${entry.result} · ${entry.score || defaultScoreLabel(entry.result)}`
+    : "No result saved yet";
+  const detail = entry
+    ? entry.note || (entry.reveal ? "Answer reveal is on." : "Answer reveal is off.")
+    : `Example score: ${scoreStyleExample(game)}`;
+  elements.currentResult.innerHTML = `
+    ${gameLogo(game)}
+    <span>
+      <strong>${escapeHtml(summary)}</strong>
+      <span>${escapeHtml(detail)}</span>
+    </span>
+    <span class="pill">${entry ? "Saved" : "Open"}</span>
+  `;
 }
 
 function renderGameList() {
@@ -1672,6 +1806,7 @@ function renderForm(entry) {
   elements.resultInput.value = entry?.result || "solved";
   elements.scoreInput.value = entry?.score || "";
   elements.scoreInput.placeholder = scoreStyleExample(activeGame);
+  elements.scoreHelp.textContent = `Example: ${scoreStyleExample(activeGame)} · ${scoreStyleLabel(activeGame)}`;
   elements.answerInput.value = entry?.answer || "";
   elements.noteInput.value = entry?.note || "";
   elements.revealInput.checked = Boolean(entry?.reveal);
@@ -1697,6 +1832,7 @@ function renderMetrics() {
 function renderScoreboards(activeGame) {
   elements.gameScoreboardTitle.textContent = `${activeGame.name} scoreboard`;
   elements.gameScoreboardMeta.textContent = scoreStyleLabel(activeGame);
+  elements.gameScoreboardNote.textContent = scoreStyleHelp(activeGame);
 
   const overallRows = buildOverallLeaderboard();
   const gameRows = buildGameLeaderboard(activeGame);
@@ -1929,6 +2065,7 @@ function importShareText(text) {
   render();
   renderSharePreview(parsed, game);
   setImportStatus(`Imported ${game.name}: ${parsed.score}.`, "success");
+  flashStatus(elements.saveStatus, `${game.name} imported and saved.`);
 }
 
 function parseShareText(text) {
@@ -2158,6 +2295,17 @@ function flashButton(button, temporary, original) {
   setTimeout(() => {
     button.textContent = original;
   }, 1200);
+}
+
+function flashStatus(element, message) {
+  element.textContent = message;
+  const existingTimer = saveStatusTimers.get(element);
+  if (existingTimer) clearTimeout(existingTimer);
+  const timer = setTimeout(() => {
+    element.textContent = "";
+    saveStatusTimers.delete(element);
+  }, 2200);
+  saveStatusTimers.set(element, timer);
 }
 
 render();

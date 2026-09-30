@@ -16,6 +16,7 @@ The build writes the deployable site to `dist/`.
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
 - Individual game scoreboards plus a combined Solvry leaderboard
+- Friendlier UI states for saved results, score examples, imports, and navigation
 - Prototype login/sign-up flow with Apple and Google account options
 - Friend leaderboard
 - Spoiler-safe answer sharing
