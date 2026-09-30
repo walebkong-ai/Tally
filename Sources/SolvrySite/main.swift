@@ -1001,6 +1001,7 @@ label {
 let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
+const DEPRECATED_DEFAULT_GAME_IDS = new Set(["krillion"]);
 const today = new Date().toISOString().slice(0, 10);
 
 const starterState = {
@@ -1009,9 +1010,15 @@ const starterState = {
   profile: { name: "You", handle: "@solvry" },
   games: [
     { id: "wordle", name: "Wordle", type: "guesses", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
+    { id: "connections", name: "Connections", type: "mistakes", officialUrl: "https://www.nytimes.com/games/connections" },
+    { id: "strands", name: "Strands", type: "complete", officialUrl: "https://www.nytimes.com/games/strands" },
+    { id: "mini-crossword", name: "Mini Crossword", type: "time", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
+    { id: "spelling-bee", name: "Spelling Bee", type: "rank", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
+    { id: "sudoku", name: "Sudoku", type: "time", officialUrl: "https://www.nytimes.com/puzzles/sudoku" },
+    { id: "queens", name: "Queens", type: "mistakes", officialUrl: "https://www.linkedin.com/games/" },
     { id: "zip", name: "Zip", type: "time", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "krillion", name: "Krillion", type: "complete", officialUrl: "" },
-    { id: "queens", name: "Queens", type: "mistakes", officialUrl: "https://www.linkedin.com/games/" }
+    { id: "crossclimb", name: "Crossclimb", type: "time", officialUrl: "https://www.linkedin.com/games/" },
+    { id: "pinpoint", name: "Pinpoint", type: "guesses", officialUrl: "https://www.linkedin.com/games/" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -1029,9 +1036,6 @@ const starterState = {
       zip: {
         mira: { result: "played", score: "01:48", answer: "Loop path", note: "One tricky turn", reveal: true },
         jay: { result: "played", score: "02:04", answer: "Loop path", note: "Good route", reveal: false }
-      },
-      krillion: {
-        nolan: { result: "solved", score: "Complete", answer: "289", note: "Math day", reveal: true }
       },
       queens: {
         you: { result: "played", score: "2 mistakes", answer: "", note: "", reveal: false },
@@ -1452,6 +1456,7 @@ function scoreStyleLabel(type) {
     guesses: "Fewest guesses",
     time: "Fastest time",
     mistakes: "Fewest mistakes",
+    rank: "Best rank",
     complete: "Completion"
   }[type];
 }
@@ -1473,10 +1478,19 @@ function loadState() {
 
 function mergeState(base, saved) {
   const baseGamesById = Object.fromEntries(base.games.map((game) => [game.id, game]));
-  const mergedGames = (saved.games?.length ? saved.games : base.games).map((game) => ({
-    ...baseGamesById[game.id],
-    ...game
+  const savedGamesById = Object.fromEntries((saved.games || []).map((game) => [game.id, game]));
+  const mergedDefaults = base.games.map((game) => ({
+    ...game,
+    ...savedGamesById[game.id]
   }));
+  const customGames = (saved.games || []).filter((game) => !baseGamesById[game.id] && !DEPRECATED_DEFAULT_GAME_IDS.has(game.id));
+  const mergedGames = [...mergedDefaults, ...customGames];
+  const entries = Object.fromEntries(
+    Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
+      date,
+      Object.fromEntries(Object.entries(dayEntries).filter(([gameId]) => !DEPRECATED_DEFAULT_GAME_IDS.has(gameId)))
+    ])
+  );
 
   return {
     ...structuredClone(base),
@@ -1484,7 +1498,7 @@ function mergeState(base, saved) {
     profile: { ...base.profile, ...saved.profile },
     games: mergedGames,
     friends: saved.friends || base.friends,
-    entries: { ...base.entries, ...saved.entries }
+    entries
   };
 }
 
