@@ -1273,6 +1273,244 @@ h2 {
   opacity: 0.48;
 }
 
+.daily-golf {
+  display: grid;
+  gap: 12px;
+}
+
+.golf-score-strip {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.84);
+}
+
+.golf-score-hole {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 4px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.golf-score-hole:last-child {
+  border-right: 0;
+}
+
+.golf-score-hole.current {
+  background: rgba(16, 167, 122, 0.12);
+  color: #087255;
+}
+
+.golf-score-hole.done {
+  background: rgba(239, 189, 58, 0.16);
+  color: var(--ink);
+}
+
+.golf-score-hole strong {
+  font-size: 1rem;
+}
+
+.golf-hero-card,
+.hole-card,
+.results-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(189, 238, 226, 0.72), rgba(255, 254, 250, 0.9)),
+    var(--panel);
+}
+
+.golf-hero-grid,
+.hole-card-grid,
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.golf-stat {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.76);
+}
+
+.golf-stat span,
+.golf-stat strong {
+  display: block;
+}
+
+.golf-stat span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.golf-stat strong {
+  margin-top: 3px;
+  font-size: 1.12rem;
+}
+
+.daily-golf-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(240px, 0.92fr);
+  gap: 14px;
+}
+
+.golf-map-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.golf-hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.golf-hud .golf-stat {
+  padding: 8px;
+}
+
+.golf-course-map {
+  width: 100%;
+  min-height: 520px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: #dfe9d5;
+  box-shadow: inset 0 0 70px rgba(20, 23, 25, 0.12);
+  touch-action: pan-y;
+}
+
+.golf-course-map text {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+.golf-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.club-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.club-button {
+  display: grid;
+  gap: 2px;
+  min-height: 58px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.club-button strong,
+.club-button span {
+  display: block;
+}
+
+.club-button span {
+  font-size: 0.72rem;
+}
+
+.club-button.active {
+  border-color: #087255;
+  background: rgba(16, 167, 122, 0.12);
+  color: #087255;
+}
+
+.swing-meter {
+  position: relative;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(242, 109, 91, 0.18) 0 18%, rgba(239, 189, 58, 0.26) 18% 38%, rgba(16, 167, 122, 0.34) 38% 62%, rgba(239, 189, 58, 0.26) 62% 82%, rgba(242, 109, 91, 0.18) 82% 100%),
+    var(--panel);
+}
+
+.swing-meter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 9%, rgba(20, 23, 25, 0.12) 9% 9.4%);
+}
+
+.swing-needle {
+  position: absolute;
+  z-index: 1;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--ink);
+  animation: swingSweep 1.55s linear infinite alternate;
+}
+
+@keyframes swingSweep {
+  from { left: 5%; }
+  to { left: 95%; }
+}
+
+.shot-summary {
+  display: grid;
+  gap: 8px;
+  min-height: 72px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(20, 23, 25, 0.07);
+  color: var(--ink);
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.8);
+}
+
+.scorecard-table th,
+.scorecard-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.82rem;
+}
+
+.scorecard-table th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.scorecard-table tr:last-child td {
+  border-bottom: 0;
+}
+
 .play-result {
   min-height: 44px;
   display: grid;
@@ -1791,8 +2029,21 @@ label {
   .metrics,
   .current-result,
   .solvry-board,
+  .daily-golf-board,
+  .golf-hero-grid,
+  .hole-card-grid,
+  .results-grid,
   .play-actions.three {
     grid-template-columns: 1fr;
+  }
+
+  .golf-hud,
+  .club-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .golf-course-map {
+    min-height: 430px;
   }
 
   .dashboard-strip {
@@ -1877,6 +2128,28 @@ const SCORING_STYLES = {
     helper: "Higher depth or rarity score wins. Krillion shares this as a total like 110.",
     example: "110"
   }
+};
+
+const GOLF_GENERATION_VERSION = 2;
+const GOLF_GAME_VERSION = 2;
+const GOLF_CLUBS = [
+  { id: "driver", label: "DR", name: "Driver", carry: 238, max: 278, dispersion: 9.5, rollout: 28 },
+  { id: "wood", label: "3W", name: "Wood", carry: 214, max: 243, dispersion: 8.2, rollout: 23 },
+  { id: "long-iron", label: "4i", name: "Long Iron", carry: 176, max: 199, dispersion: 6.8, rollout: 16 },
+  { id: "mid-iron", label: "6i", name: "Mid Iron", carry: 158, max: 179, dispersion: 5.6, rollout: 12 },
+  { id: "short-iron", label: "8i", name: "Short Iron", carry: 138, max: 156, dispersion: 4.4, rollout: 8 },
+  { id: "wedge", label: "PW", name: "Wedge", carry: 116, max: 131, dispersion: 3.2, rollout: 4 },
+  { id: "lob-wedge", label: "LW", name: "Lob Wedge", carry: 58, max: 66, dispersion: 2.4, rollout: 2 }
+];
+const GOLF_SURFACES = {
+  tee: { label: "Tee", rollout: 1, power: 1, accuracy: 1 },
+  fairway: { label: "Fairway", rollout: 1, power: 1, accuracy: 1 },
+  rough: { label: "Rough", rollout: 0.45, power: 0.92, accuracy: 1.25 },
+  deepRough: { label: "Deep rough", rollout: 0.18, power: 0.8, accuracy: 1.55 },
+  bunker: { label: "Bunker", rollout: 0.08, power: 0.74, accuracy: 1.75 },
+  green: { label: "Green", rollout: 0.85, power: 0.92, accuracy: 0.9 },
+  cartPath: { label: "Cart path", rollout: 2.4, power: 1.05, accuracy: 1.35 },
+  water: { label: "Water", rollout: 0, power: 0, accuracy: 2 }
 };
 
 const starterState = {
@@ -2209,53 +2482,219 @@ function renderSolvryGame(game) {
 }
 
 function renderHolesBoard(play) {
-  const hole = play.holes[play.holeIndex];
-  const complete = play.holes.every((item) => item.done);
-  const nextDisabled = hole.done ? "" : "disabled";
-  const finishDisabled = complete ? "" : "disabled";
+  if (play.completed) return renderGolfResults(play);
+  if (!play.started) return renderGolfStart(play);
+
+  const hole = getCurrentGolfHole(play);
+  if (play.showHoleCard) return renderGolfHoleCard(play, hole);
+
+  const remaining = Math.round(yardsBetween(play.ball, hole.pin, hole));
+  const selectedClub = getGolfClub(play.selectedClubId);
+  const target = getGolfTargetPoint(play, hole, selectedClub);
+  const scoreLabel = formatRelativeScore(getGolfRelativeScore(play));
 
   return `
-    <div class="solvry-board">
-      <section class="play-card primary">
+    <div class="daily-golf">
+      ${renderGolfScoreStrip(play)}
+      <div class="daily-golf-board">
+        <section class="play-card primary golf-map-card">
+          <div class="golf-hud">
+            <div class="golf-stat"><span>Hole</span><strong>${hole.number} / 9</strong></div>
+            <div class="golf-stat"><span>Score</span><strong>${scoreLabel}</strong></div>
+            <div class="golf-stat"><span>To pin</span><strong>${remaining} yds</strong></div>
+            <div class="golf-stat"><span>Wind</span><strong>${hole.wind.speed} mph ${windArrow(hole.wind.direction)}</strong></div>
+          </div>
+          ${renderGolfCourseSvg(play, hole, target)}
+          <div class="shot-summary">
+            <span>${escapeHtml(play.message)}</span>
+            ${play.lastShot ? `<small>${escapeHtml(play.lastShot.summary)}</small>` : ""}
+          </div>
+        </section>
+        <section class="play-card golf-controls">
+          <div class="play-topline">
+            <h3>${escapeHtml(hole.name)}</h3>
+            <span class="pill">${surfaceLabel(play.currentSurface)} · shot ${play.holeStrokes + 1}</span>
+          </div>
+          <div class="golf-hero-grid">
+            <div class="golf-stat"><span>Par</span><strong>${hole.par}</strong></div>
+            <div class="golf-stat"><span>Length</span><strong>${hole.distance} yds</strong></div>
+            <div class="golf-stat"><span>Hazard</span><strong>${escapeHtml(hole.primaryHazard)}</strong></div>
+          </div>
+          <div>
+            <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
+            <div class="club-grid">
+              ${GOLF_CLUBS.map((club) => `
+                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}">
+                  <strong>${club.label}</strong>
+                  <span>${club.max}</span>
+                </button>
+              `).join("")}
+            </div>
+          </div>
+          <div class="meter-stack">
+            ${renderPlayMeter("Aim", 50 + play.aimAngle)}
+            <div class="play-actions">
+              <button class="play-button" type="button" data-play-action="aim-left">Aim left</button>
+              <button class="play-button" type="button" data-play-action="aim-right">Aim right</button>
+            </div>
+          </div>
+          <div>
+            <span class="meter-label"><span>Timing</span><span>low · good · pure · good · over</span></span>
+            <div class="swing-meter" aria-hidden="true"><span class="swing-needle"></span></div>
+          </div>
+          <div class="play-actions">
+            <button class="play-button" type="button" data-play-action="target-safe">Aim safe</button>
+            <button class="play-button" type="button" data-play-action="target-pin">Attack pin</button>
+            <button class="play-button main" type="button" data-play-action="swing">Lock swing</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function renderGolfStart(play) {
+  const course = play.course;
+  return `
+    <div class="daily-golf">
+      ${renderGolfScoreStrip(play)}
+      <section class="golf-hero-card">
         <div class="play-topline">
-          <h3>Hole ${play.holeIndex + 1} of ${play.holes.length}</h3>
-          <span class="pill">${play.strokes} stroke${play.strokes === 1 ? "" : "s"}</span>
+          <div>
+            <p class="eyebrow">Ranked daily round</p>
+            <h3>${escapeHtml(course.name)}</h3>
+          </div>
+          <span class="pill">Seed ${escapeHtml(course.dailyNumber)}</span>
         </div>
-        <div class="course-view" style="--play-angle:${hole.angle}deg;--target-x:${hole.targetX}%;--target-y:${hole.targetY}%;--avatar-x:${play.aim}%;--avatar-y:${Math.max(8, 42 - play.power / 3)}px">
-          <span class="course-path" aria-hidden="true"></span>
-          <span class="play-target" aria-label="Cup">⛳</span>
-          <span class="play-avatar" aria-label="Ball">•</span>
+        <div class="golf-hero-grid">
+          <div class="golf-stat"><span>Format</span><strong>9 holes</strong></div>
+          <div class="golf-stat"><span>Course par</span><strong>${course.par}</strong></div>
+          <div class="golf-stat"><span>Theme</span><strong>${escapeHtml(course.environment)}</strong></div>
         </div>
-        <p>${escapeHtml(hole.distance)} yards · par ${hole.par} · ${escapeHtml(hole.hazard)}</p>
-        <div class="meter-stack">
-          ${renderPlayMeter("Aim", play.aim)}
-          ${renderPlayMeter("Power", play.power)}
-        </div>
-        <div class="play-result">${escapeHtml(play.message)}</div>
-        <div class="play-actions">
-          <button class="play-button" type="button" data-play-action="aim-left">Aim left</button>
-          <button class="play-button" type="button" data-play-action="aim-right">Aim right</button>
-          <button class="play-button" type="button" data-play-action="power-down">Less power</button>
-          <button class="play-button" type="button" data-play-action="power-up">More power</button>
-          <button class="play-button main" type="button" data-play-action="swing" ${hole.done ? "disabled" : ""}>Swing</button>
-          <button class="play-button" type="button" data-play-action="next" ${nextDisabled}>Next hole</button>
-          <button class="play-button" type="button" data-play-action="finish" ${finishDisabled}>Save round</button>
-          <button class="play-button" type="button" data-play-action="reset">Reset</button>
-        </div>
-      </section>
-      <section class="play-card">
-        <h3>Round card</h3>
-        <div class="play-grid">
-          ${play.holes.map((item, index) => `
-            <span class="play-tile${index === play.holeIndex ? " current" : ""}${item.done ? " done" : ""}">
-              <strong>${index + 1}</strong>
-              ${item.done ? `${item.strokes} stroke${item.strokes === 1 ? "" : "s"}` : `Par ${item.par}`}
-            </span>
-          `).join("")}
-        </div>
-        <p>Move aim and power, then swing. A clean shot finishes the hole quickly; rough shots add strokes.</p>
+        <p class="import-copy">One official ranked round for ${escapeHtml(state.selectedDate)}. The course, wind, hazards, and pins are deterministic, so every player gets the same challenge.</p>
+        <button class="primary-button" type="button" data-play-action="start-round">Start ranked round</button>
       </section>
     </div>
+  `;
+}
+
+function renderGolfHoleCard(play, hole) {
+  return `
+    <div class="daily-golf">
+      ${renderGolfScoreStrip(play)}
+      <section class="hole-card">
+        <div class="play-topline">
+          <div>
+            <p class="eyebrow">Hole ${hole.number} · Par ${hole.par}</p>
+            <h3>${escapeHtml(hole.name)}</h3>
+          </div>
+          <span class="pill">${hole.distance} yds</span>
+        </div>
+        <div class="hole-card-grid">
+          <div class="golf-stat"><span>Wind</span><strong>${hole.wind.speed} mph ${windArrow(hole.wind.direction)}</strong></div>
+          <div class="golf-stat"><span>Primary hazard</span><strong>${escapeHtml(hole.primaryHazard)}</strong></div>
+          <div class="golf-stat"><span>Green</span><strong>${escapeHtml(hole.greenDifficulty)}</strong></div>
+        </div>
+        <p class="import-copy">${escapeHtml(hole.summary)}</p>
+        <button class="primary-button" type="button" data-play-action="start-hole">Tap to play</button>
+      </section>
+    </div>
+  `;
+}
+
+function renderGolfResults(play) {
+  const relative = getGolfRelativeScore(play);
+  const birdies = play.holeResults.filter((result) => result.relative < 0).length;
+  const water = play.shotLog.filter((shot) => shot.penalty).length;
+  return `
+    <div class="daily-golf">
+      <section class="results-card">
+        <div class="play-topline">
+          <div>
+            <p class="eyebrow">Daily Golf ${escapeHtml(play.course.dailyNumber)}</p>
+            <h3>${formatRelativeScore(relative)}</h3>
+          </div>
+          <span class="pill">Locked score</span>
+        </div>
+        <div class="results-grid">
+          <div class="golf-stat"><span>Strokes</span><strong>${play.totalStrokes}</strong></div>
+          <div class="golf-stat"><span>Birdies+</span><strong>${birdies}</strong></div>
+          <div class="golf-stat"><span>Water penalties</span><strong>${water}</strong></div>
+        </div>
+        ${renderGolfScorecardTable(play)}
+        <div class="play-actions">
+          <button class="play-button" type="button" data-play-action="share-round">Share</button>
+          <button class="play-button" type="button" data-play-action="practice">Practice</button>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderGolfScoreStrip(play) {
+  return `
+    <div class="golf-score-strip">
+      ${play.course.holes.map((hole, index) => {
+        const result = play.holeResults[index];
+        return `
+          <span class="golf-score-hole${index === play.holeIndex ? " current" : ""}${result ? " done" : ""}">
+            <strong>${hole.number}</strong>
+            <span>${result ? formatRelativeScore(result.relative) : "·"}</span>
+            <small>${hole.par}</small>
+          </span>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderGolfScorecardTable(play) {
+  return `
+    <table class="scorecard-table">
+      <thead><tr><th>Hole</th><th>Par</th><th>Strokes</th><th>Score</th></tr></thead>
+      <tbody>
+        ${play.course.holes.map((hole, index) => {
+          const result = play.holeResults[index];
+          return `<tr><td>${hole.number}</td><td>${hole.par}</td><td>${result?.strokes || "-"}</td><td>${result ? formatRelativeScore(result.relative) : "-"}</td></tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderGolfCourseSvg(play, hole, target) {
+  const ball = play.ball;
+  const aim = getGolfAimLine(ball, target);
+  return `
+    <svg class="golf-course-map" viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(hole.name)} course map">
+      <defs>
+        <pattern id="fairway-stripes-${hole.number}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+          <rect width="8" height="8" fill="#b9e59a"></rect>
+          <rect width="4" height="8" fill="#c9efad"></rect>
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="${escapeHtml(hole.palette.rough)}"></rect>
+      ${hole.treeZones.map((zone) => `<ellipse cx="${zone.x}" cy="${zone.y}" rx="${zone.rx}" ry="${zone.ry}" fill="#6f9b6a" opacity="0.34"></ellipse>`).join("")}
+      ${hole.water.map((water) => `<ellipse cx="${water.x}" cy="${water.y}" rx="${water.rx}" ry="${water.ry}" fill="#72b7ff" opacity="0.78"></ellipse>`).join("")}
+      <path d="${escapeHtml(fairwayPath(hole))}" fill="url(#fairway-stripes-${hole.number})" opacity="0.92"></path>
+      ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d8d4c7" stroke-width="${path.width}" stroke-linecap="round" opacity="0.9"></path>`).join("")}
+      ${hole.bunkers.map((bunker) => `<ellipse cx="${bunker.x}" cy="${bunker.y}" rx="${bunker.rx}" ry="${bunker.ry}" fill="#f3df9f" stroke="#d0b970" stroke-width="0.4"></ellipse>`).join("")}
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 4}" fill="#a7df4e" opacity="0.28"></circle>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="#bdeee2" stroke="#76a96a" stroke-width="0.6"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.9" opacity="0.7"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#141719" stroke-width="0.7" opacity="0.7"></circle>
+      <line x1="${ball.x}" y1="${ball.y}" x2="${aim.x2}" y2="${aim.y2}" stroke="#b12a1c" stroke-width="0.8" stroke-linecap="round"></line>
+      <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#141719" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.6"></line>
+      ${play.lastShot ? `<line x1="${play.lastShot.start.x}" y1="${play.lastShot.start.y}" x2="${play.lastShot.final.x}" y2="${play.lastShot.final.y}" stroke="#fffefa" stroke-width="1.1" opacity="0.84"></line>` : ""}
+      <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="none" stroke="#141719" stroke-width="0.7" stroke-dasharray="1.5 1.5"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.3" fill="#141719"></circle>
+      <path d="M ${hole.pin.x} ${hole.pin.y} v -6 l 5 2 l -5 2" fill="#f26d5b" stroke="#141719" stroke-width="0.35"></path>
+      <rect x="${hole.tee.x - 2.3}" y="${hole.tee.y - 1.2}" width="4.6" height="2.4" fill="#fffefa" stroke="#141719" stroke-width="0.4"></rect>
+      <circle cx="${ball.x}" cy="${ball.y}" r="1.4" fill="#fffefa" stroke="#141719" stroke-width="0.65"></circle>
+      <text x="4" y="7" fill="#25382e" font-size="3.2" font-weight="800">HOLE ${hole.number} · PAR ${hole.par}</text>
+      <text x="4" y="12" fill="#25382e" font-size="4.2" font-weight="900">${Math.round(yardsBetween(ball, hole.pin, hole))} YDS</text>
+      <text x="78" y="7" fill="#25382e" font-size="3.2" font-weight="800">WIND ${hole.wind.speed} MPH ${windArrow(hole.wind.direction)}</text>
+    </svg>
   `;
 }
 
@@ -2314,10 +2753,11 @@ function renderHoopsBoard(play) {
 }
 
 function renderPlayMeter(label, value) {
+  const displayValue = Math.round(value);
   return `
     <div class="play-meter">
-      <span class="meter-label"><span>${escapeHtml(label)}</span><span>${value}</span></span>
-      <span class="meter-track"><span class="meter-thumb" style="--meter-value:${value}"></span></span>
+      <span class="meter-label"><span>${escapeHtml(label)}</span><span>${displayValue}</span></span>
+      <span class="meter-track"><span class="meter-thumb" style="--meter-value:${displayValue}"></span></span>
     </div>
   `;
 }
@@ -2344,45 +2784,107 @@ function handleSolvryPlayAction(action) {
 }
 
 function handleHolesAction(play, action, game) {
-  const hole = play.holes[play.holeIndex];
-  if (action === "aim-left") play.aim = clamp(play.aim - 5, 10, 90);
-  if (action === "aim-right") play.aim = clamp(play.aim + 5, 10, 90);
-  if (action === "power-down") play.power = clamp(play.power - 5, 20, 95);
-  if (action === "power-up") play.power = clamp(play.power + 5, 20, 95);
-  if (action === "swing" && !hole.done) playHolesSwing(play, hole);
-  if (action === "next" && hole.done && play.holeIndex < play.holes.length - 1) {
-    play.holeIndex += 1;
-    const nextHole = play.holes[play.holeIndex];
-    play.aim = clamp(nextHole.targetAim + 12, 12, 88);
-    play.power = clamp(nextHole.targetPower - 10, 24, 92);
-    play.message = `Hole ${play.holeIndex + 1}: ${nextHole.distance} yards. Read the wind, then swing.`;
+  if (action === "start-round" && !play.started) {
+    play.started = true;
+    play.startedAt = new Date().toISOString();
+    play.showHoleCard = true;
+    play.message = "Ranked round started. Bad shots count, so choose the target first.";
+    return;
   }
-  if (action === "finish" && play.holes.every((item) => item.done)) {
-    saveSolvryResult(game, `${play.strokes} strokes`, `Finished Solvry Holes at ${play.strokes} strokes.`);
-    play.message = "Round saved to your scoreboard.";
+
+  if (action === "start-hole") {
+    startCurrentGolfHole(play);
+    return;
+  }
+
+  if (action.startsWith("club:")) {
+    play.selectedClubId = action.split(":")[1];
+    play.message = `${getGolfClub(play.selectedClubId).name} selected.`;
+    return;
+  }
+
+  if (action === "aim-left") play.aimAngle = clamp(play.aimAngle - 4, -42, 42);
+  if (action === "aim-right") play.aimAngle = clamp(play.aimAngle + 4, -42, 42);
+  if (action === "target-safe") aimGolfAtSafeTarget(play);
+  if (action === "target-pin") aimGolfAtPin(play);
+  if (action === "swing" && play.started && !play.completed && !play.showHoleCard) playGolfSwing(play, game);
+  if (action === "share-round" && play.completed) shareGolfRound(play);
+  if (action === "practice" && play.completed) {
+    play.practiceUnlocked = true;
+    play.message = "Practice unlocked. Tomorrow's ranked course will still be fresh.";
   }
 }
 
-function playHolesSwing(play, hole) {
-  hole.strokes += 1;
-  play.strokes += 1;
-  const error = Math.abs(play.aim - hole.targetAim) + Math.abs(play.power - hole.targetPower);
+function playGolfSwing(play, game) {
+  const hole = getCurrentGolfHole(play);
+  const club = getGolfClub(play.selectedClubId);
+  const timing = getSwingTimingValue();
+  const quality = getSwingQuality(timing);
+  const start = { ...play.ball };
+  const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
+  const shotNumber = play.holeStrokes + 1;
+  const yardsPerUnit = hole.yardsPerUnit;
+  const powerMultiplier = (0.72 + timing / 100 * 0.56) * lie.power;
+  const carryYards = club.carry * powerMultiplier;
+  const carryUnits = carryYards / yardsPerUnit;
+  const miss = (timing - 50) / 50;
+  const aimWithMiss = play.aimAngle + miss * club.dispersion * lie.accuracy;
+  const direction = golfVectorFromAngle(aimWithMiss);
+  const wind = golfWindVector(hole.wind, yardsPerUnit);
+  const landing = clampPoint({
+    x: start.x + direction.x * carryUnits + wind.x,
+    y: start.y + direction.y * carryUnits + wind.y
+  });
+  const landingSurface = getGolfSurfaceAtPoint(hole, landing);
+  const waterPenalty = landingSurface === "water";
+  const surface = GOLF_SURFACES[landingSurface] || GOLF_SURFACES.rough;
+  const rolloutUnits = waterPenalty ? 0 : club.rollout * surface.rollout * quality.rollout / yardsPerUnit;
+  let final = clampPoint({
+    x: landing.x + direction.x * rolloutUnits,
+    y: landing.y + direction.y * rolloutUnits
+  });
+  let finalSurface = getGolfSurfaceAtPoint(hole, final);
+  let penalty = 0;
 
-  if (error <= 13) {
-    hole.done = true;
-    hole.result = `In for ${hole.strokes}`;
-    play.message = hole.strokes === 1 ? "Perfect line. Hole in one." : `Dropped it in ${hole.strokes} strokes.`;
-  } else if (hole.strokes >= hole.par + 2) {
-    hole.done = true;
-    hole.result = `Saved at ${hole.strokes}`;
-    play.message = `Recovered from ${hole.hazard.toLowerCase()} and finished in ${hole.strokes}.`;
-  } else if (error <= 26) {
-    play.message = "Good touch. You are close enough to attack the cup.";
-  } else if (error <= 42) {
-    play.message = `Caught the edge and found the ${hole.hazard.toLowerCase()}. Adjust before the next swing.`;
-  } else {
-    play.message = "Big miss. Bring the aim and power closer to the sweet spot.";
+  play.holeStrokes += 1;
+  play.totalStrokes += 1;
+
+  if (waterPenalty || finalSurface === "water") {
+    penalty = 1;
+    play.holeStrokes += 1;
+    play.totalStrokes += 1;
+    final = getDropPoint(hole, start);
+    finalSurface = getGolfSurfaceAtPoint(hole, final);
   }
+
+  play.ball = final;
+  play.currentSurface = finalSurface;
+  play.lastShot = {
+    hole: hole.number,
+    shotNumber,
+    club: club.id,
+    aimAngle: play.aimAngle,
+    timing,
+    quality: quality.label,
+    carryDistance: Math.round(carryYards),
+    start,
+    landing,
+    final,
+    surface: finalSurface,
+    penalty,
+    summary: `${club.name} · ${quality.label} strike · ${Math.round(carryYards)} yd carry${penalty ? " · water penalty" : ""}`
+  };
+  play.shotLog.push(play.lastShot);
+
+  if (finalSurface === "green" || yardsBetween(final, hole.pin, hole) <= hole.green.r * hole.yardsPerUnit) {
+    completeGolfHole(play, game, hole);
+    return;
+  }
+
+  const remaining = Math.round(yardsBetween(final, hole.pin, hole));
+  play.message = penalty
+    ? `Splash. One-stroke penalty and a drop. ${remaining} yards left from ${surfaceLabel(finalSurface).toLowerCase()}.`
+    : `${quality.label} strike to ${surfaceLabel(finalSurface).toLowerCase()}. ${remaining} yards left.`;
 }
 
 function handleHoopsAction(play, action, game) {
@@ -2430,7 +2932,9 @@ function playHoopsShot(play, shot) {
 function getSolvryPlay(game) {
   state.solvryPlays ||= {};
   const key = getSolvryPlayKey(game.id);
-  if (!state.solvryPlays[key]) {
+  const existing = state.solvryPlays[key];
+  const needsNewGolfRound = game.id === "solvry-holes" && existing?.version !== GOLF_GAME_VERSION;
+  if (!existing || needsNewGolfRound) {
     state.solvryPlays[key] = game.id === "solvry-holes" ? createHolesPlay(game.id) : createHoopsPlay(game.id);
   }
   return state.solvryPlays[key];
@@ -2441,27 +2945,357 @@ function getSolvryPlayKey(gameId) {
 }
 
 function createHolesPlay(gameId) {
-  const holes = [
-    { distance: 86, par: 3, hazard: "Front bunker", targetAim: 64, targetPower: 48, targetX: 77, targetY: 21, angle: -10 },
-    { distance: 124, par: 4, hazard: "Left water", targetAim: 42, targetPower: 62, targetX: 63, targetY: 28, angle: 8 },
-    { distance: 71, par: 3, hazard: "Tiny green", targetAim: 55, targetPower: 41, targetX: 70, targetY: 34, angle: -18 },
-    { distance: 153, par: 4, hazard: "Deep rough", targetAim: 35, targetPower: 75, targetX: 58, targetY: 24, angle: 15 },
-    { distance: 98, par: 3, hazard: "Back slope", targetAim: 69, targetPower: 53, targetX: 81, targetY: 30, angle: -6 },
-    { distance: 168, par: 5, hazard: "Creek carry", targetAim: 49, targetPower: 82, targetX: 66, targetY: 18, angle: 3 },
-    { distance: 112, par: 4, hazard: "Right bunker", targetAim: 31, targetPower: 59, targetX: 54, targetY: 35, angle: 20 },
-    { distance: 79, par: 3, hazard: "Fast green", targetAim: 73, targetPower: 44, targetX: 78, targetY: 40, angle: -22 },
-    { distance: 142, par: 4, hazard: "Island pin", targetAim: 58, targetPower: 70, targetX: 72, targetY: 22, angle: -2 }
-  ].map((hole) => ({ ...hole, strokes: 0, done: false, result: "" }));
-
+  const course = generateDailyGolfCourse(state.selectedDate, GOLF_GENERATION_VERSION);
   return {
+    version: GOLF_GAME_VERSION,
     gameId,
     kind: "holes",
+    isRanked: true,
+    started: false,
+    completed: false,
+    startedAt: "",
+    completedAt: "",
+    date: state.selectedDate,
+    seed: course.seed,
+    generationVersion: GOLF_GENERATION_VERSION,
+    course,
     holeIndex: 0,
-    aim: 50,
-    power: 55,
-    strokes: 0,
-    holes,
-    message: "Hole 1: set aim and power, then swing."
+    showHoleCard: false,
+    ball: { ...course.holes[0].tee },
+    aimAngle: 0,
+    selectedClubId: "driver",
+    currentSurface: "tee",
+    totalStrokes: 0,
+    holeStrokes: 0,
+    holeResults: [],
+    shotLog: [],
+    lastShot: null,
+    practiceUnlocked: false,
+    message: "Today's ranked course is ready."
+  };
+}
+
+function generateDailyGolfCourse(dateKey, version) {
+  const seed = `solvry-holes:${version}:${dateKey}`;
+  const random = mulberry32(hashSeed(seed));
+  const environments = [
+    { name: "Ravendown Golf Club", environment: "Pine forest", rough: "#dfe9d5" },
+    { name: "Blueglass Links", environment: "Coastal dunes", rough: "#e8e2bf" },
+    { name: "Cinder Mesa", environment: "Desert parkland", rough: "#ead7ac" }
+  ];
+  const env = environments[Math.floor(random() * environments.length)];
+  const parPlan = [3, 4, 4, 5, 3, 4, 4, 3, 5];
+  const holes = parPlan.map((par, index) => generateGolfHole(index + 1, par, random, env));
+  return {
+    id: seed,
+    seed,
+    generationVersion: version,
+    date: dateKey,
+    dailyNumber: `#${dateKey.replaceAll("-", "").slice(2)}`,
+    name: env.name,
+    environment: env.environment,
+    par: holes.reduce((total, hole) => total + hole.par, 0),
+    holes
+  };
+}
+
+function generateGolfHole(number, par, random, env) {
+  const distanceRanges = { 3: [105, 178], 4: [285, 430], 5: [455, 560] };
+  const [minimum, maximum] = distanceRanges[par];
+  const distance = Math.round(minimum + random() * (maximum - minimum));
+  const greenX = 36 + random() * 28;
+  const teeX = clamp(greenX + (random() - 0.5) * 28, 24, 76);
+  const doglegX = clamp((teeX + greenX) / 2 + (random() - 0.5) * 34, 18, 82);
+  const width = par === 3 ? 16 : 12 + random() * 8;
+  const greenRadius = par === 3 ? 7.2 : 6.2 + random() * 1.6;
+  const greenDifficulty = random() > 0.62 ? "Tight" : random() > 0.34 ? "Rolling" : "Friendly";
+  const puttBase = greenDifficulty === "Friendly" ? 2.6 : greenDifficulty === "Rolling" ? 2.1 : 1.7;
+  const water = [];
+  if (number >= 4 || random() > 0.7) {
+    water.push({ x: clamp(doglegX + (random() - 0.5) * 26, 12, 88), y: 36 + random() * 30, rx: 8 + random() * 6, ry: 4 + random() * 8 });
+  }
+  if (number === 9) water.push({ x: greenX + 8, y: 18, rx: 13, ry: 10 });
+  const bunkers = [
+    { x: greenX - 8 - random() * 5, y: 15 + random() * 6, rx: 4.5, ry: 2.6 },
+    { x: greenX + 8 + random() * 5, y: 18 + random() * 7, rx: 4.2, ry: 2.4 }
+  ];
+  if (par > 3) bunkers.push({ x: doglegX + 5, y: 48 + random() * 10, rx: 5.8, ry: 2.8 });
+  const treeZones = [
+    { x: clamp(doglegX - 22, 8, 92), y: 52, rx: 9, ry: 25 },
+    { x: clamp(doglegX + 24, 8, 92), y: 55, rx: 8, ry: 23 }
+  ];
+  const cartPaths = random() > 0.45 ? [{ d: `M ${clamp(teeX + 18, 8, 92)} 96 C ${clamp(doglegX + 25, 8, 92)} 70 ${clamp(greenX + 22, 8, 92)} 35 ${clamp(greenX + 18, 8, 92)} 8`, width: 2.4 }] : [];
+  const windDirection = Math.round(random() * 360);
+  const windSpeed = Math.round(3 + random() * (number > 6 ? 12 : 8));
+  const primaryHazard = number === 9 ? "Signature water carry" : water.length ? "Water crossing" : bunkers.length ? "Greenside bunkers" : "Tree line";
+
+  return {
+    id: `h${number}`,
+    number,
+    name: number === 9 ? "The Last Carry" : `${env.environment} ${number}`,
+    par,
+    distance,
+    yardsPerUnit: distance / 82,
+    tee: { x: teeX, y: 92 },
+    pin: { x: greenX + (random() - 0.5) * 4, y: 10 + random() * 5 },
+    green: { x: greenX, y: 13.5, r: greenRadius },
+    fairway: { teeX, doglegX, greenX, width },
+    water,
+    bunkers,
+    treeZones,
+    cartPaths,
+    wind: { speed: windSpeed, direction: windDirection },
+    primaryHazard,
+    greenDifficulty,
+    puttZones: { one: puttBase, two: puttBase * 2.5 },
+    palette: { rough: env.rough },
+    summary: `${primaryHazard}. ${windSpeed} mph wind ${windArrow(windDirection)}. Choose a safe landing zone or attack the pin.`
+  };
+}
+
+function startCurrentGolfHole(play) {
+  const hole = getCurrentGolfHole(play);
+  play.showHoleCard = false;
+  play.ball = { ...hole.tee };
+  play.aimAngle = angleToPoint(hole.tee, hole.pin);
+  play.selectedClubId = recommendGolfClub(hole.distance);
+  play.currentSurface = "tee";
+  play.holeStrokes = 0;
+  play.lastShot = null;
+  play.message = `Hole ${hole.number}: ${hole.distance} yards. Pick a club and time the swing.`;
+}
+
+function completeGolfHole(play, game, hole) {
+  const proximity = yardsBetween(play.ball, hole.pin, hole);
+  const onePuttYards = hole.puttZones.one * hole.yardsPerUnit;
+  const twoPuttYards = hole.puttZones.two * hole.yardsPerUnit;
+  const putts = proximity <= onePuttYards ? 1 : proximity <= twoPuttYards ? 2 : 3;
+  play.holeStrokes += putts;
+  play.totalStrokes += putts;
+  const relative = play.holeStrokes - hole.par;
+  const result = {
+    holeId: hole.id,
+    par: hole.par,
+    strokes: play.holeStrokes,
+    relative,
+    completed: true,
+    putts,
+    shots: play.shotLog.filter((shot) => shot.hole === hole.number)
+  };
+  play.holeResults[play.holeIndex] = result;
+  play.message = `Hole ${hole.number} complete: ${play.holeStrokes} on a par ${hole.par} (${formatRelativeScore(relative)}). ${putts} putt${putts === 1 ? "" : "s"}.`;
+
+  if (play.holeIndex >= play.course.holes.length - 1) {
+    play.completed = true;
+    play.completedAt = new Date().toISOString();
+    const score = `${play.totalStrokes} strokes`;
+    const note = `${formatRelativeScore(getGolfRelativeScore(play))} to par on ${play.course.name}`;
+    saveSolvryResult(game, score, note);
+    return;
+  }
+
+  play.holeIndex += 1;
+  play.showHoleCard = true;
+  const nextHole = getCurrentGolfHole(play);
+  play.ball = { ...nextHole.tee };
+  play.holeStrokes = 0;
+  play.currentSurface = "tee";
+  play.selectedClubId = recommendGolfClub(nextHole.distance);
+  play.aimAngle = angleToPoint(nextHole.tee, nextHole.pin);
+}
+
+function aimGolfAtSafeTarget(play) {
+  const hole = getCurrentGolfHole(play);
+  const safe = { x: hole.fairway.doglegX, y: hole.par === 3 ? 28 : 52 };
+  play.aimAngle = angleToPoint(play.ball, safe);
+  play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, safe, hole));
+  play.message = "Aiming at the widest fairway landing zone.";
+}
+
+function aimGolfAtPin(play) {
+  const hole = getCurrentGolfHole(play);
+  play.aimAngle = angleToPoint(play.ball, hole.pin);
+  play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, hole.pin, hole));
+  play.message = "Aiming at the pin. Time it cleanly.";
+}
+
+function shareGolfRound(play) {
+  const grid = play.holeResults.map((result) => formatRelativeScore(result.relative)).join(" ");
+  const share = `Solvry Holes ${play.course.dailyNumber}\\n${formatRelativeScore(getGolfRelativeScore(play))}\\n${grid}\\n${play.totalStrokes} strokes · ${play.course.holes.length} holes`;
+  navigator.clipboard?.writeText(share).then(() => {
+    flashStatus(elements.saveStatus, "Spoiler-free round copied.");
+  }).catch(() => {
+    flashStatus(elements.saveStatus, share);
+  });
+}
+
+function getCurrentGolfHole(play) {
+  return play.course.holes[play.holeIndex];
+}
+
+function getGolfClub(clubId) {
+  return GOLF_CLUBS.find((club) => club.id === clubId) || GOLF_CLUBS[0];
+}
+
+function recommendGolfClub(yards) {
+  const club = [...GOLF_CLUBS].reverse().find((item) => item.max >= yards);
+  return (club || GOLF_CLUBS[0]).id;
+}
+
+function getGolfTargetPoint(play, hole, club) {
+  const carryUnits = club.carry / hole.yardsPerUnit;
+  const vector = golfVectorFromAngle(play.aimAngle);
+  return clampPoint({
+    x: play.ball.x + vector.x * carryUnits,
+    y: play.ball.y + vector.y * carryUnits
+  });
+}
+
+function getGolfAimLine(ball, target) {
+  return { x1: ball.x, y1: ball.y, x2: target.x, y2: target.y };
+}
+
+function golfVectorFromAngle(angle) {
+  const radians = (angle * Math.PI) / 180;
+  return { x: Math.sin(radians), y: -Math.cos(radians) };
+}
+
+function angleToPoint(from, to) {
+  const radians = Math.atan2(to.x - from.x, from.y - to.y);
+  return clamp((radians * 180) / Math.PI, -42, 42);
+}
+
+function yardsBetween(a, b, hole) {
+  return Math.hypot(a.x - b.x, a.y - b.y) * hole.yardsPerUnit;
+}
+
+function getSwingTimingValue() {
+  const cycle = 1550;
+  const progress = (performance.now() % (cycle * 2)) / cycle;
+  const folded = progress <= 1 ? progress : 2 - progress;
+  return Math.round(folded * 100);
+}
+
+function getSwingQuality(timing) {
+  const error = Math.abs(timing - 50);
+  if (error <= 7) return { label: "Pure", rollout: 1.12 };
+  if (error <= 18) return { label: "Good", rollout: 1 };
+  if (timing < 50) return { label: "Low", rollout: 0.76 };
+  return { label: "Over", rollout: 1.18 };
+}
+
+function golfWindVector(wind, yardsPerUnit) {
+  const radians = (wind.direction * Math.PI) / 180;
+  const units = wind.speed / yardsPerUnit * 0.22;
+  return { x: Math.sin(radians) * units, y: -Math.cos(radians) * units };
+}
+
+function getGolfSurfaceAtPoint(hole, point) {
+  if (nearPoint(point, hole.tee, 4)) return "tee";
+  if (hole.water.some((water) => pointInEllipse(point, water))) return "water";
+  if (hole.bunkers.some((bunker) => pointInEllipse(point, bunker))) return "bunker";
+  if (distance(point, hole.green) <= hole.green.r) return "green";
+  if (hole.cartPaths.some((path) => distanceToPolyline(point, path.d) <= path.width * 0.55)) return "cartPath";
+  if (isPointOnFairway(hole, point)) return "fairway";
+  if (hole.treeZones.some((zone) => pointInEllipse(point, zone))) return "deepRough";
+  return "rough";
+}
+
+function isPointOnFairway(hole, point) {
+  const segments = [
+    [hole.tee, { x: hole.fairway.doglegX, y: 52 }],
+    [{ x: hole.fairway.doglegX, y: 52 }, { x: hole.fairway.greenX, y: 16 }]
+  ];
+  return segments.some(([a, b]) => distanceToSegment(point, a, b) <= hole.fairway.width / 2);
+}
+
+function fairwayPath(hole) {
+  const tee = hole.tee;
+  const mid = { x: hole.fairway.doglegX, y: 52 };
+  const green = { x: hole.fairway.greenX, y: 16 };
+  const width = hole.fairway.width;
+  return `M ${tee.x - width / 2} ${tee.y} C ${mid.x - width} 75 ${mid.x - width} 62 ${mid.x - width / 2} ${mid.y} C ${green.x - width / 2} 38 ${green.x - width / 2} 25 ${green.x - width / 2} ${green.y} L ${green.x + width / 2} ${green.y} C ${green.x + width / 2} 25 ${mid.x + width / 2} 38 ${mid.x + width / 2} ${mid.y} C ${mid.x + width} 66 ${tee.x + width / 2} 72 ${tee.x + width / 2} ${tee.y} Z`;
+}
+
+function getDropPoint(hole, start) {
+  const target = { x: hole.fairway.doglegX, y: Math.min(78, Math.max(38, start.y - 18)) };
+  return isPointOnFairway(hole, target) ? target : { x: hole.fairway.doglegX, y: 56 };
+}
+
+function getGolfRelativeScore(play) {
+  return play.holeResults.reduce((total, result) => total + (result?.relative || 0), 0);
+}
+
+function formatRelativeScore(value) {
+  if (value === 0) return "E";
+  return value > 0 ? `+${value}` : `${value}`;
+}
+
+function surfaceLabel(surface) {
+  return GOLF_SURFACES[surface]?.label || "Rough";
+}
+
+function windArrow(direction) {
+  const arrows = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
+  return arrows[Math.round((((direction % 360) + 360) % 360) / 45) % arrows.length];
+}
+
+function clampPoint(point) {
+  return { x: clamp(point.x, 4, 96), y: clamp(point.y, 4, 96) };
+}
+
+function nearPoint(a, b, radius) {
+  return distance(a, b) <= radius;
+}
+
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function pointInEllipse(point, ellipse) {
+  return ((point.x - ellipse.x) ** 2) / (ellipse.rx ** 2) + ((point.y - ellipse.y) ** 2) / (ellipse.ry ** 2) <= 1;
+}
+
+function distanceToSegment(point, a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lengthSquared = dx * dx + dy * dy;
+  if (!lengthSquared) return distance(point, a);
+  const t = clamp(((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSquared, 0, 1);
+  return distance(point, { x: a.x + t * dx, y: a.y + t * dy });
+}
+
+function distanceToPolyline(point, pathData) {
+  const numbers = pathData.match(/-?\d+(\.\d+)?/g)?.map(Number) || [];
+  const points = [];
+  for (let index = 0; index < numbers.length - 1; index += 2) {
+    points.push({ x: numbers[index], y: numbers[index + 1] });
+  }
+  if (points.length < 2) return Number.POSITIVE_INFINITY;
+  return points.slice(1).reduce((minimum, current, index) => Math.min(minimum, distanceToSegment(point, points[index], current)), Number.POSITIVE_INFINITY);
+}
+
+function hashSeed(value) {
+  let hash = 1779033703 ^ value.length;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(hash ^ value.charCodeAt(index), 3432918353);
+    hash = (hash << 13) | (hash >>> 19);
+  }
+  return () => {
+    hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+    hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+    return (hash ^= hash >>> 16) >>> 0;
+  };
+}
+
+function mulberry32(seedFactory) {
+  let seed = seedFactory();
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let next = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    next ^= next + Math.imul(next ^ (next >>> 7), 61 | next);
+    return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
   };
 }
 
