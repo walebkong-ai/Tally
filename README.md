@@ -13,7 +13,7 @@ The build writes the deployable site to `dist/`.
 ## What is in this version
 
 - Daily game tracker for paste-supported official games: Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion
-- Separate Solvry games section for in-app versions of Sudoku, Queens, Zip, Crossclimb, and Pinpoint
+- Separate Solvry games section for in-app versions of Sudoku, Queens, Zip, Crossclimb, Pinpoint, Holes, Starting Five, and Matchday
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
 - Individual game scoreboards plus a combined Solvry leaderboard

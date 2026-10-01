@@ -632,6 +632,12 @@ textarea {
   background: linear-gradient(135deg, #bdeee2, #a7df4e);
 }
 
+.game-logo.holes,
+.game-logo.starting-five,
+.game-logo.matchday {
+  background: linear-gradient(135deg, #72b7ff, #a7df4e);
+}
+
 .game-meta {
   min-width: 0;
 }
@@ -1581,6 +1587,11 @@ const SCORING_STYLES = {
     helper: "Lower mistake counts win. Use a number or a label like 0 mistakes.",
     example: "0 mistakes"
   },
+  strokes: {
+    label: "Lowest strokes",
+    helper: "Lowest stroke total wins. Use a number like 38 strokes.",
+    example: "38 strokes"
+  },
   rank: {
     label: "Best rank",
     helper: "Best rank wins. Use the rank shown by the official game.",
@@ -1620,7 +1631,10 @@ const starterState = {
     { id: "solvry-queens", name: "Solvry Queens", source: "solvry", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Solvry version inspired by Queens. Lower mistakes win.", example: "0 mistakes" }, logo: "queens", officialUrl: "" },
     { id: "solvry-zip", name: "Solvry Zip", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Zip. Lower times rank better.", example: "01:48" }, logo: "zip", officialUrl: "" },
     { id: "solvry-crossclimb", name: "Solvry Crossclimb", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Crossclimb. Lower times rank better.", example: "02:04" }, logo: "crossclimb", officialUrl: "" },
-    { id: "solvry-pinpoint", name: "Solvry Pinpoint", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Solvry version inspired by Pinpoint. Fewer guesses win.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "" }
+    { id: "solvry-pinpoint", name: "Solvry Pinpoint", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Solvry version inspired by Pinpoint. Fewer guesses win.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "" },
+    { id: "solvry-holes", name: "Solvry Holes", source: "solvry", type: "strokes", scoring: { label: "Lowest strokes", helper: "Golf-style daily challenge. Play nine tiny holes and track total strokes.", example: "38 strokes" }, logo: "holes", officialUrl: "" },
+    { id: "solvry-starting-five", name: "Solvry Starting Five", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Basketball-style daily lineup puzzle. Fewer roster clues win.", example: "4 guesses" }, logo: "starting-five", officialUrl: "" },
+    { id: "solvry-matchday", name: "Solvry Matchday", source: "solvry", type: "points", scoring: { label: "Most points", helper: "Sports slate challenge. Higher pick score wins.", example: "82 points" }, logo: "matchday", officialUrl: "" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -1640,6 +1654,9 @@ const starterState = {
       },
       "solvry-queens": {
         you: { result: "played", score: "2 mistakes", answer: "", note: "Solvry board", reveal: false }
+      },
+      "solvry-holes": {
+        mira: { result: "played", score: "39 strokes", answer: "", note: "Clean back nine", reveal: false }
       }
     }
   }
@@ -2031,6 +2048,9 @@ function gameLogo(game) {
     zip: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 30L16 12l8 18 8-20" fill="none" stroke="#141719" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="30" r="4" fill="#f26d5b"/><circle cx="16" cy="12" r="4" fill="#efbd3a"/><circle cx="24" cy="30" r="4" fill="#10a77a"/><circle cx="32" cy="10" r="4" fill="#5f5bd7"/></svg>`,
     crossclimb: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 33V7M27 33V7M13 14h14M13 22h14M13 30h14" stroke="#141719" stroke-width="4" stroke-linecap="round"/><path d="M10 30l20-16" stroke="#10a77a" stroke-width="3" stroke-linecap="round"/></svg>`,
     pinpoint: `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="#fffefa" stroke="#141719" stroke-width="3"/><circle cx="20" cy="20" r="8" fill="none" stroke="#f26d5b" stroke-width="3"/><circle cx="20" cy="20" r="3" fill="#141719"/></svg>`,
+    holes: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M11 30c4-6 14-8 22-4" fill="none" stroke="#141719" stroke-width="3" stroke-linecap="round"/><path d="M15 9v19" stroke="#141719" stroke-width="3" stroke-linecap="round"/><path d="M15 9l13 4-13 4z" fill="#f26d5b" stroke="#141719" stroke-width="2" stroke-linejoin="round"/><circle cx="27" cy="29" r="3" fill="#fffefa" stroke="#141719" stroke-width="2"/></svg>`,
+    "starting-five": `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13" fill="#f26d5b" stroke="#141719" stroke-width="3"/><path d="M8 20h24M20 7c5 7 5 19 0 26M20 7c-5 7-5 19 0 26" fill="none" stroke="#141719" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="900" fill="#fffefa">5</text></svg>`,
+    matchday: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 6l12 7v14l-12 7-12-7V13z" fill="#fffefa" stroke="#141719" stroke-width="3" stroke-linejoin="round"/><path d="M20 6v28M8 13l24 14M32 13L8 27" stroke="#141719" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#10a77a" stroke="#141719" stroke-width="2"/></svg>`,
     krillion: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5c5 5 9 12 9 19a9 9 0 0 1-18 0c0-7 4-14 9-19z" fill="#10a77a" stroke="#141719" stroke-width="2"/><path d="M13 23h14M15 29h10" stroke="#fffefa" stroke-width="3" stroke-linecap="round"/><text x="20" y="20" text-anchor="middle" font-size="12" font-weight="900" fill="#141719">K</text></svg>`
   };
 
@@ -2231,6 +2251,7 @@ function scoreEntryForGame(entry, game) {
   if (type === "time") return parseTimeScore(score);
   if (type === "guesses") return parseGuessScore(score, entry.result);
   if (type === "mistakes") return parseNumberScore(score, "mistakes");
+  if (type === "strokes") return parseNumberScore(score, "strokes");
   if (type === "rank") return parseRankScore(score);
   if (type === "points" || type === "depth") return parseNumberScore(score, type === "depth" ? "depth points" : "points", "high");
   if (type === "complete") {
