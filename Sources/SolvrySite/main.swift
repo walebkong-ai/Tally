@@ -139,10 +139,13 @@ let html = #"""
               <h2>Import a share result</h2>
             </div>
             <p class="import-copy">Play on the official site, use its Share button, then import the copied result here.</p>
-            <div class="support-row">
+          <div class="support-row">
               <span>Wordle import</span>
+              <span>Connections import</span>
+              <span>Strands import</span>
+              <span>Mini import</span>
+              <span>Spelling Bee import</span>
               <span>Krillion import</span>
-              <span>Paste-supported only</span>
             </div>
             <div class="import-actions">
               <button class="primary-button" id="importClipboardButton" type="button">Import copied result</button>
@@ -152,7 +155,7 @@ let html = #"""
               Paste fallback
               <textarea id="shareTextInput" class="share-input" rows="6" placeholder="Wordle 1,234 4/6&#10;&#10;⬛🟨⬛🟩⬛&#10;🟩🟩🟩🟩🟩"></textarea>
             </label>
-            <div class="import-status" id="importStatus" role="status">Ready for a Wordle or Krillion share result.</div>
+            <div class="import-status" id="importStatus" role="status">Ready for Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text.</div>
             <div class="share-preview" id="sharePreview" hidden></div>
           </div>
 
@@ -525,6 +528,21 @@ textarea {
   gap: 10px;
 }
 
+.game-section-label {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.game-section-label span {
+  color: rgba(102, 112, 109, 0.78);
+  font-size: 0.68rem;
+}
+
 .game-card,
 .panel {
   border: 1px solid var(--line);
@@ -556,6 +574,12 @@ textarea {
   background:
     linear-gradient(90deg, rgba(255, 226, 138, 0.24), rgba(189, 238, 226, 0.3)),
     rgba(255, 254, 250, 0.86);
+}
+
+.game-card.solvry {
+  background:
+    linear-gradient(90deg, rgba(201, 199, 255, 0.22), rgba(255, 135, 176, 0.14)),
+    rgba(255, 254, 250, 0.82);
 }
 
 .game-select {
@@ -1533,6 +1557,13 @@ let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
 const today = new Date().toISOString().slice(0, 10);
+const LEGACY_GAME_ID_MAP = {
+  sudoku: "solvry-sudoku",
+  queens: "solvry-queens",
+  zip: "solvry-zip",
+  crossclimb: "solvry-crossclimb",
+  pinpoint: "solvry-pinpoint"
+};
 
 const SCORING_STYLES = {
   guesses: {
@@ -1579,8 +1610,17 @@ const starterState = {
   account: { signedIn: false, provider: "", email: "" },
   pinnedGameIds: [],
   games: [
-    { id: "wordle", name: "Wordle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Guess count out of 6. Lower is better; X/6 is a miss.", example: "4/6" }, logo: "wordle", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
-    { id: "krillion", name: "Krillion", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" }
+    { id: "wordle", name: "Wordle", source: "official", type: "guesses", scoring: { label: "Fewest guesses", helper: "Guess count out of 6. Lower is better; X/6 is a miss.", example: "4/6" }, logo: "wordle", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
+    { id: "connections", name: "Connections", source: "official", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Imported Connections grids rank by mistakes. Lower is better.", example: "0 mistakes" }, logo: "connections", officialUrl: "https://www.nytimes.com/games/connections" },
+    { id: "strands", name: "Strands", source: "official", type: "complete", scoring: { label: "Completion", helper: "Imported Strands shares track completion and hints.", example: "Complete" }, logo: "strands", officialUrl: "https://www.nytimes.com/games/strands" },
+    { id: "mini-crossword", name: "Mini Crossword", source: "official", type: "time", scoring: { label: "Fastest time", helper: "Imported Mini shares rank by completion time.", example: "00:54" }, logo: "mini-crossword", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
+    { id: "spelling-bee", name: "Spelling Bee", source: "official", type: "rank", scoring: { label: "Best rank", helper: "Imported Spelling Bee shares rank by official level.", example: "Genius" }, logo: "spelling-bee", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
+    { id: "krillion", name: "Krillion", source: "official", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" },
+    { id: "solvry-sudoku", name: "Solvry Sudoku", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Sudoku. Track completion time here.", example: "05:21" }, logo: "sudoku", officialUrl: "" },
+    { id: "solvry-queens", name: "Solvry Queens", source: "solvry", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Solvry version inspired by Queens. Lower mistakes win.", example: "0 mistakes" }, logo: "queens", officialUrl: "" },
+    { id: "solvry-zip", name: "Solvry Zip", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Zip. Lower times rank better.", example: "01:48" }, logo: "zip", officialUrl: "" },
+    { id: "solvry-crossclimb", name: "Solvry Crossclimb", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Crossclimb. Lower times rank better.", example: "02:04" }, logo: "crossclimb", officialUrl: "" },
+    { id: "solvry-pinpoint", name: "Solvry Pinpoint", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Solvry version inspired by Pinpoint. Fewer guesses win.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -1594,6 +1634,12 @@ const starterState = {
         mira: { result: "solved", score: "3/6", answer: "BLOOM", note: "Fast opener", reveal: true },
         jay: { result: "solved", score: "5/6", answer: "BLOOM", note: "Barely saved it", reveal: true },
         nolan: { result: "missed", score: "X/6", answer: "BLOOM", note: "Tomorrow is revenge", reveal: true }
+      },
+      connections: {
+        mira: { result: "solved", score: "1 mistake", answer: "", note: "Imported grid", reveal: false }
+      },
+      "solvry-queens": {
+        you: { result: "played", score: "2 mistakes", answer: "", note: "Solvry board", reveal: false }
       }
     }
   }
@@ -1895,12 +1941,28 @@ function renderQuickGames() {
 
 function renderGameList() {
   elements.gameList.innerHTML = "";
-  getSortedGames().forEach((game) => {
+  [
+    { source: "official", title: "Official imports", detail: "Paste share results" },
+    { source: "solvry", title: "Solvry games", detail: "In-app versions" }
+  ].forEach((section) => {
+    const games = getSortedGames().filter((game) => gameSource(game) === section.source);
+    if (!games.length) return;
+    const heading = document.createElement("div");
+    heading.className = "game-section-label";
+    heading.innerHTML = `<strong>${escapeHtml(section.title)}</strong><span>${escapeHtml(section.detail)}</span>`;
+    elements.gameList.append(heading);
+    games.forEach((game) => {
+      elements.gameList.append(renderGameCard(game));
+    });
+  });
+}
+
+function renderGameCard(game) {
     const entries = getGameEntries(state.selectedDate, game.id);
     const playedCount = Object.keys(entries).length;
     const isPinned = state.pinnedGameIds.includes(game.id);
     const card = document.createElement("article");
-    card.className = `game-card${game.id === state.activeGameId ? " active" : ""}${isPinned ? " pinned" : ""}`;
+    card.className = `game-card ${gameSource(game)}${game.id === state.activeGameId ? " active" : ""}${isPinned ? " pinned" : ""}`;
     card.innerHTML = `
       <button class="game-select" type="button" aria-label="Select ${escapeHtml(game.name)}">
         ${gameLogo(game)}
@@ -1922,17 +1984,26 @@ function renderGameList() {
     card.querySelector(".pin-button").addEventListener("click", () => {
       togglePin(game.id);
     });
-    elements.gameList.append(card);
-  });
+    return card;
 }
 
 function getSortedGames() {
   const pinned = new Set(state.pinnedGameIds);
   return [...state.games].sort((a, b) => {
+    const sourceDelta = sourceOrder(gameSource(a)) - sourceOrder(gameSource(b));
+    if (sourceDelta) return sourceDelta;
     const pinDelta = Number(pinned.has(b.id)) - Number(pinned.has(a.id));
     if (pinDelta) return pinDelta;
     return state.games.findIndex((game) => game.id === a.id) - state.games.findIndex((game) => game.id === b.id);
   });
+}
+
+function gameSource(game) {
+  return game.source || "official";
+}
+
+function sourceOrder(source) {
+  return source === "official" ? 0 : 1;
 }
 
 function togglePin(gameId) {
@@ -1973,6 +2044,14 @@ function pinIcon(isPinned) {
 }
 
 function renderOfficialLink(game) {
+  if (gameSource(game) === "solvry") {
+    elements.officialLink.href = "#today";
+    elements.officialLink.textContent = "Play in Solvry";
+    elements.officialLink.classList.add("disabled");
+    elements.officialLink.setAttribute("aria-disabled", "true");
+    return;
+  }
+
   if (game?.officialUrl) {
     elements.officialLink.href = game.officialUrl;
     elements.officialLink.textContent = `Play ${game.name}`;
@@ -2264,7 +2343,7 @@ function importShareText(text) {
   if (!parsed) {
     elements.sharePreview.hidden = true;
     elements.sharePreview.innerHTML = "";
-    setImportStatus("Could not read that result yet. Wordle and Krillion share text work right now.", "error");
+    setImportStatus("Could not read that result yet. Try Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text.", "error");
     return;
   }
 
@@ -2293,7 +2372,12 @@ function parseShareText(text) {
   if (!cleaned) return null;
 
   const lines = cleaned.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  return parseWordleShare(lines) || parseKrillionShare(lines);
+  return parseWordleShare(lines)
+    || parseConnectionsShare(lines)
+    || parseStrandsShare(lines)
+    || parseMiniCrosswordShare(lines)
+    || parseSpellingBeeShare(lines)
+    || parseKrillionShare(lines);
 }
 
 function parseWordleShare(lines) {
@@ -2317,6 +2401,84 @@ function parseWordleShare(lines) {
   };
 }
 
+function parseConnectionsShare(lines) {
+  const header = lines.find((line) => /^Connections\b/i.test(line));
+  if (!header) return null;
+
+  const gridPattern = /^[\u{1F7E8}\u{1F7E9}\u{1F7E6}\u{1F7EA}]{4}$/u;
+  const grid = lines.filter((line) => gridPattern.test(line));
+  if (!grid.length) return null;
+
+  const puzzleMatch = lines.join(" ").match(/#?([\d,]+)/);
+  const solvedRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line)).length;
+  const mistakes = Math.max(0, grid.length - 4);
+
+  return {
+    gameId: "connections",
+    score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
+    result: solvedRows >= 4 ? "solved" : "played",
+    note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
+    grid
+  };
+}
+
+function parseStrandsShare(lines) {
+  const header = lines.find((line) => /^Strands\b/i.test(line));
+  if (!header) return null;
+
+  const grid = lines.filter((line) => /[\u{1F535}\u{1F7E1}\u{1F4A1}]/u.test(line));
+  if (!grid.length) return null;
+
+  const puzzleMatch = lines.join(" ").match(/#?([\d,]+)/);
+  const hintCount = (grid.join("").match(/\u{1F4A1}/gu) || []).length;
+  const foundSpangram = grid.some((line) => /\u{1F7E1}/u.test(line));
+  const score = hintCount ? `${hintCount} hint${hintCount === 1 ? "" : "s"}` : "No hints";
+
+  return {
+    gameId: "strands",
+    score,
+    result: foundSpangram ? "solved" : "played",
+    note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}`,
+    grid
+  };
+}
+
+function parseMiniCrosswordShare(lines) {
+  const text = lines.join(" ");
+  if (!/\b(Mini Crossword|The Mini)\b/i.test(text)) return null;
+
+  const timeMatch = text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+  if (!timeMatch) return null;
+
+  return {
+    gameId: "mini-crossword",
+    score: normalizeTimeScore(timeMatch[1]),
+    result: "solved",
+    note: "Imported official Mini Crossword time",
+    grid: []
+  };
+}
+
+function parseSpellingBeeShare(lines) {
+  const text = lines.join(" ");
+  if (!/Spelling Bee/i.test(text)) return null;
+
+  const ranks = ["Queen Bee", "Genius", "Amazing", "Great", "Nice", "Solid", "Good", "Moving", "Good Start", "Beginner"];
+  const rank = ranks.find((item) => new RegExp(`\\b${item}\\b`, "i").test(text));
+  if (!rank) return null;
+
+  const pointMatch = text.match(/\b(\d{1,4})\s*(?:points?|pts?)\b/i);
+  const score = pointMatch ? `${rank} · ${pointMatch[1]} pts` : rank;
+
+  return {
+    gameId: "spelling-bee",
+    score,
+    result: "played",
+    note: `Imported official Spelling Bee rank: ${rank}`,
+    grid: []
+  };
+}
+
 function parseKrillionShare(lines) {
   const header = lines.find((line) => /^Krillion\s+#?[\d,]+/i.test(line));
   if (!header) return null;
@@ -2337,6 +2499,11 @@ function parseKrillionShare(lines) {
     note: `Imported official Krillion #${numberMatch?.[1] || "daily dive"} with ${scoreLine} depth points`,
     grid
   };
+}
+
+function normalizeTimeScore(score) {
+  const parts = score.split(":");
+  return parts.length === 2 ? score.padStart(5, "0") : score;
 }
 
 function renderSharePreview(parsed, game) {
@@ -2475,21 +2642,33 @@ function mergeState(base, saved) {
   const entries = Object.fromEntries(
     Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
       date,
-      Object.fromEntries(Object.entries(dayEntries).filter(([gameId]) => mergedGameIds.has(gameId)))
+      remapDayEntries(dayEntries, mergedGameIds)
     ])
   );
+  const activeGameId = LEGACY_GAME_ID_MAP[saved.activeGameId] || saved.activeGameId;
 
   return {
     ...structuredClone(base),
     ...saved,
     profile: { ...base.profile, ...saved.profile },
     account: { ...base.account, ...saved.account },
-    activeGameId: mergedGameIds.has(saved.activeGameId) ? saved.activeGameId : base.activeGameId,
+    activeGameId: mergedGameIds.has(activeGameId) ? activeGameId : base.activeGameId,
     games: mergedGames,
-    pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds).filter((id) => mergedGameIds.has(id)),
+    pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds)
+      .map((id) => LEGACY_GAME_ID_MAP[id] || id)
+      .filter((id, index, ids) => mergedGameIds.has(id) && ids.indexOf(id) === index),
     friends: saved.friends || base.friends,
     entries
   };
+}
+
+function remapDayEntries(dayEntries, allowedIds) {
+  return Object.entries(dayEntries).reduce((nextEntries, [gameId, entries]) => {
+    const nextId = LEGACY_GAME_ID_MAP[gameId] || gameId;
+    if (!allowedIds.has(nextId)) return nextEntries;
+    nextEntries[nextId] = { ...(nextEntries[nextId] || {}), ...entries };
+    return nextEntries;
+  }, {});
 }
 
 function saveState() {
