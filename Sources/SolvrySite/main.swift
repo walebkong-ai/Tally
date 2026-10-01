@@ -73,7 +73,6 @@ let html = #"""
         <aside class="game-rail" aria-label="Tracked games">
           <div class="rail-title">
             <span>Games</span>
-            <button class="icon-button" id="addGameButton" type="button" title="Add game" aria-label="Add game">+</button>
           </div>
           <div class="game-list" id="gameList"></div>
         </aside>
@@ -143,7 +142,7 @@ let html = #"""
             <div class="support-row">
               <span>Wordle import</span>
               <span>Krillion import</span>
-              <span>More games soon</span>
+              <span>Paste-supported only</span>
             </div>
             <div class="import-actions">
               <button class="primary-button" id="importClipboardButton" type="button">Import copied result</button>
@@ -1533,7 +1532,6 @@ label {
 let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
-const DEPRECATED_DEFAULT_GAME_IDS = new Set();
 const today = new Date().toISOString().slice(0, 10);
 
 const SCORING_STYLES = {
@@ -1582,15 +1580,6 @@ const starterState = {
   pinnedGameIds: [],
   games: [
     { id: "wordle", name: "Wordle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Guess count out of 6. Lower is better; X/6 is a miss.", example: "4/6" }, logo: "wordle", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
-    { id: "connections", name: "Connections", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Mistakes before solving. Lower is better, with 0 mistakes as perfect.", example: "0 mistakes" }, logo: "connections", officialUrl: "https://www.nytimes.com/games/connections" },
-    { id: "strands", name: "Strands", type: "complete", scoring: { label: "Completion", helper: "Track completion, then use notes for hints, theme words, or spangram details.", example: "Complete" }, logo: "strands", officialUrl: "https://www.nytimes.com/games/strands" },
-    { id: "mini-crossword", name: "Mini Crossword", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "00:54" }, logo: "mini-crossword", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
-    { id: "spelling-bee", name: "Spelling Bee", type: "rank", scoring: { label: "Best rank", helper: "Official rank wins. Queen Bee beats Genius, which beats lower ranks.", example: "Genius" }, logo: "spelling-bee", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
-    { id: "sudoku", name: "Sudoku", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "05:21" }, logo: "sudoku", officialUrl: "https://www.nytimes.com/puzzles/sudoku" },
-    { id: "queens", name: "Queens", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Mistakes before finishing. Lower is better.", example: "0 mistakes" }, logo: "queens", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "zip", name: "Zip", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "01:48" }, logo: "zip", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "crossclimb", name: "Crossclimb", type: "time", scoring: { label: "Fastest time", helper: "Completion time wins. Lower times rank better.", example: "02:04" }, logo: "crossclimb", officialUrl: "https://www.linkedin.com/games/" },
-    { id: "pinpoint", name: "Pinpoint", type: "guesses", scoring: { label: "Fewest guesses", helper: "Fewer clues or guesses wins.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "https://www.linkedin.com/games/" },
     { id: "krillion", name: "Krillion", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" }
   ],
   friends: [
@@ -1605,14 +1594,6 @@ const starterState = {
         mira: { result: "solved", score: "3/6", answer: "BLOOM", note: "Fast opener", reveal: true },
         jay: { result: "solved", score: "5/6", answer: "BLOOM", note: "Barely saved it", reveal: true },
         nolan: { result: "missed", score: "X/6", answer: "BLOOM", note: "Tomorrow is revenge", reveal: true }
-      },
-      zip: {
-        mira: { result: "played", score: "01:48", answer: "Loop path", note: "One tricky turn", reveal: true },
-        jay: { result: "played", score: "02:04", answer: "Loop path", note: "Good route", reveal: false }
-      },
-      queens: {
-        you: { result: "played", score: "2 mistakes", answer: "", note: "", reveal: false },
-        mira: { result: "played", score: "0 mistakes", answer: "Board clear", note: "Locked in", reveal: true }
       }
     }
   }
@@ -1714,7 +1695,7 @@ elements.friendForm.addEventListener("submit", (event) => {
   render();
 });
 
-elements.addGameButton.addEventListener("click", () => {
+elements.addGameButton?.addEventListener("click", () => {
   elements.gameForm.reset();
   elements.gameDialog.showModal();
 });
@@ -2478,7 +2459,6 @@ function loadState() {
 }
 
 function mergeState(base, saved) {
-  const baseGamesById = Object.fromEntries(base.games.map((game) => [game.id, game]));
   const savedGamesById = Object.fromEntries((saved.games || []).map((game) => [game.id, game]));
   const mergedDefaults = base.games.map((game) => {
     const savedGame = savedGamesById[game.id] || {};
@@ -2490,18 +2470,12 @@ function mergeState(base, saved) {
       officialUrl: savedGame.officialUrl || game.officialUrl
     };
   });
-  const customGames = (saved.games || [])
-    .filter((game) => !baseGamesById[game.id] && !DEPRECATED_DEFAULT_GAME_IDS.has(game.id))
-    .map((game) => ({
-      ...game,
-      scoring: { ...scoringForType(game.type), ...game.scoring }
-    }));
-  const mergedGames = [...mergedDefaults, ...customGames];
+  const mergedGames = [...mergedDefaults];
   const mergedGameIds = new Set(mergedGames.map((game) => game.id));
   const entries = Object.fromEntries(
     Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
       date,
-      Object.fromEntries(Object.entries(dayEntries).filter(([gameId]) => !DEPRECATED_DEFAULT_GAME_IDS.has(gameId)))
+      Object.fromEntries(Object.entries(dayEntries).filter(([gameId]) => mergedGameIds.has(gameId)))
     ])
   );
 
@@ -2510,6 +2484,7 @@ function mergeState(base, saved) {
     ...saved,
     profile: { ...base.profile, ...saved.profile },
     account: { ...base.account, ...saved.account },
+    activeGameId: mergedGameIds.has(saved.activeGameId) ? saved.activeGameId : base.activeGameId,
     games: mergedGames,
     pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds).filter((id) => mergedGameIds.has(id)),
     friends: saved.friends || base.friends,

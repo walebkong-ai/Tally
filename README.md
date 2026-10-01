@@ -12,7 +12,8 @@ The build writes the deployable site to `dist/`.
 
 ## What is in this version
 
-- Daily game tracker for games like Wordle, Zip, Krillion, and Queens
+- Daily game tracker for paste-supported games: Wordle and Krillion
+- Only games with clipboard/paste result import are displayed
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
 - Individual game scoreboards plus a combined Solvry leaderboard
