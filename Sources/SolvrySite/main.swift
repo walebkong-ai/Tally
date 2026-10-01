@@ -1564,7 +1564,15 @@ h2 {
   border: 2px solid var(--ink);
   border-radius: 999px;
   background:
-    linear-gradient(90deg, #f26d5b 0 15%, #f5954b 22%, #efbd3a 34%, #80c762 44%, #16a878 50%, #80c762 56%, #efbd3a 68%, #f5954b 82%, #f26d5b 100%);
+    linear-gradient(90deg,
+      #f26d5b 0%,
+      #f5954b calc(var(--green-warm-start) * 1%),
+      #efbd3a calc(var(--green-start) * 1%),
+      #16a878 calc(var(--green-start) * 1%),
+      #16a878 calc(var(--green-end) * 1%),
+      #efbd3a calc(var(--green-end) * 1%),
+      #f5954b calc(var(--green-warm-end) * 1%),
+      #f26d5b 100%);
 }
 
 .power-meter::before {
@@ -2764,8 +2772,11 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
 }
 
 function renderGolfPowerMeter(window, moving) {
+  const greenEnd = window.start + window.width;
+  const warmStart = clamp(window.start - 14, 0, 100);
+  const warmEnd = clamp(greenEnd + 14, 0, 100);
   return `
-    <div class="power-meter${moving ? " moving" : ""}" style="--green-start:${window.start};--green-width:${window.width};--green-center:${window.center};--power-marker:${window.marker}">
+    <div class="power-meter${moving ? " moving" : ""}" style="--green-start:${window.start};--green-width:${window.width};--green-end:${greenEnd};--green-center:${window.center};--green-warm-start:${warmStart};--green-warm-end:${warmEnd};--power-marker:${window.marker}">
       <span class="power-marker" aria-hidden="true"></span>
     </div>
   `;
