@@ -1276,7 +1276,8 @@ h2 {
 .daily-golf {
   display: grid;
   gap: 0;
-  max-width: 620px;
+  width: min(620px, calc(100vw - 28px));
+  max-width: 100%;
   margin: 0 auto;
   overflow: hidden;
   border: 2px solid var(--ink);
@@ -1415,21 +1416,22 @@ h2 {
 .golf-hud {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  padding: 14px 18px;
+  gap: 8px;
+  padding: 12px 18px;
   background: rgba(222, 241, 229, 0.78);
 }
 
 .golf-hud .golf-stat {
-  min-height: 82px;
-  padding: 12px;
+  min-height: 72px;
+  padding: 10px;
   border-color: rgba(20, 23, 25, 0.14);
   background: rgba(255, 254, 250, 0.68);
 }
 
 .golf-course-map {
   width: 100%;
-  min-height: 620px;
+  height: clamp(390px, 54vh, 540px);
+  min-height: 0;
   border: 0;
   border-top: 2px solid var(--ink);
   border-bottom: 2px solid var(--ink);
@@ -1557,34 +1559,48 @@ h2 {
 
 .power-meter {
   position: relative;
-  height: 34px;
+  height: 42px;
   overflow: hidden;
   border: 2px solid var(--ink);
   border-radius: 999px;
   background:
-    linear-gradient(90deg, #f26d5b 0 16%, #f5954b 22%, #efbd3a 36%, #10a77a calc(var(--green-start) * 1%), #10a77a calc((var(--green-start) + var(--green-width)) * 1%), #efbd3a 70%, #f5954b 84%, #f26d5b 100%);
+    linear-gradient(90deg, #f26d5b 0 15%, #f5954b 22%, #efbd3a 34%, #80c762 44%, #16a878 50%, #80c762 56%, #efbd3a 68%, #f5954b 82%, #f26d5b 100%);
 }
 
 .power-meter::before {
   content: "";
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  z-index: 1;
+  top: 5px;
+  bottom: 5px;
   left: calc(var(--green-start) * 1%);
   width: calc(var(--green-width) * 1%);
-  border: 2px solid rgba(255, 254, 250, 0.9);
+  border: 3px solid rgba(255, 254, 250, 0.98);
   border-radius: 999px;
-  background: repeating-linear-gradient(135deg, rgba(255, 254, 250, 0.18) 0 5px, rgba(255, 254, 250, 0.36) 5px 10px);
-  box-shadow: 0 0 18px rgba(16, 167, 122, 0.35);
+  background: repeating-linear-gradient(135deg, rgba(255, 254, 250, 0.32) 0 6px, rgba(255, 254, 250, 0.72) 6px 12px);
+  box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.28), 0 0 18px rgba(16, 167, 122, 0.5);
+}
+
+.power-meter::after {
+  content: "BEST";
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: calc(var(--green-center) * 1%);
+  transform: translate(-50%, -50%);
+  color: rgba(20, 23, 25, 0.7);
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
 }
 
 .power-marker {
   position: absolute;
-  z-index: 2;
-  top: -5px;
+  z-index: 3;
+  top: -4px;
   left: calc(var(--power-marker) * 1%);
-  width: 7px;
-  height: 44px;
+  width: 8px;
+  height: 50px;
   border-radius: 999px;
   background: var(--paper);
   box-shadow: 0 0 0 2px var(--ink), 0 0 18px rgba(255, 254, 250, 0.86);
@@ -1598,6 +1614,25 @@ h2 {
 @keyframes powerSweep {
   from { left: 4%; }
   to { left: 96%; }
+}
+
+@media (min-width: 980px) {
+  .daily-golf {
+    width: min(1100px, calc(100vw - 40px));
+  }
+
+  .daily-golf-board {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+  }
+
+  .play-card.golf-controls,
+  .golf-controls {
+    border-left: 2px solid var(--ink);
+  }
+
+  .golf-course-map {
+    height: clamp(430px, 58vh, 560px);
+  }
 }
 
 .tap-panel {
@@ -2186,7 +2221,7 @@ label {
   }
 
   .golf-course-map {
-    min-height: 440px;
+    height: clamp(330px, 52vh, 430px);
   }
 
   .dashboard-strip {
@@ -2273,8 +2308,8 @@ const SCORING_STYLES = {
   }
 };
 
-const GOLF_GENERATION_VERSION = 2;
-const GOLF_GAME_VERSION = 3;
+const GOLF_GENERATION_VERSION = 3;
+const GOLF_GAME_VERSION = 4;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 238, max: 278, dispersion: 9.5, rollout: 28 },
   { id: "wood", label: "3W", name: "Wood", carry: 214, max: 243, dispersion: 8.2, rollout: 23 },
@@ -2678,7 +2713,7 @@ function renderHolesBoard(play) {
             <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
             <div class="club-grid">
               ${GOLF_CLUBS.map((club) => `
-                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${phase !== "scouting" ? "disabled" : ""}>
+                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${phase === "ball-flight" ? "disabled" : ""}>
                   <strong>${club.label}</strong>
                   <span>${club.max}</span>
                 </button>
@@ -2730,7 +2765,7 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
 
 function renderGolfPowerMeter(window, moving) {
   return `
-    <div class="power-meter${moving ? " moving" : ""}" style="--green-start:${window.start};--green-width:${window.width};--power-marker:${window.marker}">
+    <div class="power-meter${moving ? " moving" : ""}" style="--green-start:${window.start};--green-width:${window.width};--green-center:${window.center};--power-marker:${window.marker}">
       <span class="power-marker" aria-hidden="true"></span>
     </div>
   `;
@@ -2864,6 +2899,7 @@ function renderGolfScorecardTable(play) {
 function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const ball = play.ball;
   const landingRadius = getGolfLandingRadius(play, hole);
+  const ballMarker = renderGolfBallMarker(ball);
   const centerAngle = play.aimCenterAngle ?? play.aimAngle;
   const sweepRange = getAimSweepRange(play, hole);
   const sweepDuration = getAimSweepDuration(play, hole);
@@ -2898,12 +2934,23 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
       <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="none" stroke="#141719" stroke-width="0.7" stroke-dasharray="1.5 1.5"></circle>
       <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.3" fill="#141719"></circle>
       <path d="M ${hole.pin.x} ${hole.pin.y} v -6 l 5 2 l -5 2" fill="#f26d5b" stroke="#141719" stroke-width="0.35"></path>
-      <rect x="${hole.tee.x - 2.3}" y="${hole.tee.y - 1.2}" width="4.6" height="2.4" fill="#fffefa" stroke="#141719" stroke-width="0.4"></rect>
-      <circle cx="${ball.x}" cy="${ball.y}" r="1.4" fill="#fffefa" stroke="#141719" stroke-width="0.65"></circle>
+      <circle cx="${hole.tee.x}" cy="${hole.tee.y}" r="2.5" fill="none" stroke="#141719" stroke-width="0.35" opacity="0.42"></circle>
+      ${ballMarker}
       <text x="4" y="7" fill="#25382e" font-size="3.2" font-weight="800">HOLE ${hole.number} · PAR ${hole.par}</text>
       <text x="4" y="12" fill="#25382e" font-size="4.2" font-weight="900">${Math.round(yardsBetween(ball, hole.pin, hole))} YDS</text>
       <text x="78" y="7" fill="#25382e" font-size="3.2" font-weight="800">WIND ${hole.wind.speed} MPH ${windArrow(hole.wind.direction)}</text>
     </svg>
+  `;
+}
+
+function renderGolfBallMarker(ball) {
+  return `
+    <g class="golf-ball-marker" aria-label="Golf ball">
+      <circle cx="${ball.x}" cy="${ball.y}" r="1.9" fill="#fffefa" stroke="#141719" stroke-width="0.65"></circle>
+      <circle cx="${ball.x - 0.55}" cy="${ball.y - 0.45}" r="0.18" fill="#cfd6d0"></circle>
+      <circle cx="${ball.x + 0.45}" cy="${ball.y - 0.2}" r="0.16" fill="#cfd6d0"></circle>
+      <circle cx="${ball.x - 0.05}" cy="${ball.y + 0.42}" r="0.15" fill="#cfd6d0"></circle>
+    </g>
   `;
 }
 
@@ -3007,9 +3054,21 @@ function handleHolesAction(play, action, game) {
   }
 
   if (action.startsWith("club:")) {
-    if ((play.shotPhase || "scouting") !== "scouting") return;
-    play.selectedClubId = action.split(":")[1];
-    play.message = `${getGolfClub(play.selectedClubId).name} selected.`;
+    const phase = play.shotPhase || "scouting";
+    if (phase === "ball-flight") return;
+    const club = getGolfClub(action.split(":")[1]);
+    play.selectedClubId = club.id;
+    if (phase === "aiming") {
+      play.aimCenterAngle = play.aimAngle;
+      play.aimStartedAt = Date.now();
+      play.message = `${club.name} selected. Aim is centered back on your target.`;
+    } else if (phase === "power") {
+      play.powerWindow = getPowerWindow(play, getCurrentGolfHole(play), club);
+      play.powerStartedAt = Date.now();
+      play.message = `${club.name} selected. Power target updated.`;
+    } else {
+      play.message = `${club.name} selected.`;
+    }
     return;
   }
 
@@ -3118,6 +3177,11 @@ function playGolfSwing(play, game, powerPosition) {
 
   if (finalSurface === "green" || yardsBetween(final, hole.pin, hole) <= hole.green.r * hole.yardsPerUnit) {
     completeGolfHole(play, game, hole);
+    return;
+  }
+
+  if (play.holeStrokes >= getGolfMaxStrokes(hole)) {
+    pickUpGolfHole(play, game, hole);
     return;
   }
 
@@ -3251,9 +3315,9 @@ function generateGolfHole(number, par, random, env) {
   const distanceRanges = { 3: [105, 178], 4: [285, 430], 5: [455, 560] };
   const [minimum, maximum] = distanceRanges[par];
   const distance = Math.round(minimum + random() * (maximum - minimum));
-  const greenX = 36 + random() * 28;
-  const teeX = clamp(greenX + (random() - 0.5) * 28, 24, 76);
-  const doglegX = clamp((teeX + greenX) / 2 + (random() - 0.5) * 34, 18, 82);
+  const greenX = 40 + random() * 20;
+  const teeX = clamp(greenX + (random() - 0.5) * 22, 34, 66);
+  const doglegX = clamp((teeX + greenX) / 2 + (random() - 0.5) * 28, 26, 74);
   const width = par === 3 ? 16 : 12 + random() * 8;
   const greenRadius = par === 3 ? 7.2 : 6.2 + random() * 1.6;
   const greenDifficulty = random() > 0.62 ? "Tight" : random() > 0.34 ? "Rolling" : "Friendly";
@@ -3335,10 +3399,38 @@ function completeGolfHole(play, game, hole) {
     putts,
     shots: play.shotLog.filter((shot) => shot.hole === hole.number)
   };
+  finishGolfHole(play, game, hole, result, `Hole ${hole.number} complete: ${play.holeStrokes} on a par ${hole.par} (${formatRelativeScore(relative)}). ${putts} putt${putts === 1 ? "" : "s"}.`);
+}
+
+function pickUpGolfHole(play, game, hole) {
+  const maxStrokes = getGolfMaxStrokes(hole);
+  if (play.holeStrokes > maxStrokes) {
+    play.totalStrokes -= play.holeStrokes - maxStrokes;
+    play.holeStrokes = maxStrokes;
+  }
+  const relative = play.holeStrokes - hole.par;
+  const result = {
+    holeId: hole.id,
+    par: hole.par,
+    strokes: play.holeStrokes,
+    relative,
+    completed: true,
+    putts: 0,
+    pickup: true,
+    shots: play.shotLog.filter((shot) => shot.hole === hole.number)
+  };
+  finishGolfHole(play, game, hole, result, `Hole ${hole.number} picked up at ${play.holeStrokes} strokes (${formatRelativeScore(relative)}). Next tee.`);
+}
+
+function getGolfMaxStrokes(hole) {
+  return hole.par + 5;
+}
+
+function finishGolfHole(play, game, hole, result, message) {
   play.holeResults[play.holeIndex] = result;
   play.shotPhase = "scouting";
   play.powerWindow = null;
-  play.message = `Hole ${hole.number} complete: ${play.holeStrokes} on a par ${hole.par} (${formatRelativeScore(relative)}). ${putts} putt${putts === 1 ? "" : "s"}.`;
+  play.message = message;
 
   if (play.holeIndex >= play.course.holes.length - 1) {
     play.completed = true;
