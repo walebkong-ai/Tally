@@ -160,17 +160,22 @@ let html = #"""
           <div class="metrics" aria-label="Summary">
             <div>
               <strong id="playedMetric">0</strong>
-              <span>played</span>
+              <span>played today</span>
             </div>
             <div>
               <strong id="solvedMetric">0</strong>
-              <span>solved</span>
+              <span>completed today</span>
             </div>
             <div>
               <strong id="streakMetric">0</strong>
               <span>day streak</span>
             </div>
+            <div>
+              <strong id="totalSolvesMetric">0</strong>
+              <span>total solves</span>
+            </div>
           </div>
+          <div class="progress-days" id="progressDays" aria-label="Recent play history"></div>
         </section>
 
         <section class="panel social-panel" id="friends">
@@ -293,6 +298,10 @@ let styles = #"""
   --coral: #f26d5b;
   --violet: #5f5bd7;
   --aqua: #bdeee2;
+  --sky: #72b7ff;
+  --pink: #ff87b0;
+  --lime: #a7df4e;
+  --mint: #8be8c8;
   --shadow: 0 22px 60px rgba(20, 23, 25, 0.12);
   --display: Georgia, "Times New Roman", ui-serif, serif;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -304,14 +313,17 @@ let styles = #"""
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
   background:
-    linear-gradient(135deg, rgba(16, 167, 122, 0.12), transparent 34%),
-    radial-gradient(circle at 90% 10%, rgba(239, 189, 58, 0.22), transparent 26%),
+    linear-gradient(135deg, rgba(114, 183, 255, 0.18) 0 18%, transparent 18% 100%),
+    linear-gradient(225deg, rgba(255, 135, 176, 0.16) 0 20%, transparent 20% 100%),
+    linear-gradient(180deg, rgba(167, 223, 78, 0.14), rgba(247, 244, 234, 0) 42%),
     var(--paper);
   color: var(--ink);
 }
@@ -363,11 +375,14 @@ a {
   height: 44px;
   place-items: center;
   border-radius: 8px;
-  background: var(--ink);
+  border: 2px solid var(--ink);
+  background:
+    linear-gradient(135deg, var(--yellow) 0 48%, var(--green) 48% 100%);
   color: var(--paper);
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0;
+  text-shadow: 0 1px 0 rgba(20, 23, 25, 0.32);
 }
 
 .brand strong,
@@ -409,8 +424,9 @@ a {
 }
 
 .topnav a.active {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(20, 23, 25, 0.12);
 }
 
 .top-actions {
@@ -526,16 +542,21 @@ textarea {
   width: 100%;
   padding: 10px;
   border-color: transparent;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 
 .game-card:hover,
 .game-card.active {
   border-color: var(--ink);
   background: var(--panel);
+  transform: translateY(-1px);
 }
 
 .game-card.pinned {
-  border-color: rgba(16, 167, 122, 0.45);
+  border-color: rgba(95, 91, 215, 0.45);
+  background:
+    linear-gradient(90deg, rgba(255, 226, 138, 0.24), rgba(189, 238, 226, 0.3)),
+    rgba(255, 254, 250, 0.86);
 }
 
 .game-select {
@@ -570,22 +591,22 @@ textarea {
 .game-logo.connections,
 .game-logo.pinpoint,
 .game-logo.krillion {
-  background: #ffe28a;
+  background: linear-gradient(135deg, #ffe28a, #ffb86b);
 }
 
 .game-logo.strands,
 .game-logo.queens {
-  background: #ffb1a7;
+  background: linear-gradient(135deg, #ffb1a7, #ff87b0);
 }
 
 .game-logo.mini-crossword,
 .game-logo.crossclimb {
-  background: #c9c7ff;
+  background: linear-gradient(135deg, #c9c7ff, #9fd0ff);
 }
 
 .game-logo.sudoku,
 .game-logo.zip {
-  background: #bdeee2;
+  background: linear-gradient(135deg, #bdeee2, #a7df4e);
 }
 
 .game-meta {
@@ -628,7 +649,7 @@ textarea {
 .pin-button:hover,
 .pin-button.active {
   border-color: var(--line);
-  background: var(--paper);
+  background: rgba(239, 189, 58, 0.22);
   color: var(--ink);
 }
 
@@ -696,13 +717,36 @@ h2 {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 254, 250, 0.82);
+  background:
+    linear-gradient(135deg, rgba(189, 238, 226, 0.72), rgba(255, 254, 250, 0.88));
   text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.quick-game:nth-child(2) {
+  background:
+    linear-gradient(135deg, rgba(255, 226, 138, 0.8), rgba(255, 254, 250, 0.9));
+}
+
+.quick-game:nth-child(3) {
+  background:
+    linear-gradient(135deg, rgba(255, 177, 167, 0.74), rgba(255, 254, 250, 0.9));
+}
+
+.quick-game:nth-child(4) {
+  background:
+    linear-gradient(135deg, rgba(201, 199, 255, 0.78), rgba(255, 254, 250, 0.9));
+}
+
+.quick-game:hover {
+  border-color: rgba(20, 23, 25, 0.4);
+  box-shadow: 0 10px 22px rgba(20, 23, 25, 0.08);
+  transform: translateY(-1px);
 }
 
 .quick-game.active {
   border-color: var(--ink);
-  box-shadow: 0 8px 22px rgba(20, 23, 25, 0.08);
+  box-shadow: 0 0 0 3px rgba(239, 189, 58, 0.4), 0 12px 24px rgba(20, 23, 25, 0.1);
 }
 
 .quick-game .game-logo {
@@ -1090,7 +1134,7 @@ label {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-top: 18px;
 }
@@ -1104,7 +1148,29 @@ label {
 }
 
 .metrics div {
+  position: relative;
+  overflow: hidden;
   padding: 16px;
+}
+
+.metrics div::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--green);
+}
+
+.metrics div:nth-child(2)::before {
+  background: var(--yellow);
+}
+
+.metrics div:nth-child(3)::before {
+  background: var(--coral);
+}
+
+.metrics div:nth-child(4)::before {
+  background: var(--violet);
 }
 
 .metrics strong,
@@ -1113,12 +1179,67 @@ label {
 }
 
 .metrics strong {
-  font-size: 1.8rem;
+  font-family: var(--display);
+  font-size: 1.95rem;
+  line-height: 1;
 }
 
 .metrics span {
+  margin-top: 6px;
   color: var(--muted);
+  font-size: 0.78rem;
   font-weight: 800;
+  text-transform: uppercase;
+}
+
+.progress-days {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progress-day {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.62);
+  color: var(--muted);
+  text-align: center;
+}
+
+.progress-day strong,
+.progress-day span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-day strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.progress-day span {
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.progress-day.done {
+  border-color: rgba(16, 167, 122, 0.4);
+  background:
+    linear-gradient(135deg, rgba(16, 167, 122, 0.16), rgba(255, 226, 138, 0.22)),
+    rgba(255, 254, 250, 0.78);
+  color: #087255;
+}
+
+.progress-day.today {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px rgba(239, 189, 58, 0.5);
 }
 
 .leaderboard,
@@ -1317,7 +1438,27 @@ label {
     grid-template-columns: 210px 1fr;
     grid-template-areas:
       "rail tracker"
-      "social answers";
+      "rail social"
+      "rail answers";
+  }
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "rail"
+      "tracker"
+      "social"
+      "answers";
+  }
+
+  .game-rail {
+    position: static;
+  }
+
+  .game-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1345,23 +1486,6 @@ label {
   .account-controls {
     display: grid;
     grid-template-columns: 1fr 1fr;
-  }
-
-  .workspace {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "rail"
-      "tracker"
-      "social"
-      "answers";
-  }
-
-  .game-rail {
-    position: static;
-  }
-
-  .game-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section-head,
@@ -1519,6 +1643,8 @@ const elements = {
   playedMetric: document.querySelector("#playedMetric"),
   solvedMetric: document.querySelector("#solvedMetric"),
   streakMetric: document.querySelector("#streakMetric"),
+  totalSolvesMetric: document.querySelector("#totalSolvesMetric"),
+  progressDays: document.querySelector("#progressDays"),
   overallLeaderboard: document.querySelector("#overallLeaderboard"),
   gameLeaderboard: document.querySelector("#gameLeaderboard"),
   gameScoreboardTitle: document.querySelector("#gameScoreboardTitle"),
@@ -1905,18 +2031,41 @@ function renderForm(entry) {
 function renderMetrics() {
   const dayEntries = state.entries[state.selectedDate] || {};
   let played = 0;
-  let solved = 0;
+  let completed = 0;
 
   Object.values(dayEntries).forEach((gameEntries) => {
     const mine = gameEntries.you;
     if (!mine) return;
     played += 1;
-    if (mine.result === "solved") solved += 1;
+    if (isCompletedResult(mine.result)) completed += 1;
   });
 
   elements.playedMetric.textContent = played;
-  elements.solvedMetric.textContent = solved;
+  elements.solvedMetric.textContent = completed;
   elements.streakMetric.textContent = calculateStreak();
+  elements.totalSolvesMetric.textContent = calculateTotalSolves();
+  renderProgressDays();
+}
+
+function renderProgressDays() {
+  const baseDate = new Date(`${state.selectedDate}T00:00:00`);
+  const days = [];
+
+  for (let offset = -4; offset <= 0; offset += 1) {
+    const date = new Date(baseDate);
+    date.setDate(baseDate.getDate() + offset);
+    const key = date.toISOString().slice(0, 10);
+    const played = hasUserPlayedDate(key);
+    const isToday = key === today;
+    days.push(`
+      <div class="progress-day${played ? " done" : ""}${isToday ? " today" : ""}">
+        <strong>${escapeHtml(shortWeekday(date))}</strong>
+        <span>${played ? "done" : "open"}</span>
+      </div>
+    `);
+  }
+
+  elements.progressDays.innerHTML = days.join("");
 }
 
 function renderScoreboards(activeGame) {
@@ -2259,6 +2408,23 @@ function calculateCompleted(personId) {
   return Object.values(dayEntries).filter((gameEntries) => gameEntries[personId]).length;
 }
 
+function isCompletedResult(result) {
+  return result === "solved" || result === "played";
+}
+
+function hasUserPlayedDate(dateKey) {
+  const dayEntries = state.entries[dateKey] || {};
+  return Object.values(dayEntries).some((gameEntries) => gameEntries.you);
+}
+
+function calculateTotalSolves() {
+  return Object.values(state.entries).reduce((total, dayEntries) => {
+    return total + Object.values(dayEntries).filter((gameEntries) => {
+      return isCompletedResult(gameEntries.you?.result);
+    }).length;
+  }, 0);
+}
+
 function calculateStreak() {
   const dates = Object.keys(state.entries).sort().reverse();
   let streak = 0;
@@ -2266,15 +2432,17 @@ function calculateStreak() {
 
   for (const date of dates) {
     const expected = cursor.toISOString().slice(0, 10);
-    const dayEntries = state.entries[date] || {};
-    const played = Object.values(dayEntries).some((gameEntries) => gameEntries.you);
-    if (date === expected && played) {
+    if (date === expected && hasUserPlayedDate(date)) {
       streak += 1;
       cursor.setDate(cursor.getDate() - 1);
     }
   }
 
   return streak;
+}
+
+function shortWeekday(date) {
+  return date.toLocaleDateString(undefined, { weekday: "short" });
 }
 
 function scoreStyleLabel(type) {
