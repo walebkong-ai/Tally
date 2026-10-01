@@ -14,7 +14,8 @@ The build writes the deployable site to `dist/`.
 
 - Daily game tracker for paste-supported official games: Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion
 - Separate Solvry games section with a ranked Daily Holes MVP and playable Solvry Hoops
-- Deterministic Daily Holes course generation with nine holes, wind, hazards, club choice, timing-based swings, lie effects, water penalties, abstract putting, scorecard results, and locked local progress
+- Deterministic Daily Holes course generation with nine holes, wind, hazards, club choice, two-tap shot execution, lie effects, water penalties, abstract putting, scorecard results, and locked local progress
+- Simplified Daily Holes two-tap swing flow: lock the moving aim line, then lock the contextual colour power bar
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
 - Individual game scoreboards plus a combined Solvry leaderboard
