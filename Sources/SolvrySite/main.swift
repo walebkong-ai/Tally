@@ -95,6 +95,7 @@ let html = #"""
 
           <div class="play-surface" aria-live="polite">
             <div class="current-result" id="currentResult"></div>
+            <div class="solvry-game" id="solvryGame" hidden></div>
             <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
             <form class="entry-form" id="entryForm">
               <div class="field-grid">
@@ -311,6 +312,10 @@ let styles = #"""
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 html {
@@ -633,8 +638,7 @@ textarea {
 }
 
 .game-logo.holes,
-.game-logo.starting-five,
-.game-logo.matchday {
+.game-logo.hoops {
   background: linear-gradient(135deg, #72b7ff, #a7df4e);
 }
 
@@ -1020,6 +1024,265 @@ h2 {
 .current-result .game-logo svg {
   width: 32px;
   height: 32px;
+}
+
+.solvry-game {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.solvry-game[hidden] {
+  display: none;
+}
+
+.solvry-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+  gap: 14px;
+}
+
+.play-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.82);
+}
+
+.play-card.primary {
+  border-color: var(--ink);
+  background:
+    linear-gradient(135deg, rgba(189, 238, 226, 0.58), rgba(255, 226, 138, 0.24)),
+    rgba(255, 254, 250, 0.9);
+}
+
+.play-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.play-card p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.play-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.course-view,
+.court-view {
+  position: relative;
+  min-height: 230px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+}
+
+.course-view {
+  background:
+    radial-gradient(circle at 78% 22%, #fffefa 0 10px, transparent 11px),
+    radial-gradient(circle at 18% 65%, rgba(114, 183, 255, 0.86) 0 24px, transparent 25px),
+    linear-gradient(120deg, #a7df4e 0 28%, #55b66f 29% 70%, #6ac26d 71% 100%);
+}
+
+.court-view {
+  background:
+    radial-gradient(circle at 50% 21%, #f26d5b 0 10px, transparent 11px),
+    linear-gradient(#141719 0 0) 50% 22% / 70px 5px no-repeat,
+    radial-gradient(circle at 50% 23%, transparent 0 28px, rgba(20, 23, 25, 0.85) 29px 31px, transparent 32px),
+    linear-gradient(180deg, #ffe28a 0 46%, #f2b55f 47% 100%);
+}
+
+.course-path,
+.shot-arc {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  top: 24%;
+  height: 48%;
+  border-top: 5px dashed rgba(20, 23, 25, 0.42);
+  border-radius: 50%;
+  transform: rotate(var(--play-angle));
+}
+
+.shot-arc {
+  left: 23%;
+  right: 23%;
+  top: 30%;
+  border-color: rgba(255, 254, 250, 0.78);
+}
+
+.play-target {
+  position: absolute;
+  left: var(--target-x);
+  top: var(--target-y);
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 950;
+  transform: translate(-50%, -50%);
+}
+
+.play-avatar {
+  position: absolute;
+  left: var(--avatar-x);
+  bottom: var(--avatar-y);
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--coral);
+  color: var(--paper);
+  font-weight: 950;
+  transform: translateX(-50%);
+}
+
+.play-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.play-tile {
+  display: grid;
+  gap: 2px;
+  min-height: 64px;
+  place-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.78);
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.play-tile.current {
+  border-color: var(--ink);
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.play-tile.done {
+  border-color: rgba(16, 167, 122, 0.44);
+  background: rgba(16, 167, 122, 0.14);
+  color: #087255;
+}
+
+.play-tile strong {
+  display: block;
+  color: inherit;
+  font-size: 1rem;
+}
+
+.meter-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.play-meter {
+  display: grid;
+  gap: 5px;
+}
+
+.meter-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.meter-track {
+  position: relative;
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--coral), var(--yellow), var(--green), var(--yellow), var(--coral));
+}
+
+.meter-thumb {
+  position: absolute;
+  top: -3px;
+  left: calc(var(--meter-value) * 1%);
+  width: 6px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+.play-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.play-actions.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.play-button {
+  min-height: 40px;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.play-button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.play-button.main {
+  grid-column: 1 / -1;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.play-button.main:hover {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.play-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.play-result {
+  min-height: 44px;
+  display: grid;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(20, 23, 25, 0.07);
+  color: var(--ink);
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .entry-form,
@@ -1526,7 +1789,9 @@ label {
   .field-grid,
   .import-actions,
   .metrics,
-  .current-result {
+  .current-result,
+  .solvry-board,
+  .play-actions.three {
     grid-template-columns: 1fr;
   }
 
@@ -1620,6 +1885,7 @@ const starterState = {
   profile: { name: "You", handle: "@solvry" },
   account: { signedIn: false, provider: "", email: "" },
   pinnedGameIds: [],
+  solvryPlays: {},
   games: [
     { id: "wordle", name: "Wordle", source: "official", type: "guesses", scoring: { label: "Fewest guesses", helper: "Guess count out of 6. Lower is better; X/6 is a miss.", example: "4/6" }, logo: "wordle", officialUrl: "https://www.nytimes.com/games/wordle/index.html" },
     { id: "connections", name: "Connections", source: "official", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Imported Connections grids rank by mistakes. Lower is better.", example: "0 mistakes" }, logo: "connections", officialUrl: "https://www.nytimes.com/games/connections" },
@@ -1627,14 +1893,8 @@ const starterState = {
     { id: "mini-crossword", name: "Mini Crossword", source: "official", type: "time", scoring: { label: "Fastest time", helper: "Imported Mini shares rank by completion time.", example: "00:54" }, logo: "mini-crossword", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
     { id: "spelling-bee", name: "Spelling Bee", source: "official", type: "rank", scoring: { label: "Best rank", helper: "Imported Spelling Bee shares rank by official level.", example: "Genius" }, logo: "spelling-bee", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
     { id: "krillion", name: "Krillion", source: "official", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" },
-    { id: "solvry-sudoku", name: "Solvry Sudoku", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Sudoku. Track completion time here.", example: "05:21" }, logo: "sudoku", officialUrl: "" },
-    { id: "solvry-queens", name: "Solvry Queens", source: "solvry", type: "mistakes", scoring: { label: "Fewest mistakes", helper: "Solvry version inspired by Queens. Lower mistakes win.", example: "0 mistakes" }, logo: "queens", officialUrl: "" },
-    { id: "solvry-zip", name: "Solvry Zip", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Zip. Lower times rank better.", example: "01:48" }, logo: "zip", officialUrl: "" },
-    { id: "solvry-crossclimb", name: "Solvry Crossclimb", source: "solvry", type: "time", scoring: { label: "Fastest time", helper: "Solvry version inspired by Crossclimb. Lower times rank better.", example: "02:04" }, logo: "crossclimb", officialUrl: "" },
-    { id: "solvry-pinpoint", name: "Solvry Pinpoint", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Solvry version inspired by Pinpoint. Fewer guesses win.", example: "3 guesses" }, logo: "pinpoint", officialUrl: "" },
-    { id: "solvry-holes", name: "Solvry Holes", source: "solvry", type: "strokes", scoring: { label: "Lowest strokes", helper: "Golf-style daily challenge. Play nine tiny holes and track total strokes.", example: "38 strokes" }, logo: "holes", officialUrl: "" },
-    { id: "solvry-starting-five", name: "Solvry Starting Five", source: "solvry", type: "guesses", scoring: { label: "Fewest guesses", helper: "Basketball-style daily lineup puzzle. Fewer roster clues win.", example: "4 guesses" }, logo: "starting-five", officialUrl: "" },
-    { id: "solvry-matchday", name: "Solvry Matchday", source: "solvry", type: "points", scoring: { label: "Most points", helper: "Sports slate challenge. Higher pick score wins.", example: "82 points" }, logo: "matchday", officialUrl: "" }
+    { id: "solvry-holes", name: "Solvry Holes", source: "solvry", type: "strokes", scoring: { label: "Lowest strokes", helper: "Play nine tiny daily holes. Fewer total strokes win.", example: "38 strokes" }, logo: "holes", officialUrl: "" },
+    { id: "solvry-hoops", name: "Solvry Hoops", source: "solvry", type: "points", scoring: { label: "Most points", helper: "Play nine daily basketball shots. Higher point total wins.", example: "24 points" }, logo: "hoops", officialUrl: "" }
   ],
   friends: [
     { id: "mira", name: "Mira", handle: "@mirasolves" },
@@ -1652,11 +1912,11 @@ const starterState = {
       connections: {
         mira: { result: "solved", score: "1 mistake", answer: "", note: "Imported grid", reveal: false }
       },
-      "solvry-queens": {
-        you: { result: "played", score: "2 mistakes", answer: "", note: "Solvry board", reveal: false }
-      },
       "solvry-holes": {
         mira: { result: "played", score: "39 strokes", answer: "", note: "Clean back nine", reveal: false }
+      },
+      "solvry-hoops": {
+        jay: { result: "played", score: "21 points", answer: "", note: "Hot corner round", reveal: false }
       }
     }
   }
@@ -1675,6 +1935,7 @@ const elements = {
   friendCompletion: document.querySelector("#friendCompletion"),
   privacyState: document.querySelector("#privacyState"),
   currentResult: document.querySelector("#currentResult"),
+  solvryGame: document.querySelector("#solvryGame"),
   letterBoard: document.querySelector("#letterBoard"),
   entryForm: document.querySelector("#entryForm"),
   resultInput: document.querySelector("#resultInput"),
@@ -1699,6 +1960,7 @@ const elements = {
   friendHandleInput: document.querySelector("#friendHandleInput"),
   answerFeed: document.querySelector("#answerFeed"),
   copyButton: document.querySelector("#copyButton"),
+  importSurface: document.querySelector("#import"),
   officialLink: document.querySelector("#officialLink"),
   importClipboardButton: document.querySelector("#importClipboardButton"),
   importPasteButton: document.querySelector("#importPasteButton"),
@@ -1844,6 +2106,12 @@ elements.resetButton.addEventListener("click", () => {
   render();
 });
 
+elements.solvryGame.addEventListener("click", (event) => {
+  const actionButton = event.target.closest("[data-play-action]");
+  if (!actionButton) return;
+  handleSolvryPlayAction(actionButton.dataset.playAction);
+});
+
 function render() {
   const activeGame = getActiveGame();
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
@@ -1854,6 +2122,7 @@ function render() {
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
+  elements.importSurface.hidden = gameSource(activeGame) === "solvry";
 
   renderNav();
   renderAccount();
@@ -1861,6 +2130,7 @@ function render() {
   renderGameList();
   renderOfficialLink(activeGame);
   renderCurrentResult(activeGame, myEntry);
+  renderSolvryGame(activeGame);
   renderBoard(activeGame.name);
   renderForm(myEntry);
   renderMetrics();
@@ -1924,6 +2194,322 @@ function renderCurrentResult(game, entry) {
     </span>
     <span class="pill">${entry ? "Saved" : "Open"}</span>
   `;
+}
+
+function renderSolvryGame(game) {
+  if (!isPlayableSolvryGame(game)) {
+    elements.solvryGame.hidden = true;
+    elements.solvryGame.innerHTML = "";
+    return;
+  }
+
+  elements.solvryGame.hidden = false;
+  const play = getSolvryPlay(game);
+  elements.solvryGame.innerHTML = play.kind === "holes" ? renderHolesBoard(play) : renderHoopsBoard(play);
+}
+
+function renderHolesBoard(play) {
+  const hole = play.holes[play.holeIndex];
+  const complete = play.holes.every((item) => item.done);
+  const nextDisabled = hole.done ? "" : "disabled";
+  const finishDisabled = complete ? "" : "disabled";
+
+  return `
+    <div class="solvry-board">
+      <section class="play-card primary">
+        <div class="play-topline">
+          <h3>Hole ${play.holeIndex + 1} of ${play.holes.length}</h3>
+          <span class="pill">${play.strokes} stroke${play.strokes === 1 ? "" : "s"}</span>
+        </div>
+        <div class="course-view" style="--play-angle:${hole.angle}deg;--target-x:${hole.targetX}%;--target-y:${hole.targetY}%;--avatar-x:${play.aim}%;--avatar-y:${Math.max(8, 42 - play.power / 3)}px">
+          <span class="course-path" aria-hidden="true"></span>
+          <span class="play-target" aria-label="Cup">⛳</span>
+          <span class="play-avatar" aria-label="Ball">•</span>
+        </div>
+        <p>${escapeHtml(hole.distance)} yards · par ${hole.par} · ${escapeHtml(hole.hazard)}</p>
+        <div class="meter-stack">
+          ${renderPlayMeter("Aim", play.aim)}
+          ${renderPlayMeter("Power", play.power)}
+        </div>
+        <div class="play-result">${escapeHtml(play.message)}</div>
+        <div class="play-actions">
+          <button class="play-button" type="button" data-play-action="aim-left">Aim left</button>
+          <button class="play-button" type="button" data-play-action="aim-right">Aim right</button>
+          <button class="play-button" type="button" data-play-action="power-down">Less power</button>
+          <button class="play-button" type="button" data-play-action="power-up">More power</button>
+          <button class="play-button main" type="button" data-play-action="swing" ${hole.done ? "disabled" : ""}>Swing</button>
+          <button class="play-button" type="button" data-play-action="next" ${nextDisabled}>Next hole</button>
+          <button class="play-button" type="button" data-play-action="finish" ${finishDisabled}>Save round</button>
+          <button class="play-button" type="button" data-play-action="reset">Reset</button>
+        </div>
+      </section>
+      <section class="play-card">
+        <h3>Round card</h3>
+        <div class="play-grid">
+          ${play.holes.map((item, index) => `
+            <span class="play-tile${index === play.holeIndex ? " current" : ""}${item.done ? " done" : ""}">
+              <strong>${index + 1}</strong>
+              ${item.done ? `${item.strokes} stroke${item.strokes === 1 ? "" : "s"}` : `Par ${item.par}`}
+            </span>
+          `).join("")}
+        </div>
+        <p>Move aim and power, then swing. A clean shot finishes the hole quickly; rough shots add strokes.</p>
+      </section>
+    </div>
+  `;
+}
+
+function renderHoopsBoard(play) {
+  const shot = play.shots[play.shotIndex];
+  const complete = play.shots.every((item) => item.done);
+  const nextDisabled = shot.done ? "" : "disabled";
+  const finishDisabled = complete ? "" : "disabled";
+
+  return `
+    <div class="solvry-board">
+      <section class="play-card primary">
+        <div class="play-topline">
+          <h3>Shot ${play.shotIndex + 1} of ${play.shots.length}</h3>
+          <span class="pill">${play.totalPoints} point${play.totalPoints === 1 ? "" : "s"}</span>
+        </div>
+        <div class="court-view" style="--play-angle:${shot.angle}deg;--target-x:${shot.targetX}%;--target-y:${shot.targetY}%;--avatar-x:${play.aim}%;--avatar-y:${Math.max(18, 76 - play.power / 2)}px">
+          <span class="shot-arc" aria-hidden="true"></span>
+          <span class="play-target" aria-label="Rim">${shot.value}</span>
+          <span class="play-avatar" aria-label="Shooter">●</span>
+        </div>
+        <p>${escapeHtml(shot.label)} · worth ${shot.value} point${shot.value === 1 ? "" : "s"}</p>
+        <div class="meter-stack">
+          ${renderPlayMeter("Aim", play.aim)}
+          ${renderPlayMeter("Power", play.power)}
+          ${renderPlayMeter("Release", play.release)}
+        </div>
+        <div class="play-result">${escapeHtml(play.message)}</div>
+        <div class="play-actions three">
+          <button class="play-button" type="button" data-play-action="aim-left">Aim left</button>
+          <button class="play-button" type="button" data-play-action="aim-right">Aim right</button>
+          <button class="play-button" type="button" data-play-action="power-up">Power up</button>
+          <button class="play-button" type="button" data-play-action="power-down">Power down</button>
+          <button class="play-button" type="button" data-play-action="release-early">Earlier</button>
+          <button class="play-button" type="button" data-play-action="release-late">Later</button>
+          <button class="play-button main" type="button" data-play-action="shoot" ${shot.done ? "disabled" : ""}>Shoot</button>
+          <button class="play-button" type="button" data-play-action="next" ${nextDisabled}>Next shot</button>
+          <button class="play-button" type="button" data-play-action="finish" ${finishDisabled}>Save score</button>
+          <button class="play-button" type="button" data-play-action="reset">Reset</button>
+        </div>
+      </section>
+      <section class="play-card">
+        <h3>Shot chart</h3>
+        <div class="play-grid">
+          ${play.shots.map((item, index) => `
+            <span class="play-tile${index === play.shotIndex ? " current" : ""}${item.done ? " done" : ""}">
+              <strong>${index + 1}</strong>
+              ${item.done ? `${item.points} pt${item.points === 1 ? "" : "s"}` : item.label}
+            </span>
+          `).join("")}
+        </div>
+        <p>Set aim, power, and release for each shot. Deeper shots are worth more, but the sweet spot is tighter.</p>
+      </section>
+    </div>
+  `;
+}
+
+function renderPlayMeter(label, value) {
+  return `
+    <div class="play-meter">
+      <span class="meter-label"><span>${escapeHtml(label)}</span><span>${value}</span></span>
+      <span class="meter-track"><span class="meter-thumb" style="--meter-value:${value}"></span></span>
+    </div>
+  `;
+}
+
+function handleSolvryPlayAction(action) {
+  const game = getActiveGame();
+  if (!isPlayableSolvryGame(game)) return;
+
+  if (action === "reset") {
+    delete state.solvryPlays[getSolvryPlayKey(game.id)];
+    saveState();
+    render();
+    return;
+  }
+
+  const play = getSolvryPlay(game);
+  if (play.kind === "holes") {
+    handleHolesAction(play, action, game);
+  } else {
+    handleHoopsAction(play, action, game);
+  }
+  saveState();
+  render();
+}
+
+function handleHolesAction(play, action, game) {
+  const hole = play.holes[play.holeIndex];
+  if (action === "aim-left") play.aim = clamp(play.aim - 5, 10, 90);
+  if (action === "aim-right") play.aim = clamp(play.aim + 5, 10, 90);
+  if (action === "power-down") play.power = clamp(play.power - 5, 20, 95);
+  if (action === "power-up") play.power = clamp(play.power + 5, 20, 95);
+  if (action === "swing" && !hole.done) playHolesSwing(play, hole);
+  if (action === "next" && hole.done && play.holeIndex < play.holes.length - 1) {
+    play.holeIndex += 1;
+    const nextHole = play.holes[play.holeIndex];
+    play.aim = clamp(nextHole.targetAim + 12, 12, 88);
+    play.power = clamp(nextHole.targetPower - 10, 24, 92);
+    play.message = `Hole ${play.holeIndex + 1}: ${nextHole.distance} yards. Read the wind, then swing.`;
+  }
+  if (action === "finish" && play.holes.every((item) => item.done)) {
+    saveSolvryResult(game, `${play.strokes} strokes`, `Finished Solvry Holes at ${play.strokes} strokes.`);
+    play.message = "Round saved to your scoreboard.";
+  }
+}
+
+function playHolesSwing(play, hole) {
+  hole.strokes += 1;
+  play.strokes += 1;
+  const error = Math.abs(play.aim - hole.targetAim) + Math.abs(play.power - hole.targetPower);
+
+  if (error <= 13) {
+    hole.done = true;
+    hole.result = `In for ${hole.strokes}`;
+    play.message = hole.strokes === 1 ? "Perfect line. Hole in one." : `Dropped it in ${hole.strokes} strokes.`;
+  } else if (hole.strokes >= hole.par + 2) {
+    hole.done = true;
+    hole.result = `Saved at ${hole.strokes}`;
+    play.message = `Recovered from ${hole.hazard.toLowerCase()} and finished in ${hole.strokes}.`;
+  } else if (error <= 26) {
+    play.message = "Good touch. You are close enough to attack the cup.";
+  } else if (error <= 42) {
+    play.message = `Caught the edge and found the ${hole.hazard.toLowerCase()}. Adjust before the next swing.`;
+  } else {
+    play.message = "Big miss. Bring the aim and power closer to the sweet spot.";
+  }
+}
+
+function handleHoopsAction(play, action, game) {
+  const shot = play.shots[play.shotIndex];
+  if (action === "aim-left") play.aim = clamp(play.aim - 5, 8, 92);
+  if (action === "aim-right") play.aim = clamp(play.aim + 5, 8, 92);
+  if (action === "power-down") play.power = clamp(play.power - 5, 20, 95);
+  if (action === "power-up") play.power = clamp(play.power + 5, 20, 95);
+  if (action === "release-early") play.release = clamp(play.release - 5, 8, 92);
+  if (action === "release-late") play.release = clamp(play.release + 5, 8, 92);
+  if (action === "shoot" && !shot.done) playHoopsShot(play, shot);
+  if (action === "next" && shot.done && play.shotIndex < play.shots.length - 1) {
+    play.shotIndex += 1;
+    const nextShot = play.shots[play.shotIndex];
+    play.aim = clamp(nextShot.targetAim - 11, 10, 90);
+    play.power = clamp(nextShot.targetPower + 9, 24, 92);
+    play.release = clamp(nextShot.targetRelease - 7, 12, 88);
+    play.message = `${nextShot.label}: square up the shot before you release.`;
+  }
+  if (action === "finish" && play.shots.every((item) => item.done)) {
+    saveSolvryResult(game, `${play.totalPoints} points`, `Finished Solvry Hoops with ${play.totalPoints} points.`);
+    play.message = "Score saved to your leaderboard.";
+  }
+}
+
+function playHoopsShot(play, shot) {
+  const error = Math.abs(play.aim - shot.targetAim) + Math.abs(play.power - shot.targetPower) + Math.abs(play.release - shot.targetRelease);
+  let points = 0;
+  if (error <= 20) points = shot.value;
+  else if (error <= 34) points = Math.max(1, shot.value - 1);
+  else if (error <= 46) points = 1;
+
+  shot.done = true;
+  shot.points = points;
+  play.totalPoints += points;
+  if (points === shot.value) {
+    play.message = `Clean make from ${shot.label.toLowerCase()} for ${points}.`;
+  } else if (points > 0) {
+    play.message = `It rattled in for ${points}.`;
+  } else {
+    play.message = "Off target. No points on that shot.";
+  }
+}
+
+function getSolvryPlay(game) {
+  state.solvryPlays ||= {};
+  const key = getSolvryPlayKey(game.id);
+  if (!state.solvryPlays[key]) {
+    state.solvryPlays[key] = game.id === "solvry-holes" ? createHolesPlay(game.id) : createHoopsPlay(game.id);
+  }
+  return state.solvryPlays[key];
+}
+
+function getSolvryPlayKey(gameId) {
+  return `${state.selectedDate}:${gameId}`;
+}
+
+function createHolesPlay(gameId) {
+  const holes = [
+    { distance: 86, par: 3, hazard: "Front bunker", targetAim: 64, targetPower: 48, targetX: 77, targetY: 21, angle: -10 },
+    { distance: 124, par: 4, hazard: "Left water", targetAim: 42, targetPower: 62, targetX: 63, targetY: 28, angle: 8 },
+    { distance: 71, par: 3, hazard: "Tiny green", targetAim: 55, targetPower: 41, targetX: 70, targetY: 34, angle: -18 },
+    { distance: 153, par: 4, hazard: "Deep rough", targetAim: 35, targetPower: 75, targetX: 58, targetY: 24, angle: 15 },
+    { distance: 98, par: 3, hazard: "Back slope", targetAim: 69, targetPower: 53, targetX: 81, targetY: 30, angle: -6 },
+    { distance: 168, par: 5, hazard: "Creek carry", targetAim: 49, targetPower: 82, targetX: 66, targetY: 18, angle: 3 },
+    { distance: 112, par: 4, hazard: "Right bunker", targetAim: 31, targetPower: 59, targetX: 54, targetY: 35, angle: 20 },
+    { distance: 79, par: 3, hazard: "Fast green", targetAim: 73, targetPower: 44, targetX: 78, targetY: 40, angle: -22 },
+    { distance: 142, par: 4, hazard: "Island pin", targetAim: 58, targetPower: 70, targetX: 72, targetY: 22, angle: -2 }
+  ].map((hole) => ({ ...hole, strokes: 0, done: false, result: "" }));
+
+  return {
+    gameId,
+    kind: "holes",
+    holeIndex: 0,
+    aim: 50,
+    power: 55,
+    strokes: 0,
+    holes,
+    message: "Hole 1: set aim and power, then swing."
+  };
+}
+
+function createHoopsPlay(gameId) {
+  const shots = [
+    { label: "Wing jumper", value: 2, targetAim: 52, targetPower: 49, targetRelease: 48, targetX: 50, targetY: 24, angle: -8 },
+    { label: "Left corner", value: 3, targetAim: 29, targetPower: 66, targetRelease: 56, targetX: 30, targetY: 38, angle: 18 },
+    { label: "Right corner", value: 3, targetAim: 71, targetPower: 66, targetRelease: 44, targetX: 70, targetY: 38, angle: -18 },
+    { label: "Free throw", value: 2, targetAim: 50, targetPower: 43, targetRelease: 50, targetX: 50, targetY: 46, angle: 0 },
+    { label: "Top three", value: 3, targetAim: 48, targetPower: 72, targetRelease: 61, targetX: 50, targetY: 64, angle: 0 },
+    { label: "Bank shot", value: 2, targetAim: 61, targetPower: 57, targetRelease: 39, targetX: 58, targetY: 30, angle: -12 },
+    { label: "Elbow pull-up", value: 2, targetAim: 40, targetPower: 54, targetRelease: 53, targetX: 42, targetY: 42, angle: 11 },
+    { label: "Deep wing", value: 3, targetAim: 78, targetPower: 84, targetRelease: 47, targetX: 78, targetY: 61, angle: -24 },
+    { label: "Logo shot", value: 4, targetAim: 51, targetPower: 91, targetRelease: 64, targetX: 50, targetY: 76, angle: 2 }
+  ].map((shot) => ({ ...shot, done: false, points: 0 }));
+
+  return {
+    gameId,
+    kind: "hoops",
+    shotIndex: 0,
+    aim: 41,
+    power: 58,
+    release: 45,
+    totalPoints: 0,
+    shots,
+    message: "Shot 1: set aim, power, and release, then shoot."
+  };
+}
+
+function saveSolvryResult(game, score, note) {
+  const gameEntries = getGameEntries(state.selectedDate, game.id);
+  gameEntries.you = {
+    result: "played",
+    score,
+    answer: "",
+    note,
+    reveal: false,
+    source: "solvry-play"
+  };
+  flashStatus(elements.saveStatus, `${game.name} saved.`);
+}
+
+function isPlayableSolvryGame(game) {
+  return gameSource(game) === "solvry" && ["solvry-holes", "solvry-hoops"].includes(game.id);
+}
+
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
 }
 
 function renderQuickGames() {
@@ -2049,6 +2635,7 @@ function gameLogo(game) {
     crossclimb: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 33V7M27 33V7M13 14h14M13 22h14M13 30h14" stroke="#141719" stroke-width="4" stroke-linecap="round"/><path d="M10 30l20-16" stroke="#10a77a" stroke-width="3" stroke-linecap="round"/></svg>`,
     pinpoint: `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="#fffefa" stroke="#141719" stroke-width="3"/><circle cx="20" cy="20" r="8" fill="none" stroke="#f26d5b" stroke-width="3"/><circle cx="20" cy="20" r="3" fill="#141719"/></svg>`,
     holes: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M11 30c4-6 14-8 22-4" fill="none" stroke="#141719" stroke-width="3" stroke-linecap="round"/><path d="M15 9v19" stroke="#141719" stroke-width="3" stroke-linecap="round"/><path d="M15 9l13 4-13 4z" fill="#f26d5b" stroke="#141719" stroke-width="2" stroke-linejoin="round"/><circle cx="27" cy="29" r="3" fill="#fffefa" stroke="#141719" stroke-width="2"/></svg>`,
+    hoops: `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="21" r="13" fill="#f26d5b" stroke="#141719" stroke-width="3"/><path d="M7 21h26M20 8c5 7 5 19 0 26M20 8c-5 7-5 19 0 26" fill="none" stroke="#141719" stroke-width="2"/><path d="M12 10h16v5H12z" fill="#fffefa" stroke="#141719" stroke-width="2"/><path d="M15 15c2 5 8 5 10 0" fill="none" stroke="#fffefa" stroke-width="2"/></svg>`,
     "starting-five": `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13" fill="#f26d5b" stroke="#141719" stroke-width="3"/><path d="M8 20h24M20 7c5 7 5 19 0 26M20 7c-5 7-5 19 0 26" fill="none" stroke="#141719" stroke-width="2"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="900" fill="#fffefa">5</text></svg>`,
     matchday: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 6l12 7v14l-12 7-12-7V13z" fill="#fffefa" stroke="#141719" stroke-width="3" stroke-linejoin="round"/><path d="M20 6v28M8 13l24 14M32 13L8 27" stroke="#141719" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#10a77a" stroke="#141719" stroke-width="2"/></svg>`,
     krillion: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5c5 5 9 12 9 19a9 9 0 0 1-18 0c0-7 4-14 9-19z" fill="#10a77a" stroke="#141719" stroke-width="2"/><path d="M13 23h14M15 29h10" stroke="#fffefa" stroke-width="3" stroke-linecap="round"/><text x="20" y="20" text-anchor="middle" font-size="12" font-weight="900" fill="#141719">K</text></svg>`
@@ -2086,6 +2673,13 @@ function renderOfficialLink(game) {
 }
 
 function renderBoard(seedText) {
+  if (gameSource(getActiveGame()) === "solvry") {
+    elements.letterBoard.hidden = true;
+    elements.letterBoard.innerHTML = "";
+    return;
+  }
+
+  elements.letterBoard.hidden = false;
   const letters = (seedText.toUpperCase().replace(/[^A-Z]/g, "") + "SOLVRY").slice(0, 10);
   const classes = ["hit", "warn", "miss", "", "hit", "", "warn", "hit", "miss", ""];
   elements.letterBoard.innerHTML = "";
@@ -2099,6 +2693,12 @@ function renderBoard(seedText) {
 
 function renderForm(entry) {
   const activeGame = getActiveGame();
+  if (gameSource(activeGame) === "solvry") {
+    elements.entryForm.hidden = true;
+    return;
+  }
+
+  elements.entryForm.hidden = false;
   elements.resultInput.value = entry?.result || "solved";
   elements.scoreInput.value = entry?.score || "";
   elements.scoreInput.placeholder = scoreStyleExample(activeGame);
@@ -2266,7 +2866,7 @@ function scoreEntryForGame(entry, game) {
 
 function parseGuessScore(score, result) {
   const miss = /x\/6/i.test(score) || result === "missed";
-  const match = score.match(/([1-6])\s*\/\s*6/i);
+  const match = score.match(/([1-6])\s*\/\s*6/i) || score.match(/\b([1-9]\d*)\s*(?:guess|guesses)\b/i);
   return {
     value: miss ? Number.POSITIVE_INFINITY : Number(match?.[1] || Number.POSITIVE_INFINITY),
     label: score || defaultScoreLabel(result),
