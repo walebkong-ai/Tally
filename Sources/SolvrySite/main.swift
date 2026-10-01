@@ -1275,15 +1275,48 @@ h2 {
 
 .daily-golf {
   display: grid;
+  gap: 0;
+  max-width: 620px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.96), rgba(247, 244, 234, 0.92)),
+    var(--panel);
+  box-shadow: 0 24px 50px rgba(20, 23, 25, 0.12);
+}
+
+.golf-game-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 12px;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 254, 250, 0.88);
+}
+
+.golf-game-header strong {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+}
+
+.golf-game-header span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .golf-score-strip {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
   background: rgba(255, 254, 250, 0.84);
 }
 
@@ -1364,33 +1397,45 @@ h2 {
 
 .daily-golf-board {
   display: grid;
-  grid-template-columns: minmax(0, 1.16fr) minmax(260px, 0.84fr);
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
+.play-card.primary.golf-map-card,
 .golf-map-card {
   display: grid;
-  gap: 10px;
+  gap: 0;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(189, 238, 226, 0.3), rgba(255, 254, 250, 0.62));
 }
 
 .golf-hud {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
+  padding: 14px 18px;
+  background: rgba(222, 241, 229, 0.78);
 }
 
 .golf-hud .golf-stat {
-  padding: 8px;
+  min-height: 82px;
+  padding: 12px;
+  border-color: rgba(20, 23, 25, 0.14);
+  background: rgba(255, 254, 250, 0.68);
 }
 
 .golf-course-map {
   width: 100%;
-  min-height: 610px;
-  border: 2px solid var(--ink);
-  border-radius: 8px;
+  min-height: 620px;
+  border: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
   background: #dfe9d5;
-  box-shadow: inset 0 0 90px rgba(20, 23, 25, 0.13), 0 18px 36px rgba(20, 23, 25, 0.08);
+  box-shadow: inset 0 0 90px rgba(20, 23, 25, 0.13);
   touch-action: pan-y;
 }
 
@@ -1399,16 +1444,30 @@ h2 {
   letter-spacing: 0;
 }
 
+.play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   align-content: start;
+  padding: 16px 18px 18px;
+  border-radius: 0;
+  border: 0;
+  background: rgba(255, 254, 250, 0.92);
+}
+
+.golf-controls > * {
+  min-width: 0;
 }
 
 .club-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(7, 72px);
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .club-button {
@@ -1421,6 +1480,7 @@ h2 {
   background: var(--panel);
   color: var(--muted);
   font-weight: 900;
+  text-align: center;
 }
 
 .club-button strong,
@@ -1476,10 +1536,10 @@ h2 {
 .shot-stage {
   display: grid;
   gap: 10px;
-  padding: 12px;
-  border: 1px solid rgba(20, 23, 25, 0.16);
-  border-radius: 8px;
-  background: rgba(255, 254, 250, 0.74);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .shot-stage strong {
@@ -1555,9 +1615,10 @@ h2 {
   display: grid;
   gap: 8px;
   min-height: 72px;
-  padding: 10px;
-  border-radius: 8px;
-  background: rgba(20, 23, 25, 0.07);
+  margin: 14px 18px 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(20, 23, 25, 0.08);
   color: var(--ink);
   font-weight: 850;
   line-height: 1.35;
@@ -2116,9 +2177,12 @@ label {
     grid-template-columns: 1fr;
   }
 
-  .golf-hud,
-  .club-grid {
+  .golf-hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .club-grid {
+    grid-template-columns: repeat(7, 72px);
   }
 
   .golf-course-map {
@@ -2584,6 +2648,7 @@ function renderHolesBoard(play) {
 
   return `
     <div class="daily-golf" data-shot-phase="${escapeHtml(phase)}">
+      ${renderGolfGameHeader(play)}
       ${renderGolfScoreStrip(play)}
       <div class="daily-golf-board">
         <section class="play-card primary golf-map-card">
@@ -2675,6 +2740,7 @@ function renderGolfStart(play) {
   const course = play.course;
   return `
     <div class="daily-golf">
+      ${renderGolfGameHeader(play)}
       ${renderGolfScoreStrip(play)}
       <section class="golf-hero-card">
         <div class="play-topline">
@@ -2699,6 +2765,7 @@ function renderGolfStart(play) {
 function renderGolfHoleCard(play, hole) {
   return `
     <div class="daily-golf">
+      ${renderGolfGameHeader(play)}
       ${renderGolfScoreStrip(play)}
       <section class="hole-card">
         <div class="play-topline">
@@ -2726,6 +2793,8 @@ function renderGolfResults(play) {
   const water = play.shotLog.filter((shot) => shot.penalty).length;
   return `
     <div class="daily-golf">
+      ${renderGolfGameHeader(play)}
+      ${renderGolfScoreStrip(play)}
       <section class="results-card">
         <div class="play-topline">
           <div>
@@ -2746,6 +2815,18 @@ function renderGolfResults(play) {
         </div>
       </section>
     </div>
+  `;
+}
+
+function renderGolfGameHeader(play) {
+  return `
+    <header class="golf-game-header">
+      <div>
+        <strong>Solvry Holes</strong>
+        <span>${escapeHtml(play.course.name)} · Ranked</span>
+      </div>
+      <span class="pill">${formatRelativeScore(getGolfRelativeScore(play))}</span>
+    </header>
   `;
 }
 
@@ -2782,6 +2863,7 @@ function renderGolfScorecardTable(play) {
 
 function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const ball = play.ball;
+  const landingRadius = getGolfLandingRadius(play, hole);
   const centerAngle = play.aimCenterAngle ?? play.aimAngle;
   const sweepRange = getAimSweepRange(play, hole);
   const sweepDuration = getAimSweepDuration(play, hole);
@@ -2804,6 +2886,8 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
       <path d="${escapeHtml(fairwayPath(hole))}" fill="url(#fairway-stripes-${hole.number})" opacity="0.92"></path>
       ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d8d4c7" stroke-width="${path.width}" stroke-linecap="round" opacity="0.9"></path>`).join("")}
       ${hole.bunkers.map((bunker) => `<ellipse cx="${bunker.x}" cy="${bunker.y}" rx="${bunker.rx}" ry="${bunker.ry}" fill="#f3df9f" stroke="#d0b970" stroke-width="0.4"></ellipse>`).join("")}
+      <circle cx="${target.x}" cy="${target.y}" r="${landingRadius}" fill="#72b7ff" opacity="0.2" stroke="#72b7ff" stroke-width="0.45"></circle>
+      <circle cx="${target.x}" cy="${target.y}" r="${Math.max(4, landingRadius * 0.28)}" fill="#fffefa" opacity="0.28" stroke="#25382e" stroke-width="0.35" stroke-dasharray="1.2 1.2"></circle>
       <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 4}" fill="#a7df4e" opacity="0.28"></circle>
       <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="#bdeee2" stroke="#76a96a" stroke-width="0.6"></circle>
       <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.9" opacity="0.7"></circle>
@@ -3353,6 +3437,12 @@ function getAimSweepRange(play, hole) {
 function getAimSweepDuration(play, hole) {
   const club = getGolfClub(play.selectedClubId);
   return clamp(1900 - club.dispersion * 45 - hole.wind.speed * 18, 1180, 1900);
+}
+
+function getGolfLandingRadius(play, hole) {
+  const club = getGolfClub(play.selectedClubId);
+  const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
+  return clamp(11 + club.dispersion * 1.2 + (lie.accuracy - 1) * 9 + hole.wind.speed * 0.22, 12, 28);
 }
 
 function getActivePowerPosition(play) {
