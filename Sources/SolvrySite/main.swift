@@ -497,11 +497,14 @@ textarea {
 
 .workspace {
   display: grid;
-  grid-template-columns: 240px minmax(360px, 1.5fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1.45fr) minmax(300px, 0.9fr);
   grid-template-areas:
     "rail tracker social"
     "rail tracker answers";
   gap: 18px;
+  align-items: start;
+  max-width: 1540px;
+  margin: 0 auto;
   padding: clamp(16px, 4vw, 42px);
 }
 
@@ -692,11 +695,13 @@ textarea {
 }
 
 .panel {
+  min-width: 0;
   padding: clamp(18px, 3vw, 26px);
 }
 
 .tracker-panel {
   grid-area: tracker;
+  overflow: hidden;
 }
 
 .social-panel {
@@ -858,6 +863,7 @@ h2 {
 }
 
 .play-surface {
+  min-width: 0;
   margin-top: 22px;
   padding: clamp(16px, 3vw, 24px);
   border: 1px solid var(--ink);
@@ -1029,6 +1035,7 @@ h2 {
 .solvry-game {
   display: grid;
   gap: 14px;
+  min-width: 0;
   margin-bottom: 20px;
 }
 
@@ -1276,12 +1283,12 @@ h2 {
 .daily-golf {
   display: grid;
   gap: 0;
-  width: min(620px, calc(100vw - 28px));
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   overflow: hidden;
   border: 2px solid var(--ink);
-  border-radius: 16px;
+  border-radius: 12px;
   background:
     linear-gradient(180deg, rgba(255, 254, 250, 0.96), rgba(247, 244, 234, 0.92)),
     var(--panel);
@@ -1657,12 +1664,8 @@ h2 {
 }
 
 @media (min-width: 980px) {
-  .daily-golf {
-    width: min(1100px, calc(100vw - 40px));
-  }
-
   .daily-golf-board {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
   }
 
   .play-card.golf-controls,
