@@ -2374,58 +2374,19 @@ label {
   background: conic-gradient(from 45deg, #4285f4, #34a853, #fbbc05, #ea4335, #4285f4);
 }
 
-body.solvry-holes-focus .topbar {
-  display: none;
-}
-
-body.solvry-holes-focus {
-  background:
-    linear-gradient(135deg, rgba(20, 23, 25, 0.035) 25%, transparent 25%) 0 0 / 28px 28px,
-    linear-gradient(135deg, transparent 75%, rgba(20, 23, 25, 0.035) 75%) 0 0 / 28px 28px,
-    #fbfaf4;
-}
-
-body.solvry-holes-focus .app-shell {
-  max-width: none;
-  padding: clamp(10px, 2vw, 22px);
-}
-
 body.solvry-holes-focus .workspace {
-  display: block;
-  max-width: 750px;
-  margin: 0 auto;
-  padding: clamp(8px, 2vw, 18px);
-}
-
-body.solvry-holes-focus .game-rail,
-body.solvry-holes-focus .section-head,
-body.solvry-holes-focus .dashboard-strip,
-body.solvry-holes-focus .current-result,
-body.solvry-holes-focus .entry-form,
-body.solvry-holes-focus .letter-board,
-body.solvry-holes-focus .import-surface,
-body.solvry-holes-focus .metrics,
-body.solvry-holes-focus .progress-days,
-body.solvry-holes-focus .social-panel,
-body.solvry-holes-focus .answer-panel {
-  display: none;
-}
-
-body.solvry-holes-focus .tracker-panel,
-body.solvry-holes-focus .play-surface {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 760px) minmax(260px, 1fr);
+  max-width: 1420px;
 }
 
 body.solvry-holes-focus .play-surface {
-  margin: 0;
+  justify-items: center;
 }
 
 body.solvry-holes-focus .solvry-game {
   display: block;
+  width: 100%;
+  margin-top: 14px;
 }
 
 @media (max-width: 1080px) {
@@ -2436,10 +2397,27 @@ body.solvry-holes-focus .solvry-game {
       "rail social"
       "rail answers";
   }
+
+  body.solvry-holes-focus .workspace {
+    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-areas:
+      "rail tracker"
+      "rail social"
+      "rail answers";
+  }
 }
 
 @media (max-width: 900px) {
   .workspace {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "rail"
+      "tracker"
+      "social"
+      "answers";
+  }
+
+  body.solvry-holes-focus .workspace {
     grid-template-columns: 1fr;
     grid-template-areas:
       "rail"
