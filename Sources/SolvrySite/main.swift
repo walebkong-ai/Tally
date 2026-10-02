@@ -1243,7 +1243,7 @@ h2 {
 .play-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .play-actions.three {
@@ -1251,28 +1251,45 @@ h2 {
 }
 
 .play-button {
-  min-height: 40px;
-  border: 1px solid var(--ink);
-  border-radius: 8px;
-  background: var(--panel);
-  color: var(--ink);
-  font-weight: 900;
+  min-height: 48px;
+  border: 1px solid rgba(39, 60, 50, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.74);
+  color: #273c32;
+  font-weight: 850;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 
 .play-button:hover {
-  background: var(--ink);
-  color: var(--paper);
+  border-color: rgba(8, 114, 85, 0.38);
+  background: rgba(235, 246, 232, 0.92);
+  box-shadow: 0 10px 24px rgba(39, 60, 50, 0.08);
+  transform: translateY(-1px);
+}
+
+.play-button.active {
+  border-color: rgba(8, 114, 85, 0.5);
+  background:
+    linear-gradient(180deg, rgba(218, 245, 233, 0.96), rgba(246, 251, 244, 0.94));
+  color: #087255;
+  box-shadow: 0 10px 24px rgba(8, 114, 85, 0.12);
 }
 
 .play-button.main {
   grid-column: 1 / -1;
-  background: var(--ink);
+  min-height: 56px;
+  border-color: rgba(6, 70, 50, 0.95);
+  background:
+    linear-gradient(180deg, #16392c, #0e261f);
   color: var(--paper);
+  box-shadow: 0 18px 32px rgba(9, 45, 33, 0.22);
 }
 
 .play-button.main:hover {
-  background: var(--green);
-  border-color: var(--green);
+  background:
+    linear-gradient(180deg, #1f513e, #0d3328);
+  border-color: rgba(16, 167, 122, 0.56);
+  color: #fffefa;
 }
 
 .play-button:disabled {
@@ -1287,57 +1304,70 @@ h2 {
   max-width: 100%;
   margin: 0;
   overflow: hidden;
-  border: 2px solid var(--ink);
-  border-radius: 12px;
+  border: 1px solid rgba(39, 60, 50, 0.2);
+  border-radius: 22px;
   background:
-    linear-gradient(180deg, rgba(255, 254, 250, 0.96), rgba(247, 244, 234, 0.92)),
+    radial-gradient(circle at 14% 0%, rgba(189, 238, 226, 0.36), transparent 34%),
+    linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(246, 242, 230, 0.94)),
     var(--panel);
-  box-shadow: 0 24px 50px rgba(20, 23, 25, 0.12);
+  box-shadow: 0 28px 70px rgba(39, 60, 50, 0.14);
 }
 
 .golf-game-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(255, 254, 250, 0.88);
+  gap: 18px;
+  align-items: end;
+  padding: clamp(20px, 4vw, 34px) clamp(20px, 4vw, 38px) 18px;
+  background: rgba(255, 254, 250, 0.74);
 }
 
 .golf-game-header strong {
   display: block;
   font-family: var(--display);
-  font-size: clamp(1.35rem, 4vw, 2rem);
+  font-size: clamp(2.1rem, 5vw, 3.65rem);
+  line-height: 0.95;
+  color: #121817;
+  letter-spacing: 0;
 }
 
 .golf-game-header span {
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: clamp(0.72rem, 1vw, 0.86rem);
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.golf-game-header .pill {
+  min-width: 50px;
+  min-height: 50px;
+  place-content: center;
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(39, 60, 50, 0.08);
 }
 
 .golf-score-strip {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   overflow: hidden;
-  border-bottom: 1px solid var(--line);
+  border-block: 1px solid rgba(39, 60, 50, 0.12);
   border-radius: 0;
-  background: rgba(255, 254, 250, 0.84);
+  background: rgba(251, 249, 241, 0.72);
 }
 
 .golf-score-hole {
   display: grid;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
-  padding: 8px 4px;
-  border-right: 1px solid var(--line);
+  padding: 12px 4px 10px;
+  border-right: 1px solid rgba(39, 60, 50, 0.1);
   color: var(--muted);
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 850;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
 .golf-score-hole:last-child {
@@ -1345,30 +1375,43 @@ h2 {
 }
 
 .golf-score-hole.current {
-  background: rgba(16, 167, 122, 0.12);
+  background:
+    linear-gradient(180deg, rgba(225, 246, 235, 0.92), rgba(237, 249, 242, 0.78));
   color: #087255;
+  box-shadow: inset 0 4px 0 rgba(8, 114, 85, 0.7);
 }
 
 .golf-score-hole.done {
-  background: rgba(239, 189, 58, 0.16);
+  background: rgba(232, 223, 197, 0.26);
   color: var(--ink);
 }
 
 .golf-score-hole strong {
-  font-size: 1rem;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1;
+}
+
+.golf-score-hole span {
+  font-size: 0.8rem;
+}
+
+.golf-score-hole small {
+  font-size: 0.72rem;
+  opacity: 0.78;
 }
 
 .golf-hero-card,
 .hole-card,
 .results-card {
   display: grid;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--ink);
-  border-radius: 8px;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid rgba(39, 60, 50, 0.14);
+  border-radius: 18px;
   background:
-    linear-gradient(135deg, rgba(189, 238, 226, 0.72), rgba(255, 254, 250, 0.9)),
+    linear-gradient(135deg, rgba(189, 238, 226, 0.4), rgba(255, 254, 250, 0.94)),
     var(--panel);
+  box-shadow: 0 18px 42px rgba(39, 60, 50, 0.08);
 }
 
 .golf-hero-grid,
@@ -1380,10 +1423,11 @@ h2 {
 }
 
 .golf-stat {
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 254, 250, 0.76);
+  padding: 12px 14px;
+  border: 1px solid rgba(39, 60, 50, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 254, 250, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.54);
 }
 
 .golf-stat span,
@@ -1393,14 +1437,17 @@ h2 {
 
 .golf-stat span {
   color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 900;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .golf-stat strong {
-  margin-top: 3px;
-  font-size: 1.12rem;
+  margin-top: 5px;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.08;
+  color: #101817;
 }
 
 .daily-golf-board {
@@ -1415,44 +1462,47 @@ h2 {
   display: grid;
   gap: 0;
   min-width: 0;
-  padding: 0;
+  padding: clamp(14px, 2vw, 18px);
   border: 0;
   border-radius: 0;
-  background: linear-gradient(180deg, rgba(189, 238, 226, 0.3), rgba(255, 254, 250, 0.62));
+  background:
+    linear-gradient(180deg, rgba(218, 234, 213, 0.66), rgba(245, 244, 235, 0.8));
 }
 
 .golf-hud {
   position: absolute;
   z-index: 3;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  top: clamp(24px, 4vw, 34px);
+  left: clamp(24px, 4vw, 34px);
+  right: clamp(24px, 4vw, 34px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 0;
   background: transparent;
   pointer-events: none;
 }
 
 .golf-hud .golf-stat {
-  min-height: 58px;
-  padding: 9px 10px;
-  border-color: rgba(20, 23, 25, 0.12);
-  background: rgba(255, 254, 250, 0.72);
-  backdrop-filter: blur(10px);
+  min-width: min(128px, calc(50% - 5px));
+  min-height: 0;
+  padding: 10px 12px;
+  border-color: rgba(39, 60, 50, 0.1);
+  background: rgba(255, 254, 250, 0.62);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 24px rgba(39, 60, 50, 0.08);
 }
 
 .golf-course-map {
   width: 100%;
-  height: clamp(440px, 64vh, 620px);
+  height: clamp(500px, 68vh, 720px);
   min-height: 0;
   border: 0;
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
-  border-radius: 0;
+  border-radius: 20px;
   background: #dfe9d5;
-  box-shadow: inset 0 0 90px rgba(20, 23, 25, 0.13);
+  box-shadow:
+    inset 0 0 110px rgba(39, 60, 50, 0.16),
+    0 14px 28px rgba(39, 60, 50, 0.08);
   touch-action: pan-y;
 }
 
@@ -1464,40 +1514,87 @@ h2 {
 .play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 12px;
+  gap: 22px;
   align-content: start;
-  padding: 14px 18px 18px;
+  padding: clamp(22px, 4vw, 32px);
   border-radius: 0;
   border: 0;
-  background: rgba(255, 254, 250, 0.92);
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.94), rgba(248, 246, 237, 0.94));
 }
 
 .golf-controls > * {
   min-width: 0;
 }
 
+.golf-shot-id {
+  display: grid;
+  gap: 10px;
+}
+
+.golf-shot-id h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.08;
+  color: #151c1a;
+}
+
+.golf-shot-id .pill {
+  justify-self: start;
+}
+
+.golf-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.golf-facts .golf-stat {
+  min-height: 104px;
+}
+
+.golf-facts .hazard-stat {
+  background:
+    linear-gradient(180deg, rgba(249, 239, 213, 0.78), rgba(255, 254, 250, 0.82));
+}
+
+.golf-club-section {
+  display: grid;
+  gap: 10px;
+}
+
 .club-grid {
   display: grid;
-  grid-template-columns: repeat(7, 72px);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(72px, 1fr));
+  gap: 10px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
 }
 
 .club-button {
   display: grid;
-  gap: 2px;
-  min-height: 58px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
+  gap: 5px;
+  min-height: 66px;
+  padding: 10px 8px;
+  border: 1px solid rgba(39, 60, 50, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 254, 250, 0.7);
   color: var(--muted);
-  font-weight: 900;
+  font-weight: 850;
   text-align: center;
+  box-shadow: 0 8px 20px rgba(39, 60, 50, 0.04);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.club-button:hover {
+  border-color: rgba(8, 114, 85, 0.28);
+  background: rgba(245, 250, 241, 0.94);
+  transform: translateY(-1px);
 }
 
 .club-button strong,
@@ -1506,13 +1603,16 @@ h2 {
 }
 
 .club-button span {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
 .club-button.active {
   border-color: #087255;
-  background: rgba(16, 167, 122, 0.12);
+  background:
+    linear-gradient(180deg, rgba(220, 246, 235, 0.96), rgba(242, 250, 244, 0.94));
   color: #087255;
+  box-shadow: 0 12px 24px rgba(8, 114, 85, 0.14);
 }
 
 .swing-meter {
@@ -1552,8 +1652,8 @@ h2 {
 
 .shot-stage {
   display: grid;
-  gap: 10px;
-  padding: 0;
+  gap: 14px;
+  padding-top: 4px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1571,30 +1671,42 @@ h2 {
   min-width: 118px;
   min-height: 42px;
   padding: 9px 14px;
-  border: 2px solid rgba(20, 23, 25, 0.28);
+  border: 1px solid rgba(8, 114, 85, 0.28);
   border-radius: 999px;
-  background: rgba(255, 254, 250, 0.88);
+  background: rgba(232, 248, 238, 0.88);
   animation: golfLockPulse 0.48s ease-out;
 }
 
 .shot-stage strong {
   display: block;
-  font-size: 1.05rem;
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+  letter-spacing: 0;
+  color: #121817;
 }
 
 .shot-stage span,
 .shot-stage p {
   margin: 0;
   color: var(--muted);
-  font-weight: 850;
-  line-height: 1.35;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.strategy-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.strategy-actions .play-button {
+  min-height: 52px;
 }
 
 .power-meter {
   position: relative;
-  height: 42px;
+  height: 38px;
   overflow: hidden;
-  border: 2px solid var(--ink);
+  border: 1px solid rgba(39, 60, 50, 0.26);
   border-radius: 999px;
   background:
     linear-gradient(90deg,
@@ -1619,7 +1731,7 @@ h2 {
   border: 3px solid rgba(255, 254, 250, 0.98);
   border-radius: 999px;
   background: repeating-linear-gradient(135deg, rgba(255, 254, 250, 0.32) 0 6px, rgba(255, 254, 250, 0.72) 6px 12px);
-  box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.28), 0 0 18px rgba(16, 167, 122, 0.5);
+  box-shadow: 0 0 0 1px rgba(39, 60, 50, 0.24), 0 0 18px rgba(16, 167, 122, 0.34);
 }
 
 .power-meter::after {
@@ -1644,7 +1756,7 @@ h2 {
   height: 50px;
   border-radius: 999px;
   background: var(--paper);
-  box-shadow: 0 0 0 2px var(--ink), 0 0 18px rgba(255, 254, 250, 0.86);
+  box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.84), 0 0 18px rgba(255, 254, 250, 0.86);
   transform: translateX(-50%);
 }
 
@@ -1663,52 +1775,55 @@ h2 {
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 167, 122, 0); }
 }
 
-@media (min-width: 980px) {
+@media (min-width: 1360px) {
   .daily-golf-board {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.9fr);
   }
 
   .play-card.golf-controls,
   .golf-controls {
-    border-left: 2px solid var(--ink);
+    border-left: 1px solid rgba(39, 60, 50, 0.12);
   }
 
   .golf-course-map {
-    height: clamp(480px, 68vh, 640px);
+    height: clamp(560px, 72vh, 760px);
   }
 }
 
 .tap-panel {
-  border-color: #087255;
-  background: #087255;
+  border-color: rgba(6, 70, 50, 0.95);
+  background:
+    linear-gradient(180deg, #183e31, #0d2820);
   color: var(--paper);
 }
 
 .tap-panel:hover {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: rgba(16, 167, 122, 0.58);
+  background:
+    linear-gradient(180deg, #235845, #103629);
 }
 
 .shot-summary {
   position: absolute;
   z-index: 3;
-  left: 14px;
-  right: 14px;
-  bottom: 14px;
+  left: clamp(24px, 4vw, 34px);
+  right: clamp(24px, 4vw, 34px);
+  bottom: clamp(24px, 4vw, 34px);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   min-height: 0;
   margin: 0;
-  padding: 10px 12px;
-  border: 1px solid rgba(20, 23, 25, 0.12);
-  border-radius: 8px;
-  background: rgba(255, 254, 250, 0.78);
+  padding: 14px 16px;
+  border: 1px solid rgba(39, 60, 50, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 254, 250, 0.74);
   backdrop-filter: blur(12px);
   color: var(--ink);
   font-weight: 850;
   line-height: 1.35;
+  box-shadow: 0 14px 30px rgba(39, 60, 50, 0.1);
 }
 
 .shot-summary small {
@@ -2269,15 +2384,35 @@ label {
   .current-result,
   .solvry-board,
   .daily-golf-board,
+  .golf-facts,
   .golf-hero-grid,
   .hole-card-grid,
   .results-grid,
+  .strategy-actions,
   .play-actions.three {
     grid-template-columns: 1fr;
   }
 
+  .play-card.primary.golf-map-card,
+  .golf-map-card {
+    gap: 12px;
+  }
+
   .golf-hud {
+    position: static;
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    order: 0;
+  }
+
+  .golf-hud .golf-stat {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .golf-hud .golf-stat strong {
+    font-size: 1rem;
   }
 
   .club-grid {
@@ -2285,7 +2420,14 @@ label {
   }
 
   .golf-course-map {
-    height: clamp(380px, 62vh, 500px);
+    height: clamp(390px, 56vh, 500px);
+  }
+
+  .shot-summary {
+    position: static;
+    align-items: flex-start;
+    flex-direction: column;
+    order: 2;
   }
 
   .dashboard-strip {
@@ -2313,6 +2455,23 @@ label {
 
   .letter-board {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .daily-golf {
+    border-radius: 16px;
+  }
+
+  .golf-game-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .golf-course-map {
+    height: 520px;
+  }
+
+  .golf-score-hole {
+    padding-inline: 2px;
   }
 }
 """#
@@ -2765,16 +2924,16 @@ function renderHolesBoard(play) {
           </div>
         </section>
         <section class="play-card golf-controls">
-          <div class="play-topline">
+          <div class="play-topline golf-shot-id">
             <h3>${escapeHtml(hole.name)}</h3>
             <span class="pill">${surfaceLabel(play.currentSurface)} · shot ${play.holeStrokes + 1}</span>
           </div>
-          ${showScoutingControls ? `<div class="golf-hero-grid">
+          ${showScoutingControls ? `<div class="golf-facts">
             <div class="golf-stat"><span>Par</span><strong>${hole.par}</strong></div>
             <div class="golf-stat"><span>Length</span><strong>${hole.distance} yds</strong></div>
-            <div class="golf-stat"><span>Hazard</span><strong>${escapeHtml(hole.primaryHazard)}</strong></div>
+            <div class="golf-stat hazard-stat"><span>Hazard</span><strong>${escapeHtml(hole.primaryHazard)}</strong></div>
           </div>` : ""}
-          ${showScoutingControls ? `<div>
+          ${showScoutingControls ? `<div class="golf-club-section">
             <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
             <div class="club-grid">
               ${GOLF_CLUBS.map((club) => `
@@ -2837,9 +2996,11 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
     <div class="shot-stage">
       <strong>Scout the shot</strong>
       <p>Choose a club or target, then start the two-tap swing.</p>
+      <div class="strategy-actions" role="group" aria-label="Target strategy">
+        <button class="play-button${play.targetMode === "safe" ? " active" : ""}" type="button" data-play-action="target-safe">Aim safe</button>
+        <button class="play-button${play.targetMode === "pin" ? " active" : ""}" type="button" data-play-action="target-pin">Attack pin</button>
+      </div>
       <div class="play-actions">
-        <button class="play-button" type="button" data-play-action="target-safe">Aim safe</button>
-        <button class="play-button" type="button" data-play-action="target-pin">Attack pin</button>
         <button class="play-button main tap-panel" type="button" data-play-action="take-shot">Take shot</button>
       </div>
     </div>
@@ -2992,8 +3153,8 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const lineLength = Math.min(42, Math.max(18, distance(ball, target)));
   const lineEnd = { x: ball.x, y: ball.y - lineLength };
   const aimLine = phase === "aiming"
-    ? `<g transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y}" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#b12a1c" stroke-width="0.9" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="1.8" fill="#fffefa" stroke="#b12a1c" stroke-width="0.55"></circle></g>`
-    : `<line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#b12a1c" stroke-width="0.9" stroke-linecap="round"></line>`;
+    ? `<g transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y}" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="0.78" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="1.8" fill="#fffefa" stroke="#9c2f23" stroke-width="0.5"></circle></g>`
+    : `<line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#9c2f23" stroke-width="0.78" stroke-linecap="round"></line>`;
   const lockPulse = phase === "aim-locked"
     ? `<circle cx="${target.x}" cy="${target.y}" r="2.2" fill="#fffefa" stroke="#b12a1c" stroke-width="0.75" opacity="0.8"><animate attributeName="r" values="2.2;5.4;2.6" dur="0.5s" fill="freeze"></animate><animate attributeName="opacity" values="0.8;0.18;0" dur="0.5s" fill="freeze"></animate></circle>`
     : "";
@@ -3001,30 +3162,36 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
     <svg class="golf-course-map" viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(hole.name)} course map">
       <defs>
         <pattern id="fairway-stripes-${hole.number}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
-          <rect width="8" height="8" fill="#b9e59a"></rect>
-          <rect width="4" height="8" fill="#c9efad"></rect>
+          <rect width="8" height="8" fill="#a9d88f"></rect>
+          <rect width="4" height="8" fill="#c5e8a8"></rect>
         </pattern>
+        <radialGradient id="green-glow-${hole.number}" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="#e6f6d7" stop-opacity="0.92"></stop>
+          <stop offset="68%" stop-color="#bdeee2" stop-opacity="0.74"></stop>
+          <stop offset="100%" stop-color="#87b978" stop-opacity="0.28"></stop>
+        </radialGradient>
       </defs>
       <rect width="100" height="100" fill="${escapeHtml(hole.palette.rough)}"></rect>
-      ${hole.treeZones.map((zone) => `<ellipse cx="${zone.x}" cy="${zone.y}" rx="${zone.rx}" ry="${zone.ry}" fill="#6f9b6a" opacity="0.34"></ellipse>`).join("")}
-      ${hole.water.map((water) => `<ellipse cx="${water.x}" cy="${water.y}" rx="${water.rx}" ry="${water.ry}" fill="#72b7ff" opacity="0.78"></ellipse>`).join("")}
-      <path d="${escapeHtml(fairwayPath(hole))}" fill="url(#fairway-stripes-${hole.number})" opacity="0.92"></path>
-      ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d8d4c7" stroke-width="${path.width}" stroke-linecap="round" opacity="0.9"></path>`).join("")}
-      ${hole.bunkers.map((bunker) => `<ellipse cx="${bunker.x}" cy="${bunker.y}" rx="${bunker.rx}" ry="${bunker.ry}" fill="#f3df9f" stroke="#d0b970" stroke-width="0.4"></ellipse>`).join("")}
-      <circle cx="${target.x}" cy="${target.y}" r="${landingRadius}" fill="#72b7ff" opacity="0.2" stroke="#72b7ff" stroke-width="0.45"></circle>
-      <circle cx="${target.x}" cy="${target.y}" r="${Math.max(4, landingRadius * 0.28)}" fill="#fffefa" opacity="0.28" stroke="#25382e" stroke-width="0.35" stroke-dasharray="1.2 1.2"></circle>
-      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 4}" fill="#a7df4e" opacity="0.28"></circle>
-      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="#bdeee2" stroke="#76a96a" stroke-width="0.6"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.9" opacity="0.7"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#141719" stroke-width="0.7" opacity="0.7"></circle>
+      <rect width="100" height="100" fill="#fffefa" opacity="0.08"></rect>
+      ${hole.treeZones.map((zone) => `<ellipse cx="${zone.x}" cy="${zone.y}" rx="${zone.rx}" ry="${zone.ry}" fill="#456f4d" opacity="0.24"></ellipse>`).join("")}
+      ${hole.water.map((water) => `<ellipse cx="${water.x}" cy="${water.y}" rx="${water.rx}" ry="${water.ry}" fill="#7fc3d8" opacity="0.72"></ellipse>`).join("")}
+      <path d="${escapeHtml(fairwayPath(hole))}" fill="url(#fairway-stripes-${hole.number})" opacity="0.88"></path>
+      ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d9d1bd" stroke-width="${path.width}" stroke-linecap="round" opacity="0.7"></path>`).join("")}
+      ${hole.bunkers.map((bunker) => `<ellipse cx="${bunker.x}" cy="${bunker.y}" rx="${bunker.rx}" ry="${bunker.ry}" fill="#ead58f" stroke="#c7ac65" stroke-width="0.28" opacity="0.82"></ellipse>`).join("")}
+      <circle cx="${target.x}" cy="${target.y}" r="${landingRadius}" fill="#7fc3d8" opacity="0.16" stroke="#5fa6bd" stroke-width="0.38"></circle>
+      <circle cx="${target.x}" cy="${target.y}" r="${Math.max(4, landingRadius * 0.28)}" fill="#fffefa" opacity="0.24" stroke="#273c32" stroke-width="0.28" stroke-dasharray="1.2 1.2"></circle>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 4}" fill="#a7df4e" opacity="0.22"></circle>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="url(#green-glow-${hole.number})" stroke="#76a96a" stroke-width="0.45"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.74" opacity="0.62"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#273c32" stroke-width="0.52" opacity="0.72"></circle>
       ${aimLine}
       ${lockPulse}
-      <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#141719" stroke-width="0.4" stroke-dasharray="2 2" opacity="0.6"></line>
-      ${play.lastShot ? `<line x1="${play.lastShot.start.x}" y1="${play.lastShot.start.y}" x2="${play.lastShot.final.x}" y2="${play.lastShot.final.y}" stroke="#fffefa" stroke-width="1.1" opacity="0.84"></line>` : ""}
-      <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="none" stroke="#141719" stroke-width="0.7" stroke-dasharray="1.5 1.5"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.3" fill="#141719"></circle>
-      <path d="M ${hole.pin.x} ${hole.pin.y} v -6 l 5 2 l -5 2" fill="#f26d5b" stroke="#141719" stroke-width="0.35"></path>
-      <circle cx="${hole.tee.x}" cy="${hole.tee.y}" r="2.5" fill="none" stroke="#141719" stroke-width="0.35" opacity="0.42"></circle>
+      <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#273c32" stroke-width="0.32" stroke-dasharray="2 2" opacity="0.36"></line>
+      ${play.lastShot ? `<line x1="${play.lastShot.start.x}" y1="${play.lastShot.start.y}" x2="${play.lastShot.final.x}" y2="${play.lastShot.final.y}" stroke="#fffefa" stroke-width="1.05" opacity="0.78"></line>` : ""}
+      <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="none" stroke="#273c32" stroke-width="0.52" stroke-dasharray="1.5 1.5"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.25" fill="#273c32"></circle>
+      <path d="M ${hole.pin.x} ${hole.pin.y} v -6 l 5 2 l -5 2" fill="#ee6e5b" stroke="#273c32" stroke-width="0.28"></path>
+      <circle cx="${hole.tee.x}" cy="${hole.tee.y}" r="2.5" fill="none" stroke="#273c32" stroke-width="0.32" opacity="0.38"></circle>
       ${ballMarker}
     </svg>
   `;
@@ -3474,6 +3641,7 @@ function startCurrentGolfHole(play) {
   play.powerWindow = null;
   play.shotPhase = "scouting";
   play.selectedClubId = recommendGolfClub(hole.distance);
+  play.targetMode = "pin";
   play.currentSurface = "tee";
   play.holeStrokes = 0;
   play.lastShot = null;
@@ -3562,6 +3730,7 @@ function aimGolfAtSafeTarget(play) {
   play.lockedAimAngle = null;
   play.powerWindow = null;
   play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, safe, hole));
+  play.targetMode = "safe";
   play.message = "Aiming at the widest fairway landing zone.";
 }
 
@@ -3572,6 +3741,7 @@ function aimGolfAtPin(play) {
   play.lockedAimAngle = null;
   play.powerWindow = null;
   play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, hole.pin, hole));
+  play.targetMode = "pin";
   play.message = "Aiming at the pin. Time it cleanly.";
 }
 
