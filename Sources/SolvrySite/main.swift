@@ -1301,10 +1301,10 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 0;
-  width: min(100%, 600px);
-  max-width: 600px;
-  height: min(646px, calc(100dvh - 122px));
-  min-height: 500px;
+  width: min(100%, 590px);
+  max-width: 590px;
+  height: min(600px, calc(100dvh - 104px));
+  min-height: 480px;
   margin: 0 auto;
   overflow: hidden;
   border: 2px solid #141719;
@@ -1322,15 +1322,15 @@ h2 {
   gap: 10px;
   align-items: center;
   flex: 0 0 auto;
-  min-height: 46px;
-  padding: 8px 14px;
+  min-height: 42px;
+  padding: 7px 13px;
   background: rgba(255, 254, 250, 0.74);
 }
 
 .golf-game-header strong {
   display: block;
   font-family: var(--display);
-  font-size: clamp(1.2rem, 2.6vw, 1.62rem);
+  font-size: clamp(1.12rem, 2.3vw, 1.46rem);
   line-height: 1;
   color: #121817;
   letter-spacing: 0;
@@ -1338,7 +1338,7 @@ h2 {
 
 .golf-game-header span {
   color: var(--muted);
-  font-size: clamp(0.72rem, 1vw, 0.86rem);
+  font-size: clamp(0.68rem, 0.95vw, 0.8rem);
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1346,8 +1346,8 @@ h2 {
 
 .golf-game-header .pill {
   justify-self: end;
-  min-width: 36px;
-  min-height: 34px;
+  min-width: 32px;
+  min-height: 30px;
   place-content: center;
   border-radius: 999px;
   background: rgba(255, 254, 250, 0.78);
@@ -1368,7 +1368,7 @@ h2 {
   display: grid;
   gap: 1px;
   min-width: 0;
-  padding: 5px 3px 4px;
+  padding: 4px 3px 3px;
   border-right: 1px solid rgba(39, 60, 50, 0.1);
   color: var(--muted);
   text-align: center;
@@ -1394,16 +1394,16 @@ h2 {
 }
 
 .golf-score-hole strong {
-  font-size: clamp(0.9rem, 1.8vw, 1.02rem);
+  font-size: clamp(0.84rem, 1.55vw, 0.96rem);
   line-height: 1;
 }
 
 .golf-score-hole span {
-  font-size: 0.7rem;
+  font-size: 0.64rem;
 }
 
 .golf-score-hole small {
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   opacity: 0.78;
 }
 
@@ -1484,9 +1484,9 @@ h2 {
 .golf-hud {
   position: absolute;
   z-index: 3;
-  top: 12px;
-  left: 14px;
-  right: 14px;
+  top: 10px;
+  left: 12px;
+  right: 12px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px 18px;
@@ -1512,13 +1512,13 @@ h2 {
 }
 
 .golf-hud .golf-stat span {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
 }
 
 .golf-hud .golf-stat strong {
   margin-top: 2px;
-  font-size: clamp(0.95rem, 1.8vw, 1.18rem);
+  font-size: clamp(0.88rem, 1.55vw, 1.08rem);
 }
 
 .golf-course-map {
@@ -1543,10 +1543,10 @@ h2 {
 .play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 6px;
+  gap: 5px;
   align-content: start;
   flex: 0 0 auto;
-  padding: 7px 12px 10px;
+  padding: 6px 11px 8px;
   border-radius: 0;
   border: 0;
   background:
@@ -1590,28 +1590,28 @@ h2 {
 
 .golf-club-section {
   display: grid;
-  gap: 3px;
+  gap: 0;
 }
 
 .club-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(54px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(7, minmax(50px, 1fr));
+  gap: 4px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  padding: 0 1px 3px;
+  padding: 0 1px 2px;
   scrollbar-width: thin;
 }
 
 .club-button {
   display: grid;
   gap: 2px;
-  min-height: 42px;
-  padding: 5px;
+  min-height: 38px;
+  padding: 4px;
   border: 1px solid rgba(39, 60, 50, 0.14);
-  border-radius: 14px;
+  border-radius: 11px;
   background: rgba(255, 254, 250, 0.7);
   color: var(--muted);
   font-weight: 850;
@@ -1689,7 +1689,7 @@ h2 {
 }
 
 .swing-stage {
-  min-height: 42px;
+  min-height: 38px;
   place-items: center;
   cursor: pointer;
 }
@@ -1697,10 +1697,10 @@ h2 {
 .swing-stage strong {
   display: grid;
   width: 100%;
-  min-height: 42px;
+  min-height: 38px;
   place-items: center;
   border: 2px solid rgba(8, 114, 85, 0.78);
-  border-radius: 10px;
+  border-radius: 9px;
   background: linear-gradient(180deg, #27834f, #167247);
   color: #fffefa;
   font-size: clamp(0.96rem, 2vw, 1.12rem);
@@ -1714,7 +1714,7 @@ h2 {
 }
 
 .shot-stage.locked {
-  min-height: 46px;
+  min-height: 38px;
   place-items: center;
   text-align: center;
 }
@@ -1723,8 +1723,8 @@ h2 {
   display: inline-grid;
   place-items: center;
   min-width: 118px;
-  min-height: 42px;
-  padding: 9px 14px;
+  min-height: 36px;
+  padding: 7px 12px;
   border: 1px solid rgba(8, 114, 85, 0.28);
   border-radius: 999px;
   background: rgba(232, 248, 238, 0.88);
@@ -1759,7 +1759,7 @@ h2 {
 
 .power-meter {
   position: relative;
-  height: 28px;
+  height: 24px;
   overflow: hidden;
   border: 1px solid rgba(39, 60, 50, 0.26);
   border-radius: 999px;
@@ -1779,8 +1779,8 @@ h2 {
   content: "";
   position: absolute;
   z-index: 1;
-  top: 5px;
-  bottom: 5px;
+  top: 4px;
+  bottom: 4px;
   left: calc(var(--green-start) * 1%);
   width: calc(var(--green-width) * 1%);
   border: 3px solid rgba(255, 254, 250, 0.98);
@@ -1808,7 +1808,7 @@ h2 {
   top: -4px;
   left: calc(var(--power-marker) * 1%);
   width: 8px;
-  height: 36px;
+  height: 32px;
   border-radius: 999px;
   background: var(--paper);
   box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.84), 0 0 18px rgba(255, 254, 250, 0.86);
@@ -1846,16 +1846,16 @@ h2 {
 .shot-summary {
   position: absolute;
   z-index: 3;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 2px;
   min-height: 0;
-  max-height: 58px;
+  max-height: 50px;
   margin: 0;
-  padding: 7px 10px;
+  padding: 6px 9px;
   border: 0;
   border-radius: 10px;
   background: rgba(255, 254, 250, 0.66);
@@ -1868,7 +1868,7 @@ h2 {
 
 .shot-summary small {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 900;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1886,7 +1886,7 @@ h2 {
 }
 
 .shot-summary strong {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1894,7 +1894,7 @@ h2 {
 .shot-summary em {
   margin-top: 0;
   color: #273c32;
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   font-weight: 900;
 }
 
@@ -2378,13 +2378,14 @@ label {
 }
 
 body.solvry-holes-focus .workspace {
-  grid-template-columns: minmax(200px, 240px) minmax(0, 640px) minmax(260px, 1fr);
+  grid-template-columns: minmax(200px, 240px) minmax(0, 620px) minmax(260px, 1fr);
   max-width: 1320px;
-  padding-block: 10px;
+  padding-block: 8px;
 }
 
 body.solvry-holes-focus .tracker-panel {
-  padding: 10px;
+  align-self: start;
+  padding: 6px 10px 10px;
 }
 
 body.solvry-holes-focus .section-head,
@@ -2397,12 +2398,24 @@ body.solvry-holes-focus .progress-days {
 
 body.solvry-holes-focus .play-surface {
   justify-items: center;
+  align-items: start;
 }
 
 body.solvry-holes-focus .solvry-game {
   display: block;
   width: 100%;
   margin-top: 0;
+  margin-bottom: 0;
+}
+
+body.solvry-holes-focus .daily-golf {
+  width: min(100%, 590px);
+  max-width: 590px;
+  height: min(598px, calc(100dvh - 102px));
+}
+
+body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
+  display: none;
 }
 
 @media (max-width: 1080px) {
@@ -2436,14 +2449,18 @@ body.solvry-holes-focus .solvry-game {
   body.solvry-holes-focus .workspace {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "rail"
       "tracker"
       "social"
       "answers";
   }
 
-  .game-rail {
+  .game-rail,
+  body.solvry-holes-focus .game-rail {
     position: static;
+  }
+
+  body.solvry-holes-focus .game-rail {
+    display: none;
   }
 
   .game-list {
@@ -2460,7 +2477,7 @@ body.solvry-holes-focus .solvry-game {
   body.solvry-holes-focus .daily-golf {
     width: 100%;
     max-width: 100%;
-    height: min(720px, calc(100dvh - 20px));
+    height: min(660px, calc(100dvh - 14px));
     border-radius: 0;
   }
 
@@ -2533,7 +2550,7 @@ body.solvry-holes-focus .solvry-game {
   }
 
   .club-grid {
-    grid-template-columns: repeat(7, 64px);
+    grid-template-columns: repeat(7, 58px);
   }
 
   .golf-course-map {
@@ -2957,6 +2974,16 @@ function render() {
   renderMetrics();
   renderScoreboards(activeGame);
   renderAnswers();
+  focusHolesViewport(activeGame);
+}
+
+function focusHolesViewport(activeGame) {
+  if (activeGame.id !== "solvry-holes" || elements.solvryGame.hidden) return;
+  window.requestAnimationFrame(() => {
+    const topbarHeight = document.querySelector(".topbar")?.getBoundingClientRect().height || 0;
+    const targetTop = elements.solvryGame.getBoundingClientRect().top + window.scrollY - topbarHeight - 6;
+    if (Math.abs(window.scrollY - targetTop) > 6) window.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+  });
 }
 
 function renderAccount() {
