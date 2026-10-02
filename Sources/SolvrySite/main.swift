@@ -1298,10 +1298,13 @@ h2 {
 }
 
 .daily-golf {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0;
-  width: min(100%, 750px);
-  max-width: 750px;
+  width: min(100%, 680px);
+  max-width: 680px;
+  height: min(760px, calc(100dvh - 96px));
+  min-height: 560px;
   margin: 0 auto;
   overflow: hidden;
   border: 2px solid #141719;
@@ -1316,17 +1319,18 @@ h2 {
 .golf-game-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  min-height: 64px;
-  padding: 14px clamp(16px, 3vw, 22px);
+  flex: 0 0 auto;
+  min-height: 52px;
+  padding: 10px clamp(14px, 2vw, 18px);
   background: rgba(255, 254, 250, 0.74);
 }
 
 .golf-game-header strong {
   display: block;
   font-family: var(--display);
-  font-size: clamp(1.55rem, 4vw, 2rem);
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
   line-height: 1;
   color: #121817;
   letter-spacing: 0;
@@ -1342,8 +1346,8 @@ h2 {
 
 .golf-game-header .pill {
   justify-self: end;
-  min-width: 42px;
-  min-height: 42px;
+  min-width: 36px;
+  min-height: 36px;
   place-content: center;
   border-radius: 999px;
   background: rgba(255, 254, 250, 0.78);
@@ -1353,6 +1357,7 @@ h2 {
 .golf-score-strip {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
+  flex: 0 0 auto;
   overflow: hidden;
   border-block: 1px solid rgba(39, 60, 50, 0.12);
   border-radius: 0;
@@ -1363,7 +1368,7 @@ h2 {
   display: grid;
   gap: 1px;
   min-width: 0;
-  padding: 9px 4px 8px;
+  padding: 6px 4px 5px;
   border-right: 1px solid rgba(39, 60, 50, 0.1);
   color: var(--muted);
   text-align: center;
@@ -1454,8 +1459,11 @@ h2 {
 
 .daily-golf-board {
   display: grid;
+  flex: 1 1 auto;
   grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 0;
+  min-height: 0;
 }
 
 .play-card.primary.golf-map-card,
@@ -1464,6 +1472,7 @@ h2 {
   display: grid;
   gap: 0;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
   padding: 0;
   border: 0;
@@ -1475,9 +1484,9 @@ h2 {
 .golf-hud {
   position: absolute;
   z-index: 3;
-  top: 16px;
-  left: 18px;
-  right: 18px;
+  top: 14px;
+  left: 16px;
+  right: 16px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px 18px;
@@ -1513,8 +1522,9 @@ h2 {
 }
 
 .golf-course-map {
+  display: block;
   width: 100%;
-  height: clamp(600px, 70vh, 690px);
+  height: 100%;
   min-height: 0;
   border: 0;
   border-radius: 0;
@@ -1533,9 +1543,10 @@ h2 {
 .play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   align-content: start;
-  padding: 12px 16px 18px;
+  flex: 0 0 auto;
+  padding: 8px 14px 12px;
   border-radius: 0;
   border: 0;
   background:
@@ -1579,26 +1590,26 @@ h2 {
 
 .golf-club-section {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .club-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(72px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(64px, 1fr));
+  gap: 6px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  padding: 0 1px 6px;
+  padding: 0 1px 4px;
   scrollbar-width: thin;
 }
 
 .club-button {
   display: grid;
-  gap: 5px;
-  min-height: 62px;
-  padding: 8px;
+  gap: 2px;
+  min-height: 46px;
+  padding: 6px;
   border: 1px solid rgba(39, 60, 50, 0.14);
   border-radius: 14px;
   background: rgba(255, 254, 250, 0.7);
@@ -1621,7 +1632,7 @@ h2 {
 }
 
 .club-button span {
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 
@@ -1670,7 +1681,7 @@ h2 {
 
 .shot-stage {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding-top: 0;
   border: 0;
   border-radius: 0;
@@ -1678,7 +1689,7 @@ h2 {
 }
 
 .swing-stage {
-  min-height: 70px;
+  min-height: 46px;
   place-items: center;
   cursor: pointer;
 }
@@ -1686,13 +1697,13 @@ h2 {
 .swing-stage strong {
   display: grid;
   width: 100%;
-  min-height: 58px;
+  min-height: 46px;
   place-items: center;
   border: 2px solid rgba(8, 114, 85, 0.78);
-  border-radius: 12px;
+  border-radius: 10px;
   background: linear-gradient(180deg, #27834f, #167247);
   color: #fffefa;
-  font-size: clamp(1rem, 2.3vw, 1.25rem);
+  font-size: clamp(0.96rem, 2vw, 1.12rem);
   letter-spacing: 0;
   text-transform: none;
   box-shadow: 0 14px 26px rgba(8, 114, 85, 0.18);
@@ -1703,7 +1714,7 @@ h2 {
 }
 
 .shot-stage.locked {
-  min-height: 76px;
+  min-height: 54px;
   place-items: center;
   text-align: center;
 }
@@ -1720,7 +1731,7 @@ h2 {
   animation: golfLockPulse 0.48s ease-out;
 }
 
-.shot-stage strong {
+.shot-stage:not(.swing-stage) > strong {
   display: block;
   font-size: 0.82rem;
   letter-spacing: 0.12em;
@@ -1743,12 +1754,12 @@ h2 {
 }
 
 .strategy-actions .play-button {
-  min-height: 46px;
+  min-height: 44px;
 }
 
 .power-meter {
   position: relative;
-  height: 38px;
+  height: 34px;
   overflow: hidden;
   border: 1px solid rgba(39, 60, 50, 0.26);
   border-radius: 999px;
@@ -1797,7 +1808,7 @@ h2 {
   top: -4px;
   left: calc(var(--power-marker) * 1%);
   width: 8px;
-  height: 50px;
+  height: 44px;
   border-radius: 999px;
   background: var(--paper);
   box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.84), 0 0 18px rgba(255, 254, 250, 0.86);
@@ -1883,16 +1894,6 @@ h2 {
   color: #273c32;
   font-size: 1.1rem;
   font-weight: 900;
-}
-
-.swing-stage {
-  min-height: 58px;
-  align-items: center;
-}
-
-.swing-stage strong {
-  justify-self: center;
-  color: rgba(39, 60, 50, 0.68);
 }
 
 .scorecard-table {
@@ -2444,6 +2445,7 @@ body.solvry-holes-focus .solvry-game {
   body.solvry-holes-focus .daily-golf {
     width: 100%;
     max-width: 100%;
+    height: min(720px, calc(100dvh - 20px));
     border-radius: 0;
   }
 
@@ -2516,11 +2518,11 @@ body.solvry-holes-focus .solvry-game {
   }
 
   .club-grid {
-    grid-template-columns: repeat(7, 72px);
+    grid-template-columns: repeat(7, 64px);
   }
 
   .golf-course-map {
-    height: clamp(560px, 72vh, 680px);
+    height: 100%;
   }
 
   .shot-summary {
@@ -2567,7 +2569,7 @@ body.solvry-holes-focus .solvry-game {
   }
 
   .golf-course-map {
-    height: 520px;
+    height: 100%;
   }
 
   .golf-score-hole {
@@ -2880,12 +2882,33 @@ elements.resetButton.addEventListener("click", () => {
   render();
 });
 
+let solvryPointerStart = null;
+let ignoreNextSolvryTap = false;
+
+elements.solvryGame.addEventListener("pointerdown", (event) => {
+  solvryPointerStart = { x: event.clientX, y: event.clientY };
+});
+
+elements.solvryGame.addEventListener("pointerup", (event) => {
+  if (!solvryPointerStart) return;
+  const moved = Math.hypot(event.clientX - solvryPointerStart.x, event.clientY - solvryPointerStart.y);
+  solvryPointerStart = null;
+  if (moved > 10) {
+    ignoreNextSolvryTap = true;
+    window.setTimeout(() => {
+      ignoreNextSolvryTap = false;
+    }, 120);
+  }
+});
+
 elements.solvryGame.addEventListener("click", (event) => {
   const actionButton = event.target.closest("[data-play-action]");
   if (actionButton) {
     handleSolvryPlayAction(actionButton.dataset.playAction);
     return;
   }
+
+  if (ignoreNextSolvryTap) return;
 
   const game = getActiveGame();
   if (!isPlayableSolvryGame(game)) return;
@@ -3004,7 +3027,7 @@ function renderHolesBoard(play) {
   const displayAimAngle = phase === "aiming" ? getActiveAimAngle(play) : play.lockedAimAngle ?? play.aimAngle;
   const target = getGolfTargetPointForAngle(play, hole, selectedClub, displayAimAngle);
   const scoreLabel = formatRelativeScore(getGolfRelativeScore(play));
-  const showScoutingControls = phase === "scouting";
+  const showClubControls = phase !== "ball-flight" && phase !== "power-locked";
 
   return `
     <div class="daily-golf" data-shot-phase="${escapeHtml(phase)}">
@@ -3023,11 +3046,11 @@ function renderHolesBoard(play) {
           </div>
         </section>
         <section class="play-card golf-controls">
-          ${showScoutingControls ? `<div class="golf-club-section">
+          ${showClubControls ? `<div class="golf-club-section">
             <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
             <div class="club-grid">
               ${GOLF_CLUBS.map((club) => `
-                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${phase === "ball-flight" ? "disabled" : ""}>
+                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${phase !== "scouting" ? "disabled" : ""}>
                   <strong>${club.label}</strong>
                   <span>${club.max}</span>
                 </button>
@@ -3537,6 +3560,12 @@ function playGolfSwing(play, game, powerPosition) {
   const remaining = Math.round(yardsBetween(final, hole.pin, hole));
   play.shotPhase = "scouting";
   play.powerWindow = null;
+  play.lockedAimAngle = null;
+  play.lockedPower = null;
+  play.aimAngle = angleToPoint(final, hole.pin);
+  play.aimCenterAngle = play.aimAngle;
+  play.selectedClubId = recommendGolfClub(remaining);
+  play.targetMode = "pin";
   play.message = penalty
     ? `WATER +1. ${remaining} yds left from ${surfaceLabel(finalSurface).toLowerCase()}.`
     : `${quality.label.toUpperCase()} · ${surfaceLabel(finalSurface).toUpperCase()} · ${remaining} yds left.`;
