@@ -1301,10 +1301,10 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 0;
-  width: min(100%, 680px);
-  max-width: 680px;
-  height: min(760px, calc(100dvh - 96px));
-  min-height: 560px;
+  width: min(100%, 600px);
+  max-width: 600px;
+  height: min(646px, calc(100dvh - 122px));
+  min-height: 500px;
   margin: 0 auto;
   overflow: hidden;
   border: 2px solid #141719;
@@ -1322,15 +1322,15 @@ h2 {
   gap: 10px;
   align-items: center;
   flex: 0 0 auto;
-  min-height: 52px;
-  padding: 10px clamp(14px, 2vw, 18px);
+  min-height: 46px;
+  padding: 8px 14px;
   background: rgba(255, 254, 250, 0.74);
 }
 
 .golf-game-header strong {
   display: block;
   font-family: var(--display);
-  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-size: clamp(1.2rem, 2.6vw, 1.62rem);
   line-height: 1;
   color: #121817;
   letter-spacing: 0;
@@ -1347,7 +1347,7 @@ h2 {
 .golf-game-header .pill {
   justify-self: end;
   min-width: 36px;
-  min-height: 36px;
+  min-height: 34px;
   place-content: center;
   border-radius: 999px;
   background: rgba(255, 254, 250, 0.78);
@@ -1368,7 +1368,7 @@ h2 {
   display: grid;
   gap: 1px;
   min-width: 0;
-  padding: 6px 4px 5px;
+  padding: 5px 3px 4px;
   border-right: 1px solid rgba(39, 60, 50, 0.1);
   color: var(--muted);
   text-align: center;
@@ -1394,16 +1394,16 @@ h2 {
 }
 
 .golf-score-hole strong {
-  font-size: clamp(0.95rem, 2vw, 1.12rem);
+  font-size: clamp(0.9rem, 1.8vw, 1.02rem);
   line-height: 1;
 }
 
 .golf-score-hole span {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 
 .golf-score-hole small {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   opacity: 0.78;
 }
 
@@ -1484,9 +1484,9 @@ h2 {
 .golf-hud {
   position: absolute;
   z-index: 3;
-  top: 14px;
-  left: 16px;
-  right: 16px;
+  top: 12px;
+  left: 14px;
+  right: 14px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px 18px;
@@ -1518,7 +1518,7 @@ h2 {
 
 .golf-hud .golf-stat strong {
   margin-top: 2px;
-  font-size: clamp(1rem, 2vw, 1.28rem);
+  font-size: clamp(0.95rem, 1.8vw, 1.18rem);
 }
 
 .golf-course-map {
@@ -1543,10 +1543,10 @@ h2 {
 .play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   align-content: start;
   flex: 0 0 auto;
-  padding: 8px 14px 12px;
+  padding: 7px 12px 10px;
   border-radius: 0;
   border: 0;
   background:
@@ -1590,26 +1590,26 @@ h2 {
 
 .golf-club-section {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .club-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(64px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(7, minmax(54px, 1fr));
+  gap: 5px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  padding: 0 1px 4px;
+  padding: 0 1px 3px;
   scrollbar-width: thin;
 }
 
 .club-button {
   display: grid;
   gap: 2px;
-  min-height: 46px;
-  padding: 6px;
+  min-height: 42px;
+  padding: 5px;
   border: 1px solid rgba(39, 60, 50, 0.14);
   border-radius: 14px;
   background: rgba(255, 254, 250, 0.7);
@@ -1632,7 +1632,7 @@ h2 {
 }
 
 .club-button span {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 800;
 }
 
@@ -1681,7 +1681,7 @@ h2 {
 
 .shot-stage {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   padding-top: 0;
   border: 0;
   border-radius: 0;
@@ -1689,7 +1689,7 @@ h2 {
 }
 
 .swing-stage {
-  min-height: 46px;
+  min-height: 42px;
   place-items: center;
   cursor: pointer;
 }
@@ -1697,7 +1697,7 @@ h2 {
 .swing-stage strong {
   display: grid;
   width: 100%;
-  min-height: 46px;
+  min-height: 42px;
   place-items: center;
   border: 2px solid rgba(8, 114, 85, 0.78);
   border-radius: 10px;
@@ -1714,7 +1714,7 @@ h2 {
 }
 
 .shot-stage.locked {
-  min-height: 54px;
+  min-height: 46px;
   place-items: center;
   text-align: center;
 }
@@ -1759,7 +1759,7 @@ h2 {
 
 .power-meter {
   position: relative;
-  height: 34px;
+  height: 28px;
   overflow: hidden;
   border: 1px solid rgba(39, 60, 50, 0.26);
   border-radius: 999px;
@@ -1808,7 +1808,7 @@ h2 {
   top: -4px;
   left: calc(var(--power-marker) * 1%);
   width: 8px;
-  height: 44px;
+  height: 36px;
   border-radius: 999px;
   background: var(--paper);
   box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.84), 0 0 18px rgba(255, 254, 250, 0.86);
@@ -1846,15 +1846,16 @@ h2 {
 .shot-summary {
   position: absolute;
   z-index: 3;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 2px;
   min-height: 0;
+  max-height: 58px;
   margin: 0;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border: 0;
   border-radius: 10px;
   background: rgba(255, 254, 250, 0.66);
@@ -1867,6 +1868,7 @@ h2 {
 
 .shot-summary small {
   color: var(--muted);
+  font-size: 0.72rem;
   font-weight: 900;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1884,15 +1886,15 @@ h2 {
 }
 
 .shot-summary strong {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .shot-summary em {
-  margin-top: 2px;
+  margin-top: 0;
   color: #273c32;
-  font-size: 1.1rem;
+  font-size: 0.92rem;
   font-weight: 900;
 }
 
@@ -2376,8 +2378,21 @@ label {
 }
 
 body.solvry-holes-focus .workspace {
-  grid-template-columns: minmax(200px, 240px) minmax(0, 760px) minmax(260px, 1fr);
-  max-width: 1420px;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 640px) minmax(260px, 1fr);
+  max-width: 1320px;
+  padding-block: 10px;
+}
+
+body.solvry-holes-focus .tracker-panel {
+  padding: 10px;
+}
+
+body.solvry-holes-focus .section-head,
+body.solvry-holes-focus .dashboard-strip,
+body.solvry-holes-focus .current-result,
+body.solvry-holes-focus .metrics,
+body.solvry-holes-focus .progress-days {
+  display: none;
 }
 
 body.solvry-holes-focus .play-surface {
@@ -2387,7 +2402,7 @@ body.solvry-holes-focus .play-surface {
 body.solvry-holes-focus .solvry-game {
   display: block;
   width: 100%;
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 @media (max-width: 1080px) {
@@ -3103,10 +3118,6 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
 
   return `
     <div class="shot-stage">
-      <div class="strategy-actions" role="group" aria-label="Target strategy">
-        <button class="play-button${play.targetMode === "safe" ? " active" : ""}" type="button" data-play-action="target-safe">Aim safe</button>
-        <button class="play-button${play.targetMode === "pin" ? " active" : ""}" type="button" data-play-action="target-pin">Attack pin</button>
-      </div>
       <div class="play-actions">
         <button class="play-button main tap-panel" type="button" data-play-action="take-shot">Take shot</button>
       </div>
