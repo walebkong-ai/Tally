@@ -2649,7 +2649,7 @@ const SCORING_STYLES = {
 };
 
 const GOLF_GENERATION_VERSION = 3;
-const GOLF_GAME_VERSION = 4;
+const GOLF_GAME_VERSION = 5;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 238, max: 278, dispersion: 9.5, rollout: 28 },
   { id: "wood", label: "3W", name: "Wood", carry: 214, max: 243, dispersion: 8.2, rollout: 23 },
@@ -3448,8 +3448,10 @@ function handleHolesAction(play, action, game) {
 
 function startGolfShot(play) {
   const hole = getCurrentGolfHole(play);
+  const pinAimAngle = angleToPoint(play.ball, hole.pin);
+  play.aimAngle = pinAimAngle;
+  play.aimCenterAngle = pinAimAngle;
   play.shotPhase = "aiming";
-  play.aimCenterAngle = play.aimAngle;
   play.aimStartedAt = Date.now();
   play.lockedAimAngle = null;
   play.lockedPower = null;
@@ -3641,6 +3643,9 @@ function getSolvryPlayKey(gameId) {
 
 function createHolesPlay(gameId) {
   const course = generateDailyGolfCourse(state.selectedDate, GOLF_GENERATION_VERSION);
+  const firstHole = course.holes[0];
+  const firstAimAngle = angleToPoint(firstHole.tee, firstHole.pin);
+  const firstDistance = yardsBetween(firstHole.tee, firstHole.pin, firstHole);
   return {
     version: GOLF_GAME_VERSION,
     gameId,
@@ -3656,15 +3661,15 @@ function createHolesPlay(gameId) {
     course,
     holeIndex: 0,
     showHoleCard: false,
-    ball: { ...course.holes[0].tee },
-    aimAngle: 0,
-    aimCenterAngle: 0,
+    ball: { ...firstHole.tee },
+    aimAngle: firstAimAngle,
+    aimCenterAngle: firstAimAngle,
     lockedAimAngle: null,
     lockedPower: null,
     powerWindow: null,
     shotPhase: "scouting",
     lastTapAt: 0,
-    selectedClubId: "driver",
+    selectedClubId: recommendGolfClub(firstDistance),
     currentSurface: "tee",
     totalStrokes: 0,
     holeStrokes: 0,
@@ -3729,6 +3734,8 @@ function generateGolfHole(number, par, random, env) {
   const windDirection = Math.round(random() * 360);
   const windSpeed = Math.round(3 + random() * (number > 6 ? 12 : 8));
   const primaryHazard = number === 9 ? "Signature water carry" : water.length ? "Water crossing" : bunkers.length ? "Greenside bunkers" : "Tree line";
+  const teePosition = { x: teeX, y: 92 };
+  const pinPosition = { x: greenX + (random() - 0.5) * 4, y: 10 + random() * 5 };
 
   return {
     id: `h${number}`,
@@ -3737,8 +3744,10 @@ function generateGolfHole(number, par, random, env) {
     par,
     distance,
     yardsPerUnit: distance / 82,
-    tee: { x: teeX, y: 92 },
-    pin: { x: greenX + (random() - 0.5) * 4, y: 10 + random() * 5 },
+    tee: teePosition,
+    pin: pinPosition,
+    teePosition,
+    pinPosition,
     green: { x: greenX, y: 13.5, r: greenRadius },
     fairway: { teeX, doglegX, greenX, width },
     water,
