@@ -1300,33 +1300,34 @@ h2 {
 .daily-golf {
   display: grid;
   gap: 0;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
+  width: min(100%, 750px);
+  max-width: 750px;
+  margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgba(39, 60, 50, 0.2);
-  border-radius: 22px;
+  border: 2px solid #141719;
+  border-radius: 18px;
   background:
     radial-gradient(circle at 14% 0%, rgba(189, 238, 226, 0.36), transparent 34%),
     linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(246, 242, 230, 0.94)),
     var(--panel);
-  box-shadow: 0 28px 70px rgba(39, 60, 50, 0.14);
+  box-shadow: 0 20px 55px rgba(39, 60, 50, 0.1);
 }
 
 .golf-game-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 18px;
-  align-items: end;
-  padding: clamp(20px, 4vw, 34px) clamp(20px, 4vw, 38px) 18px;
+  gap: 14px;
+  align-items: center;
+  min-height: 64px;
+  padding: 14px clamp(16px, 3vw, 22px);
   background: rgba(255, 254, 250, 0.74);
 }
 
 .golf-game-header strong {
   display: block;
   font-family: var(--display);
-  font-size: clamp(2.1rem, 5vw, 3.65rem);
-  line-height: 0.95;
+  font-size: clamp(1.55rem, 4vw, 2rem);
+  line-height: 1;
   color: #121817;
   letter-spacing: 0;
 }
@@ -1340,8 +1341,9 @@ h2 {
 }
 
 .golf-game-header .pill {
-  min-width: 50px;
-  min-height: 50px;
+  justify-self: end;
+  min-width: 42px;
+  min-height: 42px;
   place-content: center;
   border-radius: 999px;
   background: rgba(255, 254, 250, 0.78);
@@ -1361,7 +1363,7 @@ h2 {
   display: grid;
   gap: 1px;
   min-width: 0;
-  padding: 12px 4px 10px;
+  padding: 9px 4px 8px;
   border-right: 1px solid rgba(39, 60, 50, 0.1);
   color: var(--muted);
   text-align: center;
@@ -1387,7 +1389,7 @@ h2 {
 }
 
 .golf-score-hole strong {
-  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-size: clamp(0.95rem, 2vw, 1.12rem);
   line-height: 1;
 }
 
@@ -1462,7 +1464,8 @@ h2 {
   display: grid;
   gap: 0;
   min-width: 0;
-  padding: clamp(14px, 2vw, 18px);
+  overflow: hidden;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background:
@@ -1472,33 +1475,49 @@ h2 {
 .golf-hud {
   position: absolute;
   z-index: 3;
-  top: clamp(24px, 4vw, 34px);
-  left: clamp(24px, 4vw, 34px);
-  right: clamp(24px, 4vw, 34px);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  top: 16px;
+  left: 18px;
+  right: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 18px;
   padding: 0;
   background: transparent;
   pointer-events: none;
 }
 
 .golf-hud .golf-stat {
-  min-width: min(128px, calc(50% - 5px));
+  min-width: 0;
   min-height: 0;
-  padding: 10px 12px;
-  border-color: rgba(39, 60, 50, 0.1);
-  background: rgba(255, 254, 250, 0.62);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 12px 24px rgba(39, 60, 50, 0.08);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-shadow: 0 1px 10px rgba(255, 254, 250, 0.88);
+}
+
+.golf-hud .golf-stat:nth-child(2),
+.golf-hud .golf-stat:nth-child(4) {
+  text-align: right;
+}
+
+.golf-hud .golf-stat span {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+}
+
+.golf-hud .golf-stat strong {
+  margin-top: 2px;
+  font-size: clamp(1rem, 2vw, 1.28rem);
 }
 
 .golf-course-map {
   width: 100%;
-  height: clamp(500px, 68vh, 720px);
+  height: clamp(600px, 70vh, 690px);
   min-height: 0;
   border: 0;
-  border-radius: 20px;
+  border-radius: 0;
   background: #dfe9d5;
   box-shadow:
     inset 0 0 110px rgba(39, 60, 50, 0.16),
@@ -1514,9 +1533,9 @@ h2 {
 .play-card.golf-controls,
 .golf-controls {
   display: grid;
-  gap: 22px;
+  gap: 12px;
   align-content: start;
-  padding: clamp(22px, 4vw, 32px);
+  padding: 12px 16px 18px;
   border-radius: 0;
   border: 0;
   background:
@@ -1528,8 +1547,7 @@ h2 {
 }
 
 .golf-shot-id {
-  display: grid;
-  gap: 10px;
+  display: none;
 }
 
 .golf-shot-id h3 {
@@ -1545,7 +1563,7 @@ h2 {
 }
 
 .golf-facts {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
@@ -1561,26 +1579,26 @@ h2 {
 
 .golf-club-section {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .club-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(72px, 1fr));
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  padding: 2px 2px 8px;
+  padding: 0 1px 6px;
   scrollbar-width: thin;
 }
 
 .club-button {
   display: grid;
   gap: 5px;
-  min-height: 66px;
-  padding: 10px 8px;
+  min-height: 62px;
+  padding: 8px;
   border: 1px solid rgba(39, 60, 50, 0.14);
   border-radius: 14px;
   background: rgba(255, 254, 250, 0.7);
@@ -1652,15 +1670,40 @@ h2 {
 
 .shot-stage {
   display: grid;
-  gap: 14px;
-  padding-top: 4px;
+  gap: 10px;
+  padding-top: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
+.swing-stage {
+  min-height: 70px;
+  place-items: center;
+  cursor: pointer;
+}
+
+.swing-stage strong {
+  display: grid;
+  width: 100%;
+  min-height: 58px;
+  place-items: center;
+  border: 2px solid rgba(8, 114, 85, 0.78);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #27834f, #167247);
+  color: #fffefa;
+  font-size: clamp(1rem, 2.3vw, 1.25rem);
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: 0 14px 26px rgba(8, 114, 85, 0.18);
+}
+
+.swing-stage .power-meter + strong {
+  margin-top: 2px;
+}
+
 .shot-stage.locked {
-  min-height: 108px;
+  min-height: 76px;
   place-items: center;
   text-align: center;
 }
@@ -1679,8 +1722,9 @@ h2 {
 
 .shot-stage strong {
   display: block;
-  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
-  letter-spacing: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #121817;
 }
 
@@ -1695,11 +1739,11 @@ h2 {
 .strategy-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .strategy-actions .play-button {
-  min-height: 52px;
+  min-height: 46px;
 }
 
 .power-meter {
@@ -1775,21 +1819,6 @@ h2 {
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 167, 122, 0); }
 }
 
-@media (min-width: 1360px) {
-  .daily-golf-board {
-    grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.9fr);
-  }
-
-  .play-card.golf-controls,
-  .golf-controls {
-    border-left: 1px solid rgba(39, 60, 50, 0.12);
-  }
-
-  .golf-course-map {
-    height: clamp(560px, 72vh, 760px);
-  }
-}
-
 .tap-panel {
   border-color: rgba(6, 70, 50, 0.95);
   background:
@@ -1806,19 +1835,18 @@ h2 {
 .shot-summary {
   position: absolute;
   z-index: 3;
-  left: clamp(24px, 4vw, 34px);
-  right: clamp(24px, 4vw, 34px);
-  bottom: clamp(24px, 4vw, 34px);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
   min-height: 0;
   margin: 0;
-  padding: 14px 16px;
-  border: 1px solid rgba(39, 60, 50, 0.12);
-  border-radius: 18px;
-  background: rgba(255, 254, 250, 0.74);
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 254, 250, 0.66);
   backdrop-filter: blur(12px);
   color: var(--ink);
   font-weight: 850;
@@ -1836,6 +1864,35 @@ h2 {
 
 .shot-summary span {
   min-width: 0;
+}
+
+.shot-summary strong,
+.shot-summary em {
+  display: block;
+  font-style: normal;
+}
+
+.shot-summary strong {
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.shot-summary em {
+  margin-top: 2px;
+  color: #273c32;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.swing-stage {
+  min-height: 58px;
+  align-items: center;
+}
+
+.swing-stage strong {
+  justify-self: center;
+  color: rgba(39, 60, 50, 0.68);
 }
 
 .scorecard-table {
@@ -2317,6 +2374,60 @@ label {
   background: conic-gradient(from 45deg, #4285f4, #34a853, #fbbc05, #ea4335, #4285f4);
 }
 
+body.solvry-holes-focus .topbar {
+  display: none;
+}
+
+body.solvry-holes-focus {
+  background:
+    linear-gradient(135deg, rgba(20, 23, 25, 0.035) 25%, transparent 25%) 0 0 / 28px 28px,
+    linear-gradient(135deg, transparent 75%, rgba(20, 23, 25, 0.035) 75%) 0 0 / 28px 28px,
+    #fbfaf4;
+}
+
+body.solvry-holes-focus .app-shell {
+  max-width: none;
+  padding: clamp(10px, 2vw, 22px);
+}
+
+body.solvry-holes-focus .workspace {
+  display: block;
+  max-width: 750px;
+  margin: 0 auto;
+  padding: clamp(8px, 2vw, 18px);
+}
+
+body.solvry-holes-focus .game-rail,
+body.solvry-holes-focus .section-head,
+body.solvry-holes-focus .dashboard-strip,
+body.solvry-holes-focus .current-result,
+body.solvry-holes-focus .entry-form,
+body.solvry-holes-focus .letter-board,
+body.solvry-holes-focus .import-surface,
+body.solvry-holes-focus .metrics,
+body.solvry-holes-focus .progress-days,
+body.solvry-holes-focus .social-panel,
+body.solvry-holes-focus .answer-panel {
+  display: none;
+}
+
+body.solvry-holes-focus .tracker-panel,
+body.solvry-holes-focus .play-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.solvry-holes-focus .play-surface {
+  margin: 0;
+}
+
+body.solvry-holes-focus .solvry-game {
+  display: block;
+}
+
 @media (max-width: 1080px) {
   .workspace {
     grid-template-columns: 210px 1fr;
@@ -2347,6 +2458,17 @@ label {
 }
 
 @media (max-width: 780px) {
+  body.solvry-holes-focus .workspace {
+    max-width: none;
+    padding: 0;
+  }
+
+  body.solvry-holes-focus .daily-golf {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
   .topbar {
     position: static;
     grid-template-columns: 1fr;
@@ -2399,16 +2521,16 @@ label {
   }
 
   .golf-hud {
-    position: static;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    order: 0;
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .golf-hud .golf-stat {
     min-width: 0;
-    padding: 8px 10px;
+    padding: 0;
   }
 
   .golf-hud .golf-stat strong {
@@ -2420,14 +2542,14 @@ label {
   }
 
   .golf-course-map {
-    height: clamp(390px, 56vh, 500px);
+    height: clamp(560px, 72vh, 680px);
   }
 
   .shot-summary {
-    position: static;
-    align-items: flex-start;
-    flex-direction: column;
-    order: 2;
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
   }
 
   .dashboard-strip {
@@ -2458,11 +2580,11 @@ label {
   }
 
   .daily-golf {
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .golf-game-header {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
   }
 
@@ -2800,6 +2922,7 @@ function render() {
   const myEntry = gameEntries.you;
   const friendEntries = state.friends.filter((friend) => gameEntries[friend.id]);
 
+  document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
@@ -2912,27 +3035,16 @@ function renderHolesBoard(play) {
       <div class="daily-golf-board">
         <section class="play-card primary golf-map-card">
           <div class="golf-hud">
-            <div class="golf-stat"><span>Hole</span><strong>${hole.number} / 9</strong></div>
-            <div class="golf-stat"><span>Score</span><strong>${scoreLabel}</strong></div>
-            <div class="golf-stat"><span>To pin</span><strong>${remaining} yds</strong></div>
+            <div class="golf-stat"><span>Hole ${hole.number} · Par ${hole.par}</span><strong>${hole.distance} yds</strong></div>
             <div class="golf-stat"><span>Wind</span><strong>${hole.wind.speed} mph ${windArrow(hole.wind.direction)}</strong></div>
           </div>
           ${renderGolfCourseSvg(play, hole, target, displayAimAngle, phase)}
           <div class="shot-summary">
-            <span>${escapeHtml(play.message)}</span>
-            ${play.lastShot ? `<small>${escapeHtml(play.lastShot.summary)}</small>` : ""}
+            <span><strong>${surfaceLabel(play.currentSurface)} · shot ${play.holeStrokes + 1}</strong><em>${remaining} yds to pin</em></span>
+            <small>${escapeHtml(play.lastShot ? play.lastShot.summary : play.message)}</small>
           </div>
         </section>
         <section class="play-card golf-controls">
-          <div class="play-topline golf-shot-id">
-            <h3>${escapeHtml(hole.name)}</h3>
-            <span class="pill">${surfaceLabel(play.currentSurface)} · shot ${play.holeStrokes + 1}</span>
-          </div>
-          ${showScoutingControls ? `<div class="golf-facts">
-            <div class="golf-stat"><span>Par</span><strong>${hole.par}</strong></div>
-            <div class="golf-stat"><span>Length</span><strong>${hole.distance} yds</strong></div>
-            <div class="golf-stat hazard-stat"><span>Hazard</span><strong>${escapeHtml(hole.primaryHazard)}</strong></div>
-          </div>` : ""}
           ${showScoutingControls ? `<div class="golf-club-section">
             <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
             <div class="club-grid">
@@ -2954,10 +3066,8 @@ function renderHolesBoard(play) {
 function renderGolfShotControls(play, hole, selectedClub, phase) {
   if (phase === "aiming") {
     return `
-      <div class="shot-stage">
-        <strong>Step 1 of 2 - Aim</strong>
-        <p>The line moves automatically. Tap when it points where you want.</p>
-        <button class="play-button main tap-panel" type="button" data-play-action="lock-aim">Lock aim</button>
+      <div class="shot-stage swing-stage">
+        <strong>Tap to lock aim</strong>
       </div>
     `;
   }
@@ -2974,11 +3084,9 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
   if (phase === "power") {
     const window = getPowerWindow(play, hole, selectedClub);
     return `
-      <div class="shot-stage">
-        <strong>Step 2 of 2 - Power</strong>
-        <p>Tap when the marker reaches the ideal zone.</p>
+      <div class="shot-stage swing-stage">
         ${renderGolfPowerMeter(window, true)}
-        <button class="play-button main tap-panel" type="button" data-play-action="lock-power">Lock power</button>
+        <strong>Tap to lock power</strong>
       </div>
     `;
   }
@@ -2994,8 +3102,6 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
 
   return `
     <div class="shot-stage">
-      <strong>Scout the shot</strong>
-      <p>Choose a club or target, then start the two-tap swing.</p>
       <div class="strategy-actions" role="group" aria-label="Target strategy">
         <button class="play-button${play.targetMode === "safe" ? " active" : ""}" type="button" data-play-action="target-safe">Aim safe</button>
         <button class="play-button${play.targetMode === "pin" ? " active" : ""}" type="button" data-play-action="target-pin">Attack pin</button>
