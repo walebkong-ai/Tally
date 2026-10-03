@@ -3361,7 +3361,7 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const lineLength = Math.min(42, visibleLineLength, Math.max(14, distance(ball, target)));
   const lineEnd = { x: ball.x, y: ball.y - lineLength };
   const aimLine = phase === "aiming"
-    ? `<g class="golf-aim-layer" transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y}" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`
+    ? `<g class="golf-aim-layer" transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle} ${ball.x} ${ball.y}" keyTimes="0;0.25;0.5;0.75;1" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`
     : `<g class="golf-aim-layer"><line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${target.x}" cy="${target.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${target.x}" cy="${target.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`;
   const lockPulse = phase === "aim-locked"
     ? `<circle cx="${target.x}" cy="${target.y}" r="2.2" fill="#fffefa" stroke="#b12a1c" stroke-width="0.75" opacity="0.8"><animate attributeName="r" values="2.2;5.4;2.6" dur="0.5s" fill="freeze"></animate><animate attributeName="opacity" values="0.8;0.18;0" dur="0.5s" fill="freeze"></animate></circle>`
@@ -3625,9 +3625,7 @@ function handleHolesAction(play, action, game) {
 
 function startGolfShot(play) {
   const hole = getCurrentGolfHole(play);
-  const pinAimAngle = angleToPoint(play.ball, hole.pin);
-  play.aimAngle = pinAimAngle;
-  play.aimCenterAngle = pinAimAngle;
+  setGolfAimCenterToPin(play, hole);
   play.shotPhase = "aiming";
   play.aimStartedAt = Date.now();
   play.lockedAimAngle = null;
@@ -3635,6 +3633,12 @@ function startGolfShot(play) {
   play.powerWindow = null;
   play.lastTapAt = Date.now();
   play.message = "Step 1 of 2: tap to lock aim.";
+}
+
+function setGolfAimCenterToPin(play, hole = getCurrentGolfHole(play)) {
+  const pinAimAngle = angleToPoint(play.ball, hole.pin);
+  play.aimAngle = pinAimAngle;
+  play.aimCenterAngle = pinAimAngle;
 }
 
 function lockGolfAim(play, game) {
@@ -3752,8 +3756,7 @@ function playGolfSwing(play, game, powerPosition) {
   play.powerWindow = null;
   play.lockedAimAngle = null;
   play.lockedPower = null;
-  play.aimAngle = angleToPoint(final, hole.pin);
-  play.aimCenterAngle = play.aimAngle;
+  setGolfAimCenterToPin(play, hole);
   play.selectedClubId = recommendGolfClub(remaining);
   play.targetMode = "pin";
   play.message = penalty
@@ -3944,8 +3947,7 @@ function startCurrentGolfHole(play) {
   const hole = getCurrentGolfHole(play);
   play.showHoleCard = false;
   play.ball = { ...hole.tee };
-  play.aimAngle = angleToPoint(hole.tee, hole.pin);
-  play.aimCenterAngle = play.aimAngle;
+  setGolfAimCenterToPin(play, hole);
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
@@ -4024,8 +4026,7 @@ function finishGolfHole(play, game, hole, result, message) {
   play.holeStrokes = 0;
   play.currentSurface = "tee";
   play.selectedClubId = recommendGolfClub(nextHole.distance);
-  play.aimAngle = angleToPoint(nextHole.tee, nextHole.pin);
-  play.aimCenterAngle = play.aimAngle;
+  setGolfAimCenterToPin(play, nextHole);
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
@@ -4046,8 +4047,7 @@ function aimGolfAtSafeTarget(play) {
 
 function aimGolfAtPin(play) {
   const hole = getCurrentGolfHole(play);
-  play.aimAngle = angleToPoint(play.ball, hole.pin);
-  play.aimCenterAngle = play.aimAngle;
+  setGolfAimCenterToPin(play, hole);
   play.lockedAimAngle = null;
   play.powerWindow = null;
   play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, hole.pin, hole));
@@ -4112,7 +4112,7 @@ function getActiveAimAngle(play) {
 function getAimSweepRange(play, hole) {
   const club = getGolfClub(play.selectedClubId);
   const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
-  return clamp(16 + club.dispersion * 0.9 + (lie.accuracy - 1) * 8 + hole.wind.speed * 0.25, 18, 34);
+  return clamp(13 + club.dispersion * 0.55 + (lie.accuracy - 1) * 5 + hole.wind.speed * 0.18, 15, 25);
 }
 
 function getAimSweepDuration(play, hole) {
