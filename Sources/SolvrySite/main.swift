@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
   </head>
   <body>
     <div class="app" id="app">
@@ -283,7 +283,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=7" type="module"></script>
+    <script src="app.js?v=8" type="module"></script>
   </body>
 </html>
 """#
@@ -2765,7 +2765,7 @@ const SCORING_STYLES = {
 };
 
 const GOLF_GENERATION_VERSION = 3;
-const GOLF_GAME_VERSION = 6;
+const GOLF_GAME_VERSION = 7;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 278, max: 278, dispersion: 9.5, rollout: 30 },
   { id: "wood", label: "3W", name: "Wood", carry: 243, max: 243, dispersion: 8.2, rollout: 24 },
@@ -3336,8 +3336,11 @@ function renderGolfHoleCard(play, hole) {
 
 function renderGolfResults(play) {
   const relative = getGolfRelativeScore(play);
-  const birdies = play.holeResults.filter((result) => result.relative < 0).length;
-  const water = play.shotLog.filter((shot) => shot.penalty).length;
+  const birdies = play.holeResults.filter((result) => result.relative === -1).length;
+  const eagles = play.holeResults.filter((result) => result.relative <= -2).length;
+  const pars = play.holeResults.filter((result) => result.relative === 0).length;
+  const bogeys = play.holeResults.filter((result) => result.relative > 0).length;
+  const penalties = play.holeResults.reduce((total, result) => total + (result?.penaltyStrokes || 0), 0);
   return `
     <div class="daily-golf">
       ${renderGolfGameHeader(play)}
@@ -3351,9 +3354,13 @@ function renderGolfResults(play) {
           <span class="pill">Locked score</span>
         </div>
         <div class="results-grid">
-          <div class="golf-stat"><span>Strokes</span><strong>${play.totalStrokes}</strong></div>
-          <div class="golf-stat"><span>Birdies+</span><strong>${birdies}</strong></div>
-          <div class="golf-stat"><span>Water penalties</span><strong>${water}</strong></div>
+          <div class="golf-stat"><span>Total strokes</span><strong>${play.totalStrokes}</strong></div>
+          <div class="golf-stat"><span>Course par</span><strong>${play.course.par}</strong></div>
+          <div class="golf-stat"><span>Birdies</span><strong>${birdies}</strong></div>
+          <div class="golf-stat"><span>Eagles</span><strong>${eagles}</strong></div>
+          <div class="golf-stat"><span>Pars</span><strong>${pars}</strong></div>
+          <div class="golf-stat"><span>Bogeys</span><strong>${bogeys}</strong></div>
+          <div class="golf-stat"><span>Penalties</span><strong>${penalties}</strong></div>
         </div>
         ${renderGolfScorecardTable(play)}
         <div class="play-actions">
@@ -3683,9 +3690,11 @@ function handleSolvryPlayAction(action) {
 function handleHolesAction(play, action, game) {
   if (action === "start-round" && !play.started) {
     play.started = true;
+    play.roundStarted = true;
     play.startedAt = new Date().toISOString();
-    play.showHoleCard = true;
+    startCurrentGolfHole(play);
     play.message = "Ranked round started. Bad shots count, so choose the target first.";
+    syncGolfRoundState(play);
     return;
   }
 
@@ -3978,6 +3987,7 @@ function createHolesPlay(gameId) {
     generationVersion: GOLF_GENERATION_VERSION,
     course,
     holeIndex: 0,
+    currentHoleIndex: 0,
     showHoleCard: false,
     ball: { ...firstHole.tee },
     aimAngle: firstAimAngle,
@@ -3992,6 +4002,9 @@ function createHolesPlay(gameId) {
     currentSurface: "tee",
     totalStrokes: 0,
     holeStrokes: 0,
+    roundScore: 0,
+    roundStarted: false,
+    roundCompleted: false,
     holeResults: [],
     shotLog: [],
     lastShot: null,
@@ -4084,6 +4097,8 @@ function generateGolfHole(number, par, random, env) {
 }
 
 function startCurrentGolfHole(play) {
+  play.holeIndex = clamp(play.holeIndex || 0, 0, play.course.holes.length - 1);
+  play.currentHoleIndex = play.holeIndex;
   const hole = getCurrentGolfHole(play);
   play.showHoleCard = false;
   play.ball = { ...hole.tee };
@@ -4093,16 +4108,19 @@ function startCurrentGolfHole(play) {
   play.powerWindow = null;
   play.flightPreview = null;
   play.holeCompleteFeedback = null;
+  play.pendingAdvanceToken = null;
   play.shotPhase = "scouting";
   play.selectedClubId = recommendGolfClub(hole.distance);
   play.targetMode = "pin";
   play.currentSurface = "tee";
   play.holeStrokes = 0;
   play.lastShot = null;
+  syncGolfRoundState(play);
   play.message = `Hole ${hole.number}: ${hole.distance} yards. Pick a club and time the swing.`;
 }
 
 function completeGolfHole(play, game, hole) {
+  if (play.completed || play.roundCompleted || play.holeResults[play.holeIndex]?.completed) return;
   const proximity = yardsBetween(play.ball, hole.pin, hole);
   const holeShots = play.shotLog.filter((shot) => shot.hole === hole.number);
   const penaltyStrokes = holeShots.reduce((total, shot) => total + (shot.penalty || 0), 0);
@@ -4116,9 +4134,12 @@ function completeGolfHole(play, game, hole) {
   const label = isHoleInOne ? "Hole in one" : getGolfScoreName(relative);
   const result = {
     holeId: hole.id,
+    holeIndex: play.holeIndex,
+    index: play.holeIndex,
     par: hole.par,
     normalShots,
     penaltyStrokes,
+    penalties: penaltyStrokes,
     putts,
     strokes: play.holeStrokes,
     totalStrokes: play.holeStrokes,
@@ -4134,6 +4155,7 @@ function completeGolfHole(play, game, hole) {
 }
 
 function pickUpGolfHole(play, game, hole) {
+  if (play.completed || play.roundCompleted || play.holeResults[play.holeIndex]?.completed) return;
   const maxStrokes = getGolfMaxStrokes(hole);
   if (play.holeStrokes > maxStrokes) {
     play.totalStrokes -= play.holeStrokes - maxStrokes;
@@ -4142,9 +4164,12 @@ function pickUpGolfHole(play, game, hole) {
   const relative = play.holeStrokes - hole.par;
   const result = {
     holeId: hole.id,
+    holeIndex: play.holeIndex,
+    index: play.holeIndex,
     par: hole.par,
     normalShots: Math.max(0, play.holeStrokes - play.shotLog.filter((shot) => shot.hole === hole.number).reduce((total, shot) => total + (shot.penalty || 0), 0)),
     penaltyStrokes: play.shotLog.filter((shot) => shot.hole === hole.number).reduce((total, shot) => total + (shot.penalty || 0), 0),
+    penalties: play.shotLog.filter((shot) => shot.hole === hole.number).reduce((total, shot) => total + (shot.penalty || 0), 0),
     strokes: play.holeStrokes,
     totalStrokes: play.holeStrokes,
     relative,
@@ -4162,13 +4187,17 @@ function getGolfMaxStrokes(hole) {
 }
 
 function finishGolfHole(play, game, hole, result, message) {
+  if (play.holeResults[play.holeIndex]?.completed) return;
   play.holeResults[play.holeIndex] = result;
+  syncGolfRoundState(play);
   play.shotPhase = "hole-complete";
   play.showHoleCard = false;
   play.powerWindow = null;
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.flightPreview = null;
+  const advanceToken = `${hole.id}:${Date.now()}`;
+  play.pendingAdvanceToken = advanceToken;
   play.holeCompleteFeedback = {
     holeIndex: play.holeIndex,
     holeNumber: hole.number,
@@ -4176,15 +4205,17 @@ function finishGolfHole(play, game, hole, result, message) {
     strokes: result.strokes,
     relative: result.relative,
     putts: result.putts,
-    isFinalHole: play.holeIndex >= play.course.holes.length - 1
+    isFinalHole: play.holeIndex >= play.course.holes.length - 1,
+    advanceToken
   };
   play.message = message;
   scheduleGolfHoleAdvance(play, game);
 }
 
 function scheduleGolfHoleAdvance(play, game) {
+  const advanceToken = play.pendingAdvanceToken;
   window.setTimeout(() => {
-    if (play.completed || play.shotPhase !== "hole-complete" || !play.holeCompleteFeedback) return;
+    if (play.completed || play.shotPhase !== "hole-complete" || !play.holeCompleteFeedback || play.pendingAdvanceToken !== advanceToken) return;
     advanceGolfAfterHole(play, game);
     saveState();
     render();
@@ -4197,15 +4228,18 @@ function advanceGolfAfterHole(play, game) {
 
   if (feedback.isFinalHole) {
     play.completed = true;
+    play.roundCompleted = true;
     play.completedAt = new Date().toISOString();
+    syncGolfRoundState(play);
     const score = `${play.totalStrokes} strokes`;
     const note = `${formatRelativeScore(getGolfRelativeScore(play))} to par on ${play.course.name}`;
     saveSolvryResult(game, score, note);
     play.holeCompleteFeedback = null;
+    play.pendingAdvanceToken = null;
     return;
   }
 
-  play.holeIndex += 1;
+  play.holeIndex = Math.min(feedback.holeIndex + 1, play.course.holes.length - 1);
   startCurrentGolfHole(play);
 }
 
@@ -4242,6 +4276,8 @@ function shareGolfRound(play) {
 }
 
 function getCurrentGolfHole(play) {
+  play.holeIndex = clamp(play.holeIndex || 0, 0, play.course.holes.length - 1);
+  play.currentHoleIndex = play.holeIndex;
   return play.course.holes[play.holeIndex];
 }
 
@@ -4438,6 +4474,14 @@ function getDropPoint(hole, start) {
 
 function getGolfRelativeScore(play) {
   return play.holeResults.reduce((total, result) => total + (result?.relative || 0), 0);
+}
+
+function syncGolfRoundState(play) {
+  play.currentHoleIndex = clamp(play.holeIndex || 0, 0, play.course.holes.length - 1);
+  play.roundStarted = !!play.started;
+  play.roundCompleted = !!play.completed;
+  play.roundScore = getGolfRelativeScore(play);
+  play.dailySeed = play.seed;
 }
 
 function formatRelativeScore(value) {
