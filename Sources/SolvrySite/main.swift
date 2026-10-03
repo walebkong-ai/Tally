@@ -1759,9 +1759,11 @@ h2 {
 
 .power-meter {
   position: relative;
-  height: 24px;
+  width: 100%;
+  min-width: 0;
+  height: 28px;
   overflow: hidden;
-  border: 1px solid rgba(39, 60, 50, 0.26);
+  border: 2px solid rgba(20, 23, 25, 0.76);
   border-radius: 999px;
   background:
     linear-gradient(90deg,
@@ -1779,14 +1781,14 @@ h2 {
   content: "";
   position: absolute;
   z-index: 1;
-  top: 4px;
-  bottom: 4px;
+  top: 5px;
+  bottom: 5px;
   left: calc(var(--green-start) * 1%);
   width: calc(var(--green-width) * 1%);
   border: 3px solid rgba(255, 254, 250, 0.98);
   border-radius: 999px;
   background: repeating-linear-gradient(135deg, rgba(255, 254, 250, 0.32) 0 6px, rgba(255, 254, 250, 0.72) 6px 12px);
-  box-shadow: 0 0 0 1px rgba(39, 60, 50, 0.24), 0 0 18px rgba(16, 167, 122, 0.34);
+  box-shadow: 0 0 0 1px rgba(20, 23, 25, 0.5), 0 0 18px rgba(16, 167, 122, 0.5);
 }
 
 .power-meter::after {
@@ -1805,13 +1807,13 @@ h2 {
 .power-marker {
   position: absolute;
   z-index: 3;
-  top: -4px;
+  top: -5px;
   left: calc(var(--power-marker) * 1%);
   width: 8px;
-  height: 32px;
+  height: 38px;
   border-radius: 999px;
-  background: var(--paper);
-  box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.84), 0 0 18px rgba(255, 254, 250, 0.86);
+  background: #fffefa;
+  box-shadow: 0 0 0 3px rgba(20, 23, 25, 0.9), 0 0 18px rgba(255, 254, 250, 0.95);
   transform: translateX(-50%);
 }
 
@@ -1845,7 +1847,7 @@ h2 {
 
 .shot-summary {
   position: absolute;
-  z-index: 3;
+  z-index: 2;
   left: 12px;
   right: 12px;
   bottom: 10px;
@@ -1864,6 +1866,15 @@ h2 {
   font-weight: 850;
   line-height: 1.35;
   box-shadow: 0 14px 30px rgba(39, 60, 50, 0.1);
+}
+
+.daily-golf[data-shot-phase="scouting"] .shot-summary,
+.daily-golf[data-shot-phase="aiming"] .shot-summary,
+.daily-golf[data-shot-phase="aim-locked"] .shot-summary,
+.daily-golf[data-shot-phase="power"] .shot-summary,
+.daily-golf[data-shot-phase="power-locked"] .shot-summary,
+.daily-golf[data-shot-phase="ball-flight"] .shot-summary {
+  display: none;
 }
 
 .shot-summary small {
@@ -2979,10 +2990,21 @@ function render() {
 
 function focusHolesViewport(activeGame) {
   if (activeGame.id !== "solvry-holes" || elements.solvryGame.hidden) return;
+  const alignGolfCard = () => {
+    const golfCard = elements.solvryGame.querySelector(".daily-golf") || elements.solvryGame;
+    const topbar = document.querySelector(".topbar");
+    const topbarPosition = topbar ? getComputedStyle(topbar).position : "";
+    const topbarHeight = topbar && ["fixed", "sticky"].includes(topbarPosition) ? topbar.getBoundingClientRect().height : 0;
+    const targetTop = golfCard.getBoundingClientRect().top + window.scrollY - topbarHeight - 6;
+    if (Math.abs(window.scrollY - targetTop) <= 6) return;
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+  };
   window.requestAnimationFrame(() => {
-    const topbarHeight = document.querySelector(".topbar")?.getBoundingClientRect().height || 0;
-    const targetTop = elements.solvryGame.getBoundingClientRect().top + window.scrollY - topbarHeight - 6;
-    if (Math.abs(window.scrollY - targetTop) > 6) window.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+    alignGolfCard();
+    window.setTimeout(alignGolfCard, 60);
   });
 }
 
@@ -3295,11 +3317,16 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const centerAngle = play.aimCenterAngle ?? play.aimAngle;
   const sweepRange = getAimSweepRange(play, hole);
   const sweepDuration = getAimSweepDuration(play, hole);
-  const lineLength = Math.min(42, Math.max(18, distance(ball, target)));
+  const visibleLineLength = Math.min(
+    getVisibleAimLineLength(ball, centerAngle - sweepRange),
+    getVisibleAimLineLength(ball, centerAngle),
+    getVisibleAimLineLength(ball, centerAngle + sweepRange)
+  );
+  const lineLength = Math.min(42, visibleLineLength, Math.max(14, distance(ball, target)));
   const lineEnd = { x: ball.x, y: ball.y - lineLength };
   const aimLine = phase === "aiming"
-    ? `<g transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y}" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="0.78" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="1.8" fill="#fffefa" stroke="#9c2f23" stroke-width="0.5"></circle></g>`
-    : `<line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#9c2f23" stroke-width="0.78" stroke-linecap="round"></line>`;
+    ? `<g class="golf-aim-layer" transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y}" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`
+    : `<g class="golf-aim-layer"><line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${target.x}" cy="${target.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${target.x}" cy="${target.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`;
   const lockPulse = phase === "aim-locked"
     ? `<circle cx="${target.x}" cy="${target.y}" r="2.2" fill="#fffefa" stroke="#b12a1c" stroke-width="0.75" opacity="0.8"><animate attributeName="r" values="2.2;5.4;2.6" dur="0.5s" fill="freeze"></animate><animate attributeName="opacity" values="0.8;0.18;0" dur="0.5s" fill="freeze"></animate></circle>`
     : "";
@@ -3345,7 +3372,9 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
 function renderGolfBallMarker(ball) {
   return `
     <g class="golf-ball-marker" aria-label="Golf ball">
-      <circle cx="${ball.x}" cy="${ball.y}" r="1.9" fill="#fffefa" stroke="#141719" stroke-width="0.65"></circle>
+      <circle cx="${ball.x}" cy="${ball.y}" r="4.1" fill="#fffefa" opacity="0.32"></circle>
+      <circle cx="${ball.x}" cy="${ball.y}" r="2.55" fill="none" stroke="#141719" stroke-width="0.62" opacity="0.88"></circle>
+      <circle cx="${ball.x}" cy="${ball.y}" r="1.9" fill="#fffefa" stroke="#141719" stroke-width="0.78"></circle>
       <circle cx="${ball.x - 0.55}" cy="${ball.y - 0.45}" r="0.18" fill="#cfd6d0"></circle>
       <circle cx="${ball.x + 0.45}" cy="${ball.y - 0.2}" r="0.16" fill="#cfd6d0"></circle>
       <circle cx="${ball.x - 0.05}" cy="${ball.y + 0.42}" r="0.15" fill="#cfd6d0"></circle>
@@ -3939,6 +3968,17 @@ function getGolfTargetPointForAngle(play, hole, club, angle) {
     x: play.ball.x + vector.x * carryUnits,
     y: play.ball.y + vector.y * carryUnits
   });
+}
+
+function getVisibleAimLineLength(origin, angle) {
+  const vector = golfVectorFromAngle(angle);
+  const limits = [];
+  if (vector.x > 0) limits.push((94 - origin.x) / vector.x);
+  if (vector.x < 0) limits.push((origin.x - 6) / -vector.x);
+  if (vector.y > 0) limits.push((94 - origin.y) / vector.y);
+  if (vector.y < 0) limits.push((origin.y - 6) / -vector.y);
+  const available = Math.min(...limits.filter((value) => Number.isFinite(value) && value > 0));
+  return clamp((Number.isFinite(available) ? available : 42) - 1.5, 8, 42);
 }
 
 function getActiveAimAngle(play) {
