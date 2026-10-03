@@ -2715,13 +2715,13 @@ const SCORING_STYLES = {
 const GOLF_GENERATION_VERSION = 3;
 const GOLF_GAME_VERSION = 5;
 const GOLF_CLUBS = [
-  { id: "driver", label: "DR", name: "Driver", carry: 238, max: 278, dispersion: 9.5, rollout: 28 },
-  { id: "wood", label: "3W", name: "Wood", carry: 214, max: 243, dispersion: 8.2, rollout: 23 },
-  { id: "long-iron", label: "4i", name: "Long Iron", carry: 176, max: 199, dispersion: 6.8, rollout: 16 },
-  { id: "mid-iron", label: "6i", name: "Mid Iron", carry: 158, max: 179, dispersion: 5.6, rollout: 12 },
-  { id: "short-iron", label: "8i", name: "Short Iron", carry: 138, max: 156, dispersion: 4.4, rollout: 8 },
-  { id: "wedge", label: "PW", name: "Wedge", carry: 116, max: 131, dispersion: 3.2, rollout: 4 },
-  { id: "lob-wedge", label: "LW", name: "Lob Wedge", carry: 58, max: 66, dispersion: 2.4, rollout: 2 }
+  { id: "driver", label: "DR", name: "Driver", carry: 278, max: 278, dispersion: 9.5, rollout: 30 },
+  { id: "wood", label: "3W", name: "Wood", carry: 243, max: 243, dispersion: 8.2, rollout: 24 },
+  { id: "long-iron", label: "4i", name: "Long Iron", carry: 199, max: 199, dispersion: 6.8, rollout: 17 },
+  { id: "mid-iron", label: "6i", name: "Mid Iron", carry: 179, max: 179, dispersion: 5.6, rollout: 12 },
+  { id: "short-iron", label: "8i", name: "Short Iron", carry: 156, max: 156, dispersion: 4.4, rollout: 8 },
+  { id: "wedge", label: "PW", name: "Wedge", carry: 131, max: 131, dispersion: 3.2, rollout: 4 },
+  { id: "lob-wedge", label: "LW", name: "Lob Wedge", carry: 66, max: 66, dispersion: 2.4, rollout: 2 }
 ];
 const GOLF_SURFACES = {
   tee: { label: "Tee", rollout: 1, power: 1, accuracy: 1 },
@@ -3350,6 +3350,8 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const ball = play.ball;
   const landingRadius = getGolfLandingRadius(play, hole);
   const ballMarker = renderGolfBallMarker(ball);
+  const flightPath = renderGolfFlightPath(play.flightPreview, phase);
+  const restingBallMarker = phase === "ball-flight" && play.flightPreview ? "" : ballMarker;
   const centerAngle = play.aimCenterAngle ?? play.aimAngle;
   const sweepRange = getAimSweepRange(play, hole);
   const sweepDuration = getAimSweepDuration(play, hole);
@@ -3425,6 +3427,7 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
       ${lockPulse}
       <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#273c32" stroke-width="0.28" stroke-dasharray="2 2" opacity="0.26"></line>
       ${play.lastShot ? `<line x1="${play.lastShot.start.x}" y1="${play.lastShot.start.y}" x2="${play.lastShot.final.x}" y2="${play.lastShot.final.y}" stroke="#fffefa" stroke-width="1.05" opacity="0.78"></line>` : ""}
+      ${flightPath}
       <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="rgba(255, 254, 250, 0.24)" stroke="#273c32" stroke-width="0.46" stroke-dasharray="1.5 1.5"></circle>
       <g class="pin-flag">
         <ellipse cx="${hole.pin.x}" cy="${hole.pin.y + 0.35}" rx="1.75" ry="1.05" fill="#11211d" opacity="0.24"></ellipse>
@@ -3434,8 +3437,33 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
         <path d="M ${hole.pin.x + 0.2} ${hole.pin.y - 6.3} C ${hole.pin.x + 2.1} ${hole.pin.y - 5.8} ${hole.pin.x + 3.2} ${hole.pin.y - 5} ${hole.pin.x + 4.8} ${hole.pin.y - 4.25} C ${hole.pin.x + 3.1} ${hole.pin.y - 3.55} ${hole.pin.x + 2.1} ${hole.pin.y - 2.9} ${hole.pin.x + 0.2} ${hole.pin.y - 2.4} Z" fill="#ee6e5b" stroke="#263c32" stroke-width="0.25"></path>
       </g>
       <ellipse cx="${hole.tee.x}" cy="${hole.tee.y}" rx="2.85" ry="1.9" fill="url(#tee-fill-${hole.number})" stroke="#273c32" stroke-width="0.32" opacity="0.86"></ellipse>
-      ${ballMarker}
+      ${restingBallMarker}
     </svg>
+  `;
+}
+
+function renderGolfFlightPath(outcome, phase) {
+  if (phase !== "ball-flight" || !outcome) return "";
+  const start = outcome.start;
+  const landing = outcome.landing;
+  const final = outcome.final;
+  const apexY = Math.max(5, Math.min(start.y, landing.y) - 13);
+  const controlOne = { x: start.x + (landing.x - start.x) * 0.3, y: apexY };
+  const controlTwo = { x: start.x + (landing.x - start.x) * 0.76 + outcome.crossWind.x * 0.35, y: apexY + 2 };
+  const arc = `M ${start.x} ${start.y} C ${controlOne.x} ${controlOne.y} ${controlTwo.x} ${controlTwo.y} ${landing.x} ${landing.y}`;
+  const rollout = distance(landing, final) > 1.2 ? ` L ${final.x} ${final.y}` : "";
+  const motionPath = `${arc}${rollout}`;
+  return `
+    <g class="golf-flight-preview" aria-hidden="true">
+      <path d="${motionPath}" fill="none" stroke="#fffefa" stroke-width="1.05" opacity="0.58" stroke-linecap="round"></path>
+      <path d="${motionPath}" fill="none" stroke="#9c2f23" stroke-width="0.54" opacity="0.74" stroke-linecap="round" stroke-dasharray="1.4 1.6"></path>
+      <circle r="1.5" fill="#fffefa" stroke="#141719" stroke-width="0.48">
+        <animateMotion path="${motionPath}" dur="0.72s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.18 0.78 0.2 1"></animateMotion>
+      </circle>
+      <ellipse rx="2.7" ry="0.8" fill="#273c32" opacity="0.2">
+        <animateMotion path="M ${start.x} ${start.y + 2.4} L ${landing.x} ${landing.y + 1.7}${rollout ? ` L ${final.x} ${final.y + 1.2}` : ""}" dur="0.72s" fill="freeze"></animateMotion>
+      </ellipse>
+    </g>
   `;
 }
 
@@ -3631,6 +3659,7 @@ function startGolfShot(play) {
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
+  play.flightPreview = null;
   play.lastTapAt = Date.now();
   play.message = "Step 1 of 2: tap to lock aim.";
 }
@@ -3661,6 +3690,7 @@ function lockGolfAim(play, game) {
 function lockGolfPower(play, game) {
   if (Date.now() - (play.lastTapAt || 0) < 260) return;
   play.lockedPower = getActivePowerPosition(play);
+  play.flightPreview = computeGolfShotOutcome(play, play.lockedPower);
   play.shotPhase = "power-locked";
   play.lastTapAt = Date.now();
   play.message = "Power locked.";
@@ -3673,32 +3703,37 @@ function lockGolfPower(play, game) {
     render();
     window.setTimeout(() => {
       if (play.completed || play.shotPhase !== "ball-flight") return;
-      playGolfSwing(play, game, lockedPower);
+      playGolfSwing(play, game, lockedPower, play.flightPreview);
       saveState();
       render();
-    }, 260);
+    }, 760);
   }, 560);
 }
 
-function playGolfSwing(play, game, powerPosition) {
+function computeGolfShotOutcome(play, powerPosition) {
   const hole = getCurrentGolfHole(play);
   const club = getGolfClub(play.selectedClubId);
   const window = play.powerWindow || getPowerWindow(play, hole, club);
   const quality = getPowerQuality(powerPosition, window);
   const start = { ...play.ball };
   const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
-  const shotNumber = play.holeStrokes + 1;
   const yardsPerUnit = hole.yardsPerUnit;
   const powerMultiplier = (0.48 + powerPosition / 100 * 0.88) * lie.power;
-  const carryYards = club.carry * powerMultiplier;
-  const carryUnits = carryYards / yardsPerUnit;
-  const miss = (powerPosition - window.center) / Math.max(8, window.width);
-  const aimWithMiss = (play.lockedAimAngle ?? play.aimAngle) + miss * club.dispersion * lie.accuracy;
-  const direction = golfVectorFromAngle(aimWithMiss);
+  const baselineCarryYards = club.carry * powerMultiplier;
+  const lockedAngle = play.lockedAimAngle ?? play.aimAngle;
+  const direction = golfVectorFromAngle(lockedAngle);
   const wind = golfWindVector(hole.wind, yardsPerUnit);
+  const windAlong = wind.x * direction.x + wind.y * direction.y;
+  const crossWind = {
+    x: wind.x - direction.x * windAlong,
+    y: wind.y - direction.y * windAlong
+  };
+  const windCarryYards = clamp(windAlong * yardsPerUnit * 0.42, -club.carry * 0.14, club.carry * 0.14);
+  const carryYards = Math.max(8, baselineCarryYards + windCarryYards);
+  const carryUnits = carryYards / yardsPerUnit;
   const landing = clampPoint({
-    x: start.x + direction.x * carryUnits + wind.x,
-    y: start.y + direction.y * carryUnits + wind.y
+    x: start.x + direction.x * carryUnits + crossWind.x,
+    y: start.y + direction.y * carryUnits + crossWind.y
   });
   const landingSurface = getGolfSurfaceAtPoint(hole, landing);
   const waterPenalty = landingSurface === "water";
@@ -3709,32 +3744,71 @@ function playGolfSwing(play, game, powerPosition) {
     y: landing.y + direction.y * rolloutUnits
   });
   let finalSurface = getGolfSurfaceAtPoint(hole, final);
+  const endedInWater = waterPenalty || finalSurface === "water";
+
+  if (endedInWater) {
+    final = getDropPoint(hole, start);
+    finalSurface = getGolfSurfaceAtPoint(hole, final);
+  }
+
+  return {
+    hole,
+    club,
+    window,
+    quality,
+    start,
+    lie,
+    powerPosition,
+    powerMultiplier,
+    lockedAngle,
+    direction,
+    wind,
+    windAlong,
+    crossWind,
+    windCarryYards,
+    baselineCarryYards,
+    carryYards,
+    carryUnits,
+    landing,
+    landingSurface,
+    rolloutUnits,
+    final,
+    finalSurface,
+    penalty: endedInWater ? 1 : 0
+  };
+}
+
+function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
+  const outcome = preparedOutcome || computeGolfShotOutcome(play, powerPosition);
+  const { hole, club, quality, start, carryYards, landing, final, finalSurface } = outcome;
+  const shotNumber = play.holeStrokes + 1;
   let penalty = 0;
 
   play.holeStrokes += 1;
   play.totalStrokes += 1;
 
-  if (waterPenalty || finalSurface === "water") {
+  if (outcome.penalty) {
     penalty = 1;
     play.holeStrokes += 1;
     play.totalStrokes += 1;
-    final = getDropPoint(hole, start);
-    finalSurface = getGolfSurfaceAtPoint(hole, final);
   }
 
   play.ball = final;
   play.currentSurface = finalSurface;
+  play.flightPreview = null;
   play.lastShot = {
     hole: hole.number,
     shotNumber,
     club: club.id,
-    aimAngle: play.lockedAimAngle ?? play.aimAngle,
+    aimAngle: outcome.lockedAngle,
     powerPosition,
     quality: quality.label,
     carryDistance: Math.round(carryYards),
+    windCarryDistance: Math.round(outcome.windCarryYards),
     start,
     landing,
     final,
+    landingSurface: outcome.landingSurface,
     surface: finalSurface,
     penalty,
     summary: `${club.name} · ${quality.label} strike · ${Math.round(carryYards)} yd carry${penalty ? " · water penalty" : ""}`
@@ -3847,6 +3921,7 @@ function createHolesPlay(gameId) {
     lockedAimAngle: null,
     lockedPower: null,
     powerWindow: null,
+    flightPreview: null,
     shotPhase: "scouting",
     lastTapAt: 0,
     selectedClubId: recommendGolfClub(firstDistance),
@@ -3951,6 +4026,7 @@ function startCurrentGolfHole(play) {
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
+  play.flightPreview = null;
   play.shotPhase = "scouting";
   play.selectedClubId = recommendGolfClub(hole.distance);
   play.targetMode = "pin";
@@ -4030,6 +4106,7 @@ function finishGolfHole(play, game, hole, result, message) {
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
+  play.flightPreview = null;
   play.shotPhase = "scouting";
 }
 
