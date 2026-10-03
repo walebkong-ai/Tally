@@ -1765,6 +1765,12 @@ h2 {
   animation: golfLockPulse 0.48s ease-out;
 }
 
+.hole-complete-stage strong {
+  min-width: 148px;
+  background: rgba(255, 250, 224, 0.94);
+  color: #103c2b;
+}
+
 .shot-stage:not(.swing-stage) > strong {
   display: block;
   font-size: 0.82rem;
@@ -2713,7 +2719,7 @@ const SCORING_STYLES = {
 };
 
 const GOLF_GENERATION_VERSION = 3;
-const GOLF_GAME_VERSION = 5;
+const GOLF_GAME_VERSION = 6;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 278, max: 278, dispersion: 9.5, rollout: 30 },
   { id: "wood", label: "3W", name: "Wood", carry: 243, max: 243, dispersion: 8.2, rollout: 24 },
@@ -3127,7 +3133,7 @@ function renderHolesBoard(play) {
   const displayAimAngle = phase === "aiming" ? getActiveAimAngle(play) : play.lockedAimAngle ?? play.aimAngle;
   const target = getGolfTargetPointForAngle(play, hole, selectedClub, displayAimAngle);
   const scoreLabel = formatRelativeScore(getGolfRelativeScore(play));
-  const showClubControls = phase !== "ball-flight" && phase !== "power-locked";
+  const showClubControls = !["power-locked", "ball-flight", "hole-complete"].includes(phase);
 
   return `
     <div class="daily-golf" data-shot-phase="${escapeHtml(phase)}">
@@ -3197,6 +3203,16 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
       <div class="shot-stage locked">
         <strong>${phase === "power-locked" ? "Power locked" : "Swinging"}</strong>
         <p>${phase === "power-locked" ? "Watch the shot." : "Controls hidden during flight."}</p>
+      </div>
+    `;
+  }
+
+  if (phase === "hole-complete") {
+    const feedback = play.holeCompleteFeedback;
+    return `
+      <div class="shot-stage locked hole-complete-stage">
+        <strong>${escapeHtml(feedback?.label || "Hole complete")}</strong>
+        <p>${feedback?.strokes || play.holeStrokes} strokes${feedback?.putts ? ` · ${feedback.putts} putt${feedback.putts === 1 ? "" : "s"}` : ""}</p>
       </div>
     `;
   }
@@ -3348,6 +3364,7 @@ function renderGolfScorecardTable(play) {
 
 function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const ball = play.ball;
+  const puttZones = getGolfPuttZones(hole);
   const landingRadius = getGolfLandingRadius(play, hole);
   const ballMarker = renderGolfBallMarker(ball);
   const flightPath = renderGolfFlightPath(play.flightPreview, phase);
@@ -3421,8 +3438,9 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
       <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 2.4}" fill="#d6f0bd" opacity="0.42"></circle>
       <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="url(#green-glow-${hole.number})" stroke="#6f9e64" stroke-width="0.38" filter="url(#course-shadow-${hole.number})"></circle>
       <path d="M ${hole.green.x - hole.green.r * 0.7} ${hole.green.y + 1.3} C ${hole.green.x - 2.5} ${hole.green.y - 2.3} ${hole.green.x + 2.4} ${hole.green.y + 3.7} ${hole.green.x + hole.green.r * 0.72} ${hole.green.y - 0.6}" fill="none" stroke="#fffefa" stroke-width="0.38" opacity="0.48"></path>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.55" opacity="0.48"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#224238" stroke-width="0.42" opacity="0.62"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${puttZones.outer}" fill="none" stroke="#fffefa" stroke-width="0.42" stroke-dasharray="1.6 1.4" opacity="0.34"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.55" opacity="0.5"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${puttZones.one}" fill="none" stroke="#224238" stroke-width="0.42" opacity="0.64"></circle>
       ${aimLine}
       ${lockPulse}
       <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#273c32" stroke-width="0.28" stroke-dasharray="2 2" opacity="0.26"></line>
@@ -3815,7 +3833,7 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
   };
   play.shotLog.push(play.lastShot);
 
-  if (finalSurface === "green" || yardsBetween(final, hole.pin, hole) <= hole.green.r * hole.yardsPerUnit) {
+  if (isGolfBallOnGreen(hole, final)) {
     completeGolfHole(play, game, hole);
     return;
   }
@@ -3931,6 +3949,7 @@ function createHolesPlay(gameId) {
     holeResults: [],
     shotLog: [],
     lastShot: null,
+    holeCompleteFeedback: null,
     practiceUnlocked: false,
     message: "Today's ranked course is ready."
   };
@@ -4012,7 +4031,7 @@ function generateGolfHole(number, par, random, env) {
     wind: { speed: windSpeed, direction: windDirection },
     primaryHazard,
     greenDifficulty,
-    puttZones: { one: puttBase, two: puttBase * 2.5 },
+    puttZones: { one: puttBase, two: puttBase * 2.5, outer: greenRadius },
     palette: { rough: env.rough },
     summary: `${primaryHazard}. ${windSpeed} mph wind ${windArrow(windDirection)}. Choose a safe landing zone or attack the pin.`
   };
@@ -4027,6 +4046,7 @@ function startCurrentGolfHole(play) {
   play.lockedPower = null;
   play.powerWindow = null;
   play.flightPreview = null;
+  play.holeCompleteFeedback = null;
   play.shotPhase = "scouting";
   play.selectedClubId = recommendGolfClub(hole.distance);
   play.targetMode = "pin";
@@ -4038,22 +4058,33 @@ function startCurrentGolfHole(play) {
 
 function completeGolfHole(play, game, hole) {
   const proximity = yardsBetween(play.ball, hole.pin, hole);
-  const onePuttYards = hole.puttZones.one * hole.yardsPerUnit;
-  const twoPuttYards = hole.puttZones.two * hole.yardsPerUnit;
-  const putts = proximity <= onePuttYards ? 1 : proximity <= twoPuttYards ? 2 : 3;
+  const holeShots = play.shotLog.filter((shot) => shot.hole === hole.number);
+  const penaltyStrokes = holeShots.reduce((total, shot) => total + (shot.penalty || 0), 0);
+  const normalShots = Math.max(0, play.holeStrokes - penaltyStrokes);
+  const isHoleInOne = play.holeStrokes === 1 && proximity <= getGolfHoleInOneThresholdYards(hole);
+  const putting = isHoleInOne ? { putts: 0, zone: "cup" } : getGolfPuttingResult(hole, play.ball);
+  const putts = putting.putts;
   play.holeStrokes += putts;
   play.totalStrokes += putts;
   const relative = play.holeStrokes - hole.par;
+  const label = isHoleInOne ? "Hole in one" : getGolfScoreName(relative);
   const result = {
     holeId: hole.id,
     par: hole.par,
-    strokes: play.holeStrokes,
-    relative,
-    completed: true,
+    normalShots,
+    penaltyStrokes,
     putts,
-    shots: play.shotLog.filter((shot) => shot.hole === hole.number)
+    strokes: play.holeStrokes,
+    totalStrokes: play.holeStrokes,
+    relative,
+    relativeScore: relative,
+    scoreName: label,
+    completed: true,
+    puttingZone: putting.zone,
+    shots: holeShots
   };
-  finishGolfHole(play, game, hole, result, `Hole ${hole.number} complete: ${play.holeStrokes} on a par ${hole.par} (${formatRelativeScore(relative)}). ${putts} putt${putts === 1 ? "" : "s"}.`);
+  const puttCopy = putts ? `${putts} putt${putts === 1 ? "" : "s"}` : "holed from the shot";
+  finishGolfHole(play, game, hole, result, `${label.toUpperCase()} · ${play.holeStrokes} stroke${play.holeStrokes === 1 ? "" : "s"} · ${puttCopy}.`);
 }
 
 function pickUpGolfHole(play, game, hole) {
@@ -4066,8 +4097,12 @@ function pickUpGolfHole(play, game, hole) {
   const result = {
     holeId: hole.id,
     par: hole.par,
+    normalShots: Math.max(0, play.holeStrokes - play.shotLog.filter((shot) => shot.hole === hole.number).reduce((total, shot) => total + (shot.penalty || 0), 0)),
+    penaltyStrokes: play.shotLog.filter((shot) => shot.hole === hole.number).reduce((total, shot) => total + (shot.penalty || 0), 0),
     strokes: play.holeStrokes,
+    totalStrokes: play.holeStrokes,
     relative,
+    relativeScore: relative,
     completed: true,
     putts: 0,
     pickup: true,
@@ -4082,32 +4117,50 @@ function getGolfMaxStrokes(hole) {
 
 function finishGolfHole(play, game, hole, result, message) {
   play.holeResults[play.holeIndex] = result;
-  play.shotPhase = "scouting";
+  play.shotPhase = "hole-complete";
+  play.showHoleCard = false;
   play.powerWindow = null;
+  play.lockedAimAngle = null;
+  play.lockedPower = null;
+  play.flightPreview = null;
+  play.holeCompleteFeedback = {
+    holeIndex: play.holeIndex,
+    holeNumber: hole.number,
+    label: (result.scoreName || getGolfScoreName(result.relative)).toUpperCase(),
+    strokes: result.strokes,
+    relative: result.relative,
+    putts: result.putts,
+    isFinalHole: play.holeIndex >= play.course.holes.length - 1
+  };
   play.message = message;
+  scheduleGolfHoleAdvance(play, game);
+}
 
-  if (play.holeIndex >= play.course.holes.length - 1) {
+function scheduleGolfHoleAdvance(play, game) {
+  window.setTimeout(() => {
+    if (play.completed || play.shotPhase !== "hole-complete" || !play.holeCompleteFeedback) return;
+    advanceGolfAfterHole(play, game);
+    saveState();
+    render();
+  }, 1450);
+}
+
+function advanceGolfAfterHole(play, game) {
+  const feedback = play.holeCompleteFeedback;
+  if (!feedback) return;
+
+  if (feedback.isFinalHole) {
     play.completed = true;
     play.completedAt = new Date().toISOString();
     const score = `${play.totalStrokes} strokes`;
     const note = `${formatRelativeScore(getGolfRelativeScore(play))} to par on ${play.course.name}`;
     saveSolvryResult(game, score, note);
+    play.holeCompleteFeedback = null;
     return;
   }
 
   play.holeIndex += 1;
-  play.showHoleCard = true;
-  const nextHole = getCurrentGolfHole(play);
-  play.ball = { ...nextHole.tee };
-  play.holeStrokes = 0;
-  play.currentSurface = "tee";
-  play.selectedClubId = recommendGolfClub(nextHole.distance);
-  setGolfAimCenterToPin(play, nextHole);
-  play.lockedAimAngle = null;
-  play.lockedPower = null;
-  play.powerWindow = null;
-  play.flightPreview = null;
-  play.shotPhase = "scouting";
+  startCurrentGolfHole(play);
 }
 
 function aimGolfAtSafeTarget(play) {
@@ -4252,6 +4305,34 @@ function yardsBetween(a, b, hole) {
   return Math.hypot(a.x - b.x, a.y - b.y) * hole.yardsPerUnit;
 }
 
+function getGolfPuttZones(hole) {
+  const one = hole.puttZones?.one ?? Math.max(1.6, hole.green.r * 0.28);
+  const two = hole.puttZones?.two ?? Math.max(one + 1.2, hole.green.r * 0.66);
+  const outer = hole.puttZones?.outer ?? hole.green.r;
+  return {
+    one: Math.min(one, outer),
+    two: Math.min(Math.max(two, one), outer),
+    outer
+  };
+}
+
+function getGolfPuttingResult(hole, point) {
+  const zones = getGolfPuttZones(hole);
+  const proximityUnits = distance(point, hole.pin);
+  if (proximityUnits <= zones.one) return { putts: 1, zone: "inner" };
+  if (proximityUnits <= zones.two) return { putts: 2, zone: "middle" };
+  return { putts: 3, zone: "outer" };
+}
+
+function getGolfHoleInOneThresholdYards(hole) {
+  return Math.max(0.75, hole.yardsPerUnit * 0.45);
+}
+
+function isGolfBallOnGreen(hole, point) {
+  const zones = getGolfPuttZones(hole);
+  return getGolfSurfaceAtPoint(hole, point) === "green" || distance(point, hole.pin) <= zones.outer;
+}
+
 function getSwingTimingValue() {
   const cycle = 1550;
   const progress = (performance.now() % (cycle * 2)) / cycle;
@@ -4316,6 +4397,16 @@ function getGolfRelativeScore(play) {
 function formatRelativeScore(value) {
   if (value === 0) return "E";
   return value > 0 ? `+${value}` : `${value}`;
+}
+
+function getGolfScoreName(relative) {
+  if (relative <= -3) return "Albatross";
+  if (relative === -2) return "Eagle";
+  if (relative === -1) return "Birdie";
+  if (relative === 0) return "Par";
+  if (relative === 1) return "Bogey";
+  if (relative === 2) return "Double bogey";
+  return `+${relative}`;
 }
 
 function surfaceLabel(surface) {
