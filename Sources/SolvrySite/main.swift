@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <div class="app" id="app">
@@ -283,7 +283,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=8" type="module"></script>
+    <script src="app.js?v=9" type="module"></script>
   </body>
 </html>
 """#
@@ -2765,7 +2765,8 @@ const SCORING_STYLES = {
 };
 
 const GOLF_GENERATION_VERSION = 3;
-const GOLF_GAME_VERSION = 7;
+const GOLF_GAME_VERSION = 8;
+const GOLF_IDEAL_POWER = 60;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 278, max: 278, dispersion: 9.5, rollout: 30 },
   { id: "wood", label: "3W", name: "Wood", carry: 243, max: 243, dispersion: 8.2, rollout: 24 },
@@ -3177,7 +3178,8 @@ function renderHolesBoard(play) {
   const remaining = Math.round(yardsBetween(play.ball, hole.pin, hole));
   const selectedClub = getGolfClub(play.selectedClubId);
   const displayAimAngle = phase === "aiming" ? getActiveAimAngle(play) : play.lockedAimAngle ?? play.aimAngle;
-  const target = getGolfTargetPointForAngle(play, hole, selectedClub, displayAimAngle);
+  const shotContext = getGolfShotContext(play, hole, selectedClub, displayAimAngle);
+  const target = shotContext.aimEndpoint;
   const scoreLabel = formatRelativeScore(getGolfRelativeScore(play));
   const showClubControls = !["power-locked", "ball-flight", "hole-complete"].includes(phase);
 
@@ -3188,7 +3190,7 @@ function renderHolesBoard(play) {
       <div class="daily-golf-board">
         <section class="play-card primary golf-map-card">
           <div class="golf-hud">
-            <div class="golf-stat"><span>Hole ${hole.number} · Par ${hole.par}</span><strong>${hole.distance} yds</strong></div>
+            <div class="golf-stat"><span>Hole ${hole.number} · Par ${hole.par}</span><strong>${remaining} yds</strong></div>
             <div class="golf-stat"><span>Wind</span><strong>${hole.wind.speed} mph ${windArrow(hole.wind.direction)}</strong></div>
           </div>
           ${renderGolfCourseSvg(play, hole, target, displayAimAngle, phase)}
@@ -3202,7 +3204,7 @@ function renderHolesBoard(play) {
             <label class="meter-label"><span>Club</span><span>${escapeHtml(selectedClub.name)}</span></label>
             <div class="club-grid">
               ${GOLF_CLUBS.map((club) => `
-                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${phase !== "scouting" ? "disabled" : ""}>
+                <button class="club-button${club.id === selectedClub.id ? " active" : ""}" type="button" data-play-action="club:${club.id}" ${!["scouting", "aiming"].includes(phase) ? "disabled" : ""}>
                   <strong>${club.label}</strong>
                   <span>${club.max}</span>
                 </button>
@@ -3430,7 +3432,7 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
     getVisibleAimLineLength(ball, centerAngle),
     getVisibleAimLineLength(ball, centerAngle + sweepRange)
   );
-  const lineLength = Math.min(42, visibleLineLength, Math.max(14, distance(ball, target)));
+  const lineLength = Math.min(visibleLineLength, Math.max(8, distance(ball, target)));
   const lineEnd = { x: ball.x, y: ball.y - lineLength };
   const aimLine = phase === "aiming"
     ? `<g class="golf-aim-layer" transform="rotate(${centerAngle} ${ball.x} ${ball.y})"><animateTransform attributeName="transform" type="rotate" values="${centerAngle} ${ball.x} ${ball.y};${centerAngle + sweepRange} ${ball.x} ${ball.y};${centerAngle} ${ball.x} ${ball.y};${centerAngle - sweepRange} ${ball.x} ${ball.y};${centerAngle} ${ball.x} ${ball.y}" keyTimes="0;0.25;0.5;0.75;1" dur="${sweepDuration}ms" repeatCount="indefinite"></animateTransform><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#fffefa" stroke-width="2.1" stroke-linecap="round" opacity="0.9"></line><line x1="${ball.x}" y1="${ball.y}" x2="${lineEnd.x}" y2="${lineEnd.y}" stroke="#9c2f23" stroke-width="1.08" stroke-linecap="round"></line><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="#ffe28a" stroke="#fffefa" stroke-width="0.9"></circle><circle cx="${lineEnd.x}" cy="${lineEnd.y}" r="2.75" fill="none" stroke="#141719" stroke-width="0.45"></circle></g>`
@@ -3705,9 +3707,15 @@ function handleHolesAction(play, action, game) {
 
   if (action.startsWith("club:")) {
     const phase = play.shotPhase || "scouting";
-    if (phase !== "scouting") return;
+    if (!["scouting", "aiming"].includes(phase)) return;
     const club = getGolfClub(action.split(":")[1]);
     play.selectedClubId = club.id;
+    play.powerWindow = null;
+    play.flightPreview = null;
+    if (phase === "aiming") {
+      setGolfAimCenterToPin(play);
+      play.aimStartedAt = Date.now();
+    }
     play.message = `${club.name} selected.`;
     return;
   }
@@ -3726,6 +3734,10 @@ function handleHolesAction(play, action, game) {
 
 function startGolfShot(play) {
   const hole = getCurrentGolfHole(play);
+  beginGolfAiming(play, hole);
+}
+
+function beginGolfAiming(play, hole = getCurrentGolfHole(play)) {
   setGolfAimCenterToPin(play, hole);
   play.shotPhase = "aiming";
   play.aimStartedAt = Date.now();
@@ -3786,23 +3798,21 @@ function lockGolfPower(play, game) {
 function computeGolfShotOutcome(play, powerPosition) {
   const hole = getCurrentGolfHole(play);
   const club = getGolfClub(play.selectedClubId);
+  const lockedAngle = play.lockedAimAngle ?? play.aimAngle;
+  const context = getGolfShotContext(play, hole, club, lockedAngle, powerPosition);
   const window = play.powerWindow || getPowerWindow(play, hole, club);
   const quality = getPowerQuality(powerPosition, window);
-  const start = { ...play.ball };
-  const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
+  const start = context.start;
+  const lie = context.lie;
   const yardsPerUnit = hole.yardsPerUnit;
-  const powerMultiplier = (0.48 + powerPosition / 100 * 0.88) * lie.power;
-  const baselineCarryYards = club.carry * powerMultiplier;
-  const lockedAngle = play.lockedAimAngle ?? play.aimAngle;
-  const direction = golfVectorFromAngle(lockedAngle);
-  const wind = golfWindVector(hole.wind, yardsPerUnit);
-  const windAlong = wind.x * direction.x + wind.y * direction.y;
-  const crossWind = {
-    x: wind.x - direction.x * windAlong,
-    y: wind.y - direction.y * windAlong
-  };
-  const windCarryYards = clamp(windAlong * yardsPerUnit * 0.42, -club.carry * 0.14, club.carry * 0.14);
-  const carryYards = Math.max(8, baselineCarryYards + windCarryYards);
+  const powerMultiplier = getGolfPowerFactor(powerPosition) * lie.power;
+  const baselineCarryYards = club.carry * getGolfPowerFactor(powerPosition) * lie.power;
+  const direction = context.direction;
+  const wind = context.wind;
+  const windAlong = context.windAlong;
+  const crossWind = context.crossWind;
+  const windCarryYards = context.windCarryYards;
+  const carryYards = context.predictedCarryYards;
   const carryUnits = carryYards / yardsPerUnit;
   const landing = clampPoint({
     x: start.x + direction.x * carryUnits + crossWind.x,
@@ -3899,13 +3909,9 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
   }
 
   const remaining = Math.round(yardsBetween(final, hole.pin, hole));
-  play.shotPhase = "scouting";
-  play.powerWindow = null;
-  play.lockedAimAngle = null;
-  play.lockedPower = null;
-  setGolfAimCenterToPin(play, hole);
   play.selectedClubId = recommendGolfClub(remaining);
   play.targetMode = "pin";
+  beginGolfAiming(play, hole);
   play.message = penalty
     ? `WATER +1. ${remaining} yds left from ${surfaceLabel(finalSurface).toLowerCase()}.`
     : `${quality.label.toUpperCase()} · ${surfaceLabel(finalSurface).toUpperCase()} · ${remaining} yds left.`;
@@ -4102,19 +4108,14 @@ function startCurrentGolfHole(play) {
   const hole = getCurrentGolfHole(play);
   play.showHoleCard = false;
   play.ball = { ...hole.tee };
-  setGolfAimCenterToPin(play, hole);
-  play.lockedAimAngle = null;
-  play.lockedPower = null;
-  play.powerWindow = null;
-  play.flightPreview = null;
   play.holeCompleteFeedback = null;
   play.pendingAdvanceToken = null;
-  play.shotPhase = "scouting";
-  play.selectedClubId = recommendGolfClub(hole.distance);
+  play.selectedClubId = recommendGolfClub(yardsBetween(play.ball, hole.pin, hole));
   play.targetMode = "pin";
   play.currentSurface = "tee";
   play.holeStrokes = 0;
   play.lastShot = null;
+  beginGolfAiming(play, hole);
   syncGolfRoundState(play);
   play.message = `Hole ${hole.number}: ${hole.distance} yards. Pick a club and time the swing.`;
 }
@@ -4295,12 +4296,7 @@ function getGolfTargetPoint(play, hole, club) {
 }
 
 function getGolfTargetPointForAngle(play, hole, club, angle) {
-  const carryUnits = club.carry / hole.yardsPerUnit;
-  const vector = golfVectorFromAngle(angle);
-  return clampPoint({
-    x: play.ball.x + vector.x * carryUnits,
-    y: play.ball.y + vector.y * carryUnits
-  });
+  return getGolfShotContext(play, hole, club, angle).aimEndpoint;
 }
 
 function getVisibleAimLineLength(origin, angle) {
@@ -4311,14 +4307,14 @@ function getVisibleAimLineLength(origin, angle) {
   if (vector.y > 0) limits.push((94 - origin.y) / vector.y);
   if (vector.y < 0) limits.push((origin.y - 6) / -vector.y);
   const available = Math.min(...limits.filter((value) => Number.isFinite(value) && value > 0));
-  return clamp((Number.isFinite(available) ? available : 42) - 1.5, 8, 42);
+  return clamp((Number.isFinite(available) ? available : 88) - 1.5, 8, 88);
 }
 
 function getActiveAimAngle(play) {
   const hole = getCurrentGolfHole(play);
   const elapsed = Date.now() - (play.aimStartedAt || Date.now());
   const phase = Math.sin((elapsed / getAimSweepDuration(play, hole)) * Math.PI * 2);
-  return clamp((play.aimCenterAngle ?? play.aimAngle) + phase * getAimSweepRange(play, hole), -48, 48);
+  return (play.aimCenterAngle ?? play.aimAngle) + phase * getAimSweepRange(play, hole);
 }
 
 function getAimSweepRange(play, hole) {
@@ -4346,11 +4342,76 @@ function getActivePowerPosition(play) {
   return clamp(Math.round(folded * 100), 4, 96);
 }
 
-function getPowerWindow(play, hole, club) {
-  const target = getGolfTargetPointForAngle(play, hole, club, play.lockedAimAngle ?? play.aimAngle);
-  const targetYards = yardsBetween(play.ball, target, hole);
+function getGolfPowerFactor(powerPosition) {
+  return 0.48 + powerPosition / 100 * 0.88;
+}
+
+function getGolfWindCarryYards(club, hole, windAlong) {
+  return clamp(windAlong * hole.yardsPerUnit * 0.42, -club.carry * 0.14, club.carry * 0.14);
+}
+
+function getGolfCarryYards(club, lie, powerPosition, windCarryYards = 0) {
+  return Math.max(8, club.carry * getGolfPowerFactor(powerPosition) * lie.power + windCarryYards);
+}
+
+function getGolfRequiredPowerForCarry(club, lie, targetYards, windCarryYards = 0) {
+  const baseCarry = Math.max(1, club.carry * lie.power);
+  return clamp(((targetYards - windCarryYards) / baseCarry - 0.48) / 0.88 * 100, 8, 92);
+}
+
+function getGolfShotContext(play, hole = getCurrentGolfHole(play), club = getGolfClub(play.selectedClubId), angle = play.lockedAimAngle ?? play.aimAngle, powerPosition = GOLF_IDEAL_POWER) {
+  const start = { ...play.ball };
+  const pin = hole.pin;
   const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
-  const required = clamp(((targetYards / Math.max(1, club.carry * lie.power)) - 0.48) / 0.88 * 100, 8, 92);
+  const baseAimAngle = angleToPoint(start, pin);
+  const lockedAngle = Number.isFinite(angle) ? angle : baseAimAngle;
+  const direction = golfVectorFromAngle(lockedAngle);
+  const wind = golfWindVector(hole.wind, hole.yardsPerUnit);
+  const windAlong = wind.x * direction.x + wind.y * direction.y;
+  const crossWind = {
+    x: wind.x - direction.x * windAlong,
+    y: wind.y - direction.y * windAlong
+  };
+  const windCarryYards = getGolfWindCarryYards(club, hole, windAlong);
+  const distanceToPin = yardsBetween(start, pin, hole);
+  const nominalCarryYards = getGolfCarryYards(club, lie, GOLF_IDEAL_POWER, windCarryYards);
+  const referenceCarryYards = clamp(Math.min(distanceToPin, nominalCarryYards), 8, nominalCarryYards);
+  const requiredPower = getGolfRequiredPowerForCarry(club, lie, referenceCarryYards, windCarryYards);
+  const carryUnits = referenceCarryYards / hole.yardsPerUnit;
+  const aimEndpoint = clampPoint({
+    x: start.x + direction.x * carryUnits,
+    y: start.y + direction.y * carryUnits
+  });
+  const predictedCarryYards = getGolfCarryYards(club, lie, powerPosition, windCarryYards);
+  return {
+    hole,
+    club,
+    lie,
+    start,
+    pin,
+    yardsPerUnit: hole.yardsPerUnit,
+    distanceToPin,
+    baseAimAngle,
+    angle: lockedAngle,
+    direction,
+    wind,
+    windAlong,
+    crossWind,
+    windCarryYards,
+    nominalCarryYards,
+    referenceCarryYards,
+    requiredPower,
+    aimEndpoint,
+    powerPosition,
+    predictedCarryYards
+  };
+}
+
+function getPowerWindow(play, hole, club) {
+  const context = getGolfShotContext(play, hole, club, play.lockedAimAngle ?? play.aimAngle);
+  const target = context.aimEndpoint;
+  const lie = GOLF_SURFACES[play.currentSurface] || GOLF_SURFACES.rough;
+  const required = context.requiredPower;
   const landingSurface = getGolfSurfaceAtPoint(hole, target);
   const carryRisk = hole.water.some((water) => distanceToSegment(water, play.ball, target) < Math.max(water.rx, water.ry) * 0.9);
   let width = 23;
@@ -4380,7 +4441,7 @@ function golfVectorFromAngle(angle) {
 
 function angleToPoint(from, to) {
   const radians = Math.atan2(to.x - from.x, from.y - to.y);
-  return clamp((radians * 180) / Math.PI, -42, 42);
+  return (radians * 180) / Math.PI;
 }
 
 function yardsBetween(a, b, hole) {
