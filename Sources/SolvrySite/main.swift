@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=11" />
   </head>
   <body>
     <div class="app" id="app">
@@ -218,6 +218,7 @@ let html = #"""
             </label>
             <button class="primary-button" type="submit">Add friend</button>
           </form>
+          <div class="friend-sync" id="friendSync"></div>
         </section>
 
         <section class="panel answer-panel" id="answers">
@@ -279,11 +280,11 @@ let html = #"""
             <span class="provider-mark google">G</span>
             <span>Continue with Google</span>
           </button>
-          <p class="account-note">For now this creates a prototype account on this device. Real Apple and Google sign-in can be connected when Solvry gets production OAuth credentials.</p>
+          <p class="account-note" id="accountStatus">Connect Firebase web config to enable real Google and Apple sign-in.</p>
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=10" type="module"></script>
+    <script src="app.js?v=11" type="module"></script>
   </body>
 </html>
 """#
@@ -2335,6 +2336,51 @@ label {
   width: 100%;
 }
 
+.friend-sync {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sync-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 254, 250, 0.72);
+}
+
+.sync-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sync-card strong,
+.sync-card small {
+  display: block;
+}
+
+.sync-card small,
+.sync-pill {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.request-actions .ghost-button,
+.request-actions .primary-button {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
 .answer-card {
   padding: 14px;
 }
@@ -2392,6 +2438,11 @@ label {
 
 .account-note {
   font-size: 0.78rem;
+}
+
+.account-note.error,
+.sync-pill.error {
+  color: #a63a2f;
 }
 
 .provider-button {
@@ -2713,6 +2764,12 @@ let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
 const today = new Date().toISOString().slice(0, 10);
+const SOLVRY_FIREBASE_CONFIG = window.SOLVRY_FIREBASE_CONFIG || null;
+const FIREBASE_MODULES = {
+  app: "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js",
+  auth: "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js",
+  firestore: "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+};
 const LEGACY_GAME_ID_MAP = {
   sudoku: "solvry-sudoku",
   queens: "solvry-queens",
@@ -2791,7 +2848,8 @@ const starterState = {
   activeGameId: "wordle",
   selectedDate: today,
   profile: { name: "You", handle: "@solvry" },
-  account: { signedIn: false, provider: "", email: "" },
+  account: { signedIn: false, provider: "", email: "", uid: "", backend: "local" },
+  friendRequests: { incoming: [], outgoing: [] },
   pinnedGameIds: [],
   solvryPlays: {},
   games: [
@@ -2864,6 +2922,7 @@ const elements = {
   gameScoreboardMeta: document.querySelector("#gameScoreboardMeta"),
   gameScoreboardNote: document.querySelector("#gameScoreboardNote"),
   friendForm: document.querySelector("#friendForm"),
+  friendSync: document.querySelector("#friendSync"),
   friendNameInput: document.querySelector("#friendNameInput"),
   friendHandleInput: document.querySelector("#friendHandleInput"),
   answerFeed: document.querySelector("#answerFeed"),
@@ -2886,7 +2945,21 @@ const elements = {
   accountDialog: document.querySelector("#accountDialog"),
   accountForm: document.querySelector("#accountForm"),
   accountTitle: document.querySelector("#accountTitle"),
+  accountStatus: document.querySelector("#accountStatus"),
   closeAccountDialogButton: document.querySelector("#closeAccountDialogButton")
+};
+
+let cloudBackend = {
+  configured: false,
+  ready: false,
+  status: "offline",
+  error: "",
+  auth: null,
+  db: null,
+  modules: null,
+  unsubscribers: [],
+  saveTimer: 0,
+  applyingRemote: false
 };
 
 elements.playDate.value = state.selectedDate;
@@ -2916,16 +2989,7 @@ elements.entryForm.addEventListener("submit", (event) => {
 
 elements.friendForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = elements.friendNameInput.value.trim();
-  if (!name) return;
-  state.friends.push({
-    id: uniqueId(slugify(name), state.friends.map((friend) => friend.id)),
-    name,
-    handle: elements.friendHandleInput.value.trim() || `@${slugify(name)}`
-  });
-  elements.friendForm.reset();
-  saveState();
-  render();
+  handleFriendSubmit();
 });
 
 elements.addGameButton?.addEventListener("click", () => {
@@ -2955,9 +3019,7 @@ elements.accountControls.addEventListener("click", (event) => {
   if (!actionButton) return;
   const action = actionButton.dataset.accountAction;
   if (action === "signout") {
-    state.account = { signedIn: false, provider: "", email: "" };
-    saveState();
-    render();
+    signOutAccount();
     return;
   }
   openAccountDialog(action);
@@ -2970,11 +3032,17 @@ elements.closeAccountDialogButton.addEventListener("click", () => {
 elements.accountForm.addEventListener("click", (event) => {
   const providerButton = event.target.closest("[data-provider]");
   if (!providerButton) return;
-  createPrototypeAccount(providerButton.dataset.provider);
+  signInWithProvider(providerButton.dataset.provider);
 });
 
 elements.accountForm.addEventListener("submit", (event) => {
   event.preventDefault();
+});
+
+elements.friendSync?.addEventListener("click", (event) => {
+  const actionButton = event.target.closest("[data-friend-action]");
+  if (!actionButton) return;
+  handleFriendRequestAction(actionButton.dataset.friendAction, actionButton.dataset.requestId);
 });
 
 elements.copyButton.addEventListener("click", async () => {
@@ -3053,7 +3121,7 @@ function render() {
   const activeGame = getActiveGame();
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
   const myEntry = gameEntries.you;
-  const friendEntries = state.friends.filter((friend) => gameEntries[friend.id]);
+  const friendEntries = state.friends.filter((friend) => friend.status !== "pending" && gameEntries[friend.id]);
 
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
@@ -3073,6 +3141,7 @@ function render() {
   renderForm(myEntry);
   renderMetrics();
   renderScoreboards(activeGame);
+  renderFriendSync();
   renderAnswers();
   focusHolesViewport(activeGame);
 }
@@ -3102,7 +3171,7 @@ function renderAccount() {
     elements.accountControls.innerHTML = `
       <span class="account-name">
         ${escapeHtml(state.profile.name)}
-        <small>${escapeHtml(state.account.provider)} account</small>
+        <small>${escapeHtml(state.account.provider)} · ${state.account.backend === "cloud" ? "synced" : "local"}</small>
       </span>
       <button class="ghost-button compact-button" type="button" data-account-action="signout">Sign out</button>
     `;
@@ -3124,18 +3193,400 @@ function renderNav() {
 
 function openAccountDialog(mode) {
   elements.accountTitle.textContent = mode === "login" ? "Log in to Solvry" : "Create your Solvry account";
+  updateAccountStatus();
   elements.accountDialog.showModal();
 }
 
-function createPrototypeAccount(provider) {
+function getFirebaseConfig() {
+  if (SOLVRY_FIREBASE_CONFIG?.apiKey && SOLVRY_FIREBASE_CONFIG?.projectId && SOLVRY_FIREBASE_CONFIG?.appId) {
+    return SOLVRY_FIREBASE_CONFIG;
+  }
+  try {
+    const localConfig = JSON.parse(localStorage.getItem("solvry-firebase-config") || "null");
+    return localConfig?.apiKey && localConfig?.projectId && localConfig?.appId ? localConfig : null;
+  } catch {
+    return null;
+  }
+}
+
+async function initCloudBackend() {
+  const config = getFirebaseConfig();
+  cloudBackend.configured = !!config;
+  if (!config) {
+    cloudBackend.status = "local-only";
+    updateAccountStatus();
+    renderFriendSync();
+    return;
+  }
+
+  try {
+    const [appModule, authModule, firestoreModule] = await Promise.all([
+      import(FIREBASE_MODULES.app),
+      import(FIREBASE_MODULES.auth),
+      import(FIREBASE_MODULES.firestore)
+    ]);
+    const app = appModule.initializeApp(config);
+    cloudBackend.modules = { auth: authModule, firestore: firestoreModule };
+    cloudBackend.auth = authModule.getAuth(app);
+    cloudBackend.db = firestoreModule.getFirestore(app);
+    cloudBackend.ready = true;
+    cloudBackend.status = "ready";
+    authModule.onAuthStateChanged(cloudBackend.auth, (user) => {
+      handleCloudAuthUser(user).catch((error) => {
+        cloudBackend.error = error.message || "Could not sync account.";
+        updateAccountStatus();
+      });
+    });
+    updateAccountStatus();
+  } catch (error) {
+    cloudBackend.status = "error";
+    cloudBackend.error = error.message || "Could not load Firebase.";
+    updateAccountStatus();
+  }
+}
+
+function updateAccountStatus(message = "") {
+  if (!elements.accountStatus) return;
+  const text = message
+    || (cloudBackend.ready
+      ? "Google and Apple sign-in are connected. Scores, friends, and requests sync to Solvry Cloud."
+      : cloudBackend.configured
+        ? cloudBackend.error || "Connecting Solvry Cloud."
+        : "Real sign-in needs Firebase web config. Add window.SOLVRY_FIREBASE_CONFIG with Auth and Firestore enabled.");
+  elements.accountStatus.textContent = text;
+  elements.accountStatus.classList.toggle("error", !!cloudBackend.error || (!cloudBackend.ready && !cloudBackend.configured));
+}
+
+async function signInWithProvider(providerName) {
+  if (!cloudBackend.ready) {
+    updateAccountStatus("Real sign-in is not configured yet. Add Firebase web config to enable Google and Apple accounts.");
+    return;
+  }
+
+  const { GoogleAuthProvider, OAuthProvider, signInWithPopup } = cloudBackend.modules.auth;
+  const provider = providerName === "Google" ? new GoogleAuthProvider() : new OAuthProvider("apple.com");
+  try {
+    updateAccountStatus(`Opening ${providerName} sign-in.`);
+    await signInWithPopup(cloudBackend.auth, provider);
+  } catch (error) {
+    cloudBackend.error = error.message || `${providerName} sign-in failed.`;
+    updateAccountStatus();
+  }
+}
+
+async function signOutAccount() {
+  if (cloudBackend.ready && cloudBackend.auth?.currentUser) {
+    try {
+      await cloudBackend.modules.auth.signOut(cloudBackend.auth);
+    } catch (error) {
+      cloudBackend.error = error.message || "Could not sign out of Solvry Cloud.";
+    }
+  }
+  clearCloudSubscriptions();
+  state.account = { signedIn: false, provider: "", email: "", uid: "", backend: "local" };
+  state.friendRequests = { incoming: [], outgoing: [] };
+  saveState();
+  render();
+}
+
+async function handleCloudAuthUser(user) {
+  if (!user) return;
+  clearCloudSubscriptions();
+  const provider = getAuthProviderLabel(user);
+  const profile = {
+    name: user.displayName || state.profile.name || "You",
+    handle: state.profile.handle && state.profile.handle !== "@solvry" ? state.profile.handle : `@${slugify((user.displayName || user.email || "solvry").split("@")[0])}`
+  };
+  state.profile = { ...state.profile, ...profile, id: "you" };
   state.account = {
     signedIn: true,
     provider,
-    email: provider === "Google" ? "google-account@solvry.local" : "apple-account@solvry.local"
+    email: user.email || "",
+    uid: user.uid,
+    backend: "cloud"
   };
+  try {
+    await loadCloudState(user.uid);
+    await persistCloudState();
+    subscribeFriendRequests(user.uid);
+    await refreshAcceptedFriends();
+    elements.accountDialog.close();
+    saveState();
+    render();
+  } catch (error) {
+    cloudBackend.error = error.message || "Could not finish account sync.";
+    updateAccountStatus();
+    renderFriendSync();
+  }
+}
+
+function getAuthProviderLabel(user) {
+  const providerId = user.providerData?.[0]?.providerId || "";
+  if (providerId.includes("google")) return "Google";
+  if (providerId.includes("apple")) return "Apple";
+  return "Solvry";
+}
+
+async function loadCloudState(uid) {
+  const { doc, getDoc } = cloudBackend.modules.firestore;
+  cloudBackend.applyingRemote = true;
+  try {
+    const snap = await getDoc(doc(cloudBackend.db, "users", uid));
+    if (!snap.exists()) return;
+    const remote = snap.data();
+    state.profile = { ...state.profile, ...(remote.profile || {}) };
+    state.friends = Array.isArray(remote.friends) ? remote.friends : state.friends;
+    state.pinnedGameIds = Array.isArray(remote.pinnedGameIds) ? remote.pinnedGameIds : state.pinnedGameIds;
+    state.entries = mergeEntries(state.entries, remote.entries || {});
+  } finally {
+    cloudBackend.applyingRemote = false;
+  }
+}
+
+function serializeCloudState() {
+  return {
+    profile: {
+      name: state.profile.name,
+      handle: state.profile.handle,
+      handleLower: normalizeHandle(state.profile.handle)
+    },
+    friends: state.friends,
+    entries: state.entries,
+    pinnedGameIds: state.pinnedGameIds,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function queueCloudSave() {
+  if (!cloudBackend.ready || !state.account?.uid || cloudBackend.applyingRemote) return;
+  window.clearTimeout(cloudBackend.saveTimer);
+  cloudBackend.saveTimer = window.setTimeout(() => {
+    persistCloudState().catch((error) => {
+      cloudBackend.error = error.message || "Could not save to Solvry Cloud.";
+      renderFriendSync();
+    });
+  }, 420);
+}
+
+async function persistCloudState() {
+  if (!cloudBackend.ready || !state.account?.uid) return;
+  const { doc, setDoc } = cloudBackend.modules.firestore;
+  await setDoc(doc(cloudBackend.db, "users", state.account.uid), serializeCloudState(), { merge: true });
+  cloudBackend.error = "";
+}
+
+function clearCloudSubscriptions() {
+  cloudBackend.unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+  cloudBackend.unsubscribers = [];
+}
+
+function subscribeFriendRequests(uid) {
+  const { collection, onSnapshot, query, where } = cloudBackend.modules.firestore;
+  const requests = collection(cloudBackend.db, "friendRequests");
+  const incoming = onSnapshot(query(requests, where("toUid", "==", uid)), (snapshot) => {
+    state.friendRequests.incoming = snapshot.docs.map(requestSnapshotToState).filter((request) => request.status !== "rejected");
+    applyAcceptedRequests();
+    renderFriendSync();
+  });
+  const outgoing = onSnapshot(query(requests, where("fromUid", "==", uid)), (snapshot) => {
+    state.friendRequests.outgoing = snapshot.docs.map(requestSnapshotToState).filter((request) => request.status !== "rejected");
+    applyAcceptedRequests();
+    renderFriendSync();
+  });
+  cloudBackend.unsubscribers.push(incoming, outgoing);
+}
+
+function requestSnapshotToState(snapshot) {
+  return { id: snapshot.id, ...snapshot.data() };
+}
+
+function applyAcceptedRequests() {
+  [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])]
+    .filter((request) => request.status === "accepted")
+    .forEach((request) => {
+      const friend = request.fromUid === state.account.uid
+        ? { uid: request.toUid, ...(request.toProfile || {}) }
+        : { uid: request.fromUid, ...(request.fromProfile || {}) };
+      addOrUpdateFriend({
+        id: friend.uid,
+        uid: friend.uid,
+        name: friend.name || friend.handle || "Friend",
+        handle: friend.handle || "@friend",
+        status: "accepted"
+      });
+    });
   saveState();
-  elements.accountDialog.close();
+}
+
+async function handleFriendSubmit() {
+  const name = elements.friendNameInput.value.trim();
+  const handle = elements.friendHandleInput.value.trim();
+  if (!name && !handle) return;
+
+  if (cloudBackend.ready && state.account?.uid) {
+    try {
+      await sendCloudFriendRequest(name, handle);
+    } catch (error) {
+      cloudBackend.error = error.message || "Could not send that friend request.";
+      renderFriendSync();
+    }
+    return;
+  }
+
+  if (!name) return;
+  addOrUpdateFriend({
+    id: uniqueId(slugify(name), state.friends.map((friend) => friend.id)),
+    name,
+    handle: handle || `@${slugify(name)}`,
+    status: "local"
+  });
+  elements.friendForm.reset();
+  saveState();
   render();
+}
+
+async function sendCloudFriendRequest(name, handle) {
+  const normalizedHandle = normalizeHandle(handle || name);
+  if (!normalizedHandle) {
+    cloudBackend.error = "Enter a friend's Solvry handle to send a request.";
+    renderFriendSync();
+    return;
+  }
+
+  const { collection, doc, getDocs, query, setDoc, where } = cloudBackend.modules.firestore;
+  const users = await getDocs(query(collection(cloudBackend.db, "users"), where("profile.handleLower", "==", normalizedHandle)));
+  const target = users.docs.find((item) => item.id !== state.account.uid);
+  if (!target) {
+    cloudBackend.error = `No Solvry account found for @${normalizedHandle}.`;
+    renderFriendSync();
+    return;
+  }
+
+  const requestId = [state.account.uid, target.id].sort().join("__");
+  const targetProfile = target.data().profile || {};
+  await setDoc(doc(cloudBackend.db, "friendRequests", requestId), {
+    fromUid: state.account.uid,
+    toUid: target.id,
+    fromProfile: { name: state.profile.name, handle: state.profile.handle },
+    toProfile: { name: targetProfile.name || name || "Friend", handle: targetProfile.handle || `@${normalizedHandle}` },
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }, { merge: true });
+  elements.friendForm.reset();
+  cloudBackend.error = "";
+  renderFriendSync();
+}
+
+async function handleFriendRequestAction(action, requestId) {
+  if (!cloudBackend.ready || !requestId) return;
+  const request = [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])].find((item) => item.id === requestId);
+  if (!request) return;
+  const { doc, updateDoc } = cloudBackend.modules.firestore;
+  const status = action === "accept" ? "accepted" : "rejected";
+  await updateDoc(doc(cloudBackend.db, "friendRequests", requestId), {
+    status,
+    updatedAt: new Date().toISOString()
+  });
+  if (status === "accepted") applyAcceptedRequests();
+}
+
+async function refreshAcceptedFriends() {
+  if (!cloudBackend.ready || !state.account?.uid) return;
+  const accepted = state.friends.filter((friend) => friend.uid && friend.status === "accepted");
+  await Promise.all(accepted.map((friend) => loadFriendEntries(friend)));
+}
+
+async function loadFriendEntries(friend) {
+  const { doc, getDoc } = cloudBackend.modules.firestore;
+  const snap = await getDoc(doc(cloudBackend.db, "users", friend.uid));
+  if (!snap.exists()) return;
+  mergeFriendEntries(friend.id, snap.data().entries || {});
+}
+
+function mergeFriendEntries(friendId, entries) {
+  Object.entries(entries).forEach(([dateKey, dayEntries]) => {
+    Object.entries(dayEntries || {}).forEach(([gameId, gameEntries]) => {
+      const entry = gameEntries?.you;
+      if (!entry) return;
+      state.entries[dateKey] ||= {};
+      state.entries[dateKey][gameId] ||= {};
+      state.entries[dateKey][gameId][friendId] = entry;
+    });
+  });
+}
+
+function mergeEntries(localEntries, remoteEntries) {
+  const merged = structuredClone(remoteEntries || {});
+  Object.entries(localEntries || {}).forEach(([dateKey, dayEntries]) => {
+    merged[dateKey] ||= {};
+    Object.entries(dayEntries || {}).forEach(([gameId, entries]) => {
+      merged[dateKey][gameId] = { ...(merged[dateKey][gameId] || {}), ...entries };
+    });
+  });
+  return merged;
+}
+
+function addOrUpdateFriend(friend) {
+  const existingIndex = state.friends.findIndex((item) => item.id === friend.id || item.uid === friend.uid || normalizeHandle(item.handle) === normalizeHandle(friend.handle));
+  if (existingIndex >= 0) {
+    state.friends[existingIndex] = { ...state.friends[existingIndex], ...friend };
+  } else {
+    state.friends.push(friend);
+  }
+}
+
+function normalizeHandle(value) {
+  return String(value || "").trim().toLowerCase().replace(/^@/, "");
+}
+
+function renderFriendSync() {
+  if (!elements.friendSync) return;
+  if (!cloudBackend.ready) {
+    elements.friendSync.innerHTML = `
+      <article class="sync-card">
+        <header><strong>Local friends</strong><span class="sync-pill${cloudBackend.error ? " error" : ""}">${cloudBackend.configured ? "Connecting" : "No backend"}</span></header>
+        <small>${escapeHtml(cloudBackend.error || "Add Firebase Auth and Firestore config to enable real friend requests and synced leaderboards.")}</small>
+      </article>
+    `;
+    return;
+  }
+
+  if (!state.account?.uid) {
+    elements.friendSync.innerHTML = `
+      <article class="sync-card">
+        <header><strong>Friend requests</strong><span class="sync-pill">Sign in</span></header>
+        <small>Log in with Google or Apple to send requests by Solvry handle.</small>
+      </article>
+    `;
+    return;
+  }
+
+  const incoming = (state.friendRequests.incoming || []).filter((request) => request.status === "pending");
+  const outgoing = (state.friendRequests.outgoing || []).filter((request) => request.status === "pending");
+  const acceptedCount = state.friends.filter((friend) => friend.status === "accepted" || !friend.status).length;
+  elements.friendSync.innerHTML = `
+    <article class="sync-card">
+      <header><strong>Cloud friends</strong><span class="sync-pill">${acceptedCount} connected</span></header>
+      <small>${cloudBackend.error ? escapeHtml(cloudBackend.error) : "Requests and accepted friends sync across devices."}</small>
+    </article>
+    ${incoming.map((request) => `
+      <article class="sync-card">
+        <header><strong>${escapeHtml(request.fromProfile?.name || "Friend")}</strong><span class="sync-pill">Request</span></header>
+        <small>${escapeHtml(request.fromProfile?.handle || "")}</small>
+        <div class="request-actions">
+          <button class="primary-button" type="button" data-friend-action="accept" data-request-id="${escapeHtml(request.id)}">Accept</button>
+          <button class="ghost-button" type="button" data-friend-action="reject" data-request-id="${escapeHtml(request.id)}">Decline</button>
+        </div>
+      </article>
+    `).join("")}
+    ${outgoing.map((request) => `
+      <article class="sync-card">
+        <header><strong>${escapeHtml(request.toProfile?.name || "Friend")}</strong><span class="sync-pill">Pending</span></header>
+        <small>${escapeHtml(request.toProfile?.handle || "")}</small>
+      </article>
+    `).join("")}
+  `;
 }
 
 function renderCurrentResult(game, entry) {
@@ -5197,7 +5648,7 @@ function parseRankScore(score) {
 function renderAnswers() {
   const activeGame = getActiveGame();
   const entries = getGameEntries(state.selectedDate, state.activeGameId);
-  const people = [state.profile, ...state.friends].map((person) => ({
+  const people = [state.profile, ...state.friends.filter((friend) => friend.status !== "pending")].map((person) => ({
     id: person.id || "you",
     name: person.name,
     handle: person.handle,
@@ -5429,7 +5880,7 @@ function getGameEntries(date, gameId) {
 }
 
 function getPeople() {
-  return [state.profile, ...state.friends].map((person) => ({
+  return [state.profile, ...state.friends.filter((friend) => friend.status !== "pending")].map((person) => ({
     id: person.id || "you",
     name: person.name,
     handle: person.handle
@@ -5550,6 +6001,7 @@ function mergeState(base, saved) {
     ...saved,
     profile: { ...base.profile, ...saved.profile },
     account: { ...base.account, ...saved.account },
+    friendRequests: { ...base.friendRequests, ...saved.friendRequests },
     activeGameId: mergedGameIds.has(activeGameId) ? activeGameId : base.activeGameId,
     games: mergedGames,
     pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds)
@@ -5571,6 +6023,7 @@ function remapDayEntries(dayEntries, allowedIds) {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  queueCloudSave();
 }
 
 function slugify(value) {
@@ -5618,5 +6071,6 @@ function flashStatus(element, message) {
   saveStatusTimers.set(element, timer);
 }
 
+initCloudBackend();
 render();
 """#

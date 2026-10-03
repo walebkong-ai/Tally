@@ -22,10 +22,20 @@ The build writes the deployable site to `dist/`.
 - Streak, completed-today, and total-solves stats with a recent progress row
 - Friendlier UI states for saved results, score examples, imports, and navigation
 - Colorful Concept C-style dashboard strip with Concept A-style editorial headings
-- Prototype login/sign-up flow with Apple and Google account options
-- Friend leaderboard
+- Firebase-ready login/sign-up flow with Google and Apple account options
+- Friend requests, friend leaderboards, and cloud-ready saved profiles/scores
 - Spoiler-safe answer sharing
 - Official game links
 - Clipboard and paste import for supported official share results
 - Add-friend and add-game flows
-- Browser-local saved data for the first prototype
+- Browser-local fallback when cloud config is not connected
+
+## Account and friend sync
+
+Solvry now includes a real-account adapter for Firebase Auth and Firestore. Without config, the site stays in local mode and labels friends as local-only. To enable production accounts, provide a Firebase web config as `window.SOLVRY_FIREBASE_CONFIG` before `app.js` loads, or save the same JSON in local storage under `solvry-firebase-config` while testing.
+
+Required Firebase products:
+
+- Authentication with Google and Apple providers enabled
+- Firestore collections for `users` and `friendRequests`
+- Security rules that let signed-in users read/write their own profile and scores, read accepted friends' public score data, and create/respond to their own friend requests
