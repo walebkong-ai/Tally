@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=10" />
   </head>
   <body>
     <div class="app" id="app">
@@ -283,7 +283,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=9" type="module"></script>
+    <script src="app.js?v=10" type="module"></script>
   </body>
 </html>
 """#
@@ -2765,7 +2765,7 @@ const SCORING_STYLES = {
 };
 
 const GOLF_GENERATION_VERSION = 3;
-const GOLF_GAME_VERSION = 8;
+const GOLF_GAME_VERSION = 9;
 const GOLF_IDEAL_POWER = 60;
 const GOLF_CLUBS = [
   { id: "driver", label: "DR", name: "Driver", carry: 278, max: 278, dispersion: 9.5, rollout: 30 },
@@ -3179,9 +3179,11 @@ function renderHolesBoard(play) {
   const selectedClub = getGolfClub(play.selectedClubId);
   const displayAimAngle = phase === "aiming" ? getActiveAimAngle(play) : play.lockedAimAngle ?? play.aimAngle;
   const shotContext = getGolfShotContext(play, hole, selectedClub, displayAimAngle);
+  const cameraAngle = play.cameraAnchorAngle ?? play.aimCenterAngle ?? play.aimAngle;
+  const cameraContext = getGolfShotContext(play, hole, selectedClub, cameraAngle);
   const target = shotContext.aimEndpoint;
   const scoreLabel = formatRelativeScore(getGolfRelativeScore(play));
-  const showClubControls = !["power-locked", "ball-flight", "hole-complete"].includes(phase);
+  const showClubControls = !["power-locked", "ball-flight", "shot-result", "hole-complete"].includes(phase);
 
   return `
     <div class="daily-golf" data-shot-phase="${escapeHtml(phase)}">
@@ -3193,7 +3195,7 @@ function renderHolesBoard(play) {
             <div class="golf-stat"><span>Hole ${hole.number} · Par ${hole.par}</span><strong>${remaining} yds</strong></div>
             <div class="golf-stat"><span>Wind</span><strong>${hole.wind.speed} mph ${windArrow(hole.wind.direction)}</strong></div>
           </div>
-          ${renderGolfCourseSvg(play, hole, target, displayAimAngle, phase)}
+          ${renderGolfCourseSvg(play, hole, target, displayAimAngle, phase, cameraContext)}
           <div class="shot-summary">
             <span><strong>${surfaceLabel(play.currentSurface)} · shot ${play.holeStrokes + 1}</strong><em>${remaining} yds to pin</em></span>
             <small>${escapeHtml(play.lastShot ? play.lastShot.summary : play.message)}</small>
@@ -3246,11 +3248,11 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
     `;
   }
 
-  if (phase === "power-locked" || phase === "ball-flight") {
+  if (phase === "power-locked" || phase === "ball-flight" || phase === "shot-result") {
     return `
       <div class="shot-stage locked">
-        <strong>${phase === "power-locked" ? "Power locked" : "Swinging"}</strong>
-        <p>${phase === "power-locked" ? "Watch the shot." : "Controls hidden during flight."}</p>
+        <strong>${phase === "power-locked" ? "Power locked" : phase === "shot-result" ? "Settling" : "Swinging"}</strong>
+        <p>${phase === "power-locked" ? "Watch the shot." : phase === "shot-result" ? "Camera moving to the next lie." : "Controls hidden during flight."}</p>
       </div>
     `;
   }
@@ -3417,8 +3419,14 @@ function renderGolfScorecardTable(play) {
   `;
 }
 
-function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
+function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase, cameraContext) {
   const ball = play.ball;
+  const camera = getGolfCameraFrame(play, hole, cameraContext, phase);
+  const viewBox = formatGolfCameraViewBox(camera);
+  const previousViewBox = play.previousCameraFrame ? formatGolfCameraViewBox(play.previousCameraFrame) : "";
+  const animateCamera = previousViewBox && previousViewBox !== viewBox
+    ? `<animate attributeName="viewBox" from="${previousViewBox}" to="${viewBox}" dur="420ms" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.76 0.24 1"></animate>`
+    : "";
   const puttZones = getGolfPuttZones(hole);
   const landingRadius = getGolfLandingRadius(play, hole);
   const ballMarker = renderGolfBallMarker(ball);
@@ -3443,7 +3451,8 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const fairwayFringe = fairwayPathWithWidth(hole, 7);
   const fairwayCore = fairwayPath(hole);
   return `
-    <svg class="golf-course-map" viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(hole.name)} course map">
+    <svg class="golf-course-map" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet" data-camera-mode="${camera.mode}" role="img" aria-label="${escapeHtml(hole.name)} course map">
+      ${animateCamera}
       <defs>
         <filter id="course-shadow-${hole.number}" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="0.8" stdDeviation="0.65" flood-color="#273c32" flood-opacity="0.18"></feDropShadow>
@@ -3714,6 +3723,7 @@ function handleHolesAction(play, action, game) {
     play.flightPreview = null;
     if (phase === "aiming") {
       setGolfAimCenterToPin(play);
+      play.cameraAnchorAngle = play.aimCenterAngle;
       play.aimStartedAt = Date.now();
     }
     play.message = `${club.name} selected.`;
@@ -3741,6 +3751,8 @@ function beginGolfAiming(play, hole = getCurrentGolfHole(play)) {
   setGolfAimCenterToPin(play, hole);
   play.shotPhase = "aiming";
   play.aimStartedAt = Date.now();
+  play.cameraAnchorAngle = play.aimCenterAngle;
+  play.previousCameraFrame = null;
   play.lockedAimAngle = null;
   play.lockedPower = null;
   play.powerWindow = null;
@@ -3862,6 +3874,13 @@ function computeGolfShotOutcome(play, powerPosition) {
 }
 
 function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
+  const currentHole = getCurrentGolfHole(play);
+  const previousCameraFrame = getGolfCameraFrame(
+    play,
+    currentHole,
+    getGolfShotContext(play, currentHole, getGolfClub(play.selectedClubId), play.cameraAnchorAngle ?? play.aimCenterAngle ?? play.aimAngle),
+    "ball-flight"
+  );
   const outcome = preparedOutcome || computeGolfShotOutcome(play, powerPosition);
   const { hole, club, quality, start, carryYards, landing, final, finalSurface } = outcome;
   const shotNumber = play.holeStrokes + 1;
@@ -3911,10 +3930,24 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
   const remaining = Math.round(yardsBetween(final, hole.pin, hole));
   play.selectedClubId = recommendGolfClub(remaining);
   play.targetMode = "pin";
-  beginGolfAiming(play, hole);
-  play.message = penalty
+  setGolfAimCenterToPin(play, hole);
+  play.cameraAnchorAngle = play.aimCenterAngle;
+  play.previousCameraFrame = previousCameraFrame;
+  play.shotPhase = "shot-result";
+  play.lockedAimAngle = null;
+  play.lockedPower = null;
+  play.powerWindow = null;
+  const resultMessage = penalty
     ? `WATER +1. ${remaining} yds left from ${surfaceLabel(finalSurface).toLowerCase()}.`
     : `${quality.label.toUpperCase()} · ${surfaceLabel(finalSurface).toUpperCase()} · ${remaining} yds left.`;
+  play.message = resultMessage;
+  window.setTimeout(() => {
+    if (play.completed || play.shotPhase !== "shot-result") return;
+    beginGolfAiming(play, hole);
+    play.message = resultMessage;
+    saveState();
+    render();
+  }, 360);
 }
 
 function handleHoopsAction(play, action, game) {
@@ -4297,6 +4330,87 @@ function getGolfTargetPoint(play, hole, club) {
 
 function getGolfTargetPointForAngle(play, hole, club, angle) {
   return getGolfShotContext(play, hole, club, angle).aimEndpoint;
+}
+
+function getGolfCameraFrame(play, hole, context, phase) {
+  if (phase === "ball-flight" && play.flightPreview) {
+    return getGolfCameraFrameForPoints([
+      play.flightPreview.start,
+      play.flightPreview.landing,
+      play.flightPreview.final
+    ], "ball-follow", 13);
+  }
+
+  const ball = context.start;
+  const remainingUnits = Math.max(1, context.distanceToPin / hole.yardsPerUnit);
+  const clubUnits = Math.max(8, context.nominalCarryYards / hole.yardsPerUnit);
+  const nearGreen = context.distanceToPin <= 92;
+  const shouldIncludePin = nearGreen || context.distanceToPin <= context.nominalCarryYards * 1.18;
+  const forwardFocus = shouldIncludePin ? hole.pin : context.aimEndpoint;
+  const forwardDistance = distance(ball, forwardFocus);
+  const progress = clamp(1 - context.distanceToPin / Math.max(1, hole.distance), 0, 1);
+  let size = Math.max(34, Math.min(remainingUnits, clubUnits) * (shouldIncludePin ? 1.35 : 1.58) + 18);
+
+  if (play.holeStrokes === 0 && play.currentSurface === "tee") {
+    size = Math.max(size, Math.min(92, distance(hole.tee, hole.pin) * 1.05));
+  }
+
+  size = clamp(size - progress * 16, nearGreen ? 26 : 32, 92);
+
+  const direction = normalizeGolfVector({ x: forwardFocus.x - ball.x, y: forwardFocus.y - ball.y });
+  const center = {
+    x: ball.x + direction.x * Math.min(forwardDistance * 0.54, size * 0.28),
+    y: ball.y + direction.y * Math.min(forwardDistance * 0.54, size * 0.28)
+  };
+  const points = [ball, context.aimEndpoint];
+  const sweepRange = getAimSweepRange(play, hole);
+  const club = getGolfClub(play.selectedClubId);
+  points.push(
+    getGolfShotContext(play, hole, club, context.angle - sweepRange).aimEndpoint,
+    getGolfShotContext(play, hole, club, context.angle + sweepRange).aimEndpoint
+  );
+  if (shouldIncludePin) points.push(hole.pin, hole.green);
+  const frame = clampGolfCameraFrame(center, size, size, points, nearGreen ? 6 : 8);
+  const mode = nearGreen ? "green" : progress > 0.45 ? "approach" : play.holeStrokes ? "shot-setup" : "hole-overview";
+  return { ...frame, mode };
+}
+
+function getGolfCameraFrameForPoints(points, mode, padding = 10) {
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const size = clamp(Math.max(maxX - minX, maxY - minY) + padding * 2, 34, 96);
+  return { ...clampGolfCameraFrame({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, size, size, points, padding), mode };
+}
+
+function clampGolfCameraFrame(center, width, height, points = [], padding = 6) {
+  let frameWidth = clamp(width, 24, 100);
+  let frameHeight = clamp(height, 24, 100);
+  for (const point of points) {
+    while ((point.x < center.x - frameWidth / 2 + padding || point.x > center.x + frameWidth / 2 - padding || point.y < center.y - frameHeight / 2 + padding || point.y > center.y + frameHeight / 2 - padding) && frameWidth < 100) {
+      frameWidth = Math.min(100, frameWidth + 4);
+      frameHeight = Math.min(100, frameHeight + 4);
+    }
+  }
+  const x = clamp(center.x - frameWidth / 2, 0, 100 - frameWidth);
+  const y = clamp(center.y - frameHeight / 2, 0, 100 - frameHeight);
+  return { x, y, width: frameWidth, height: frameHeight };
+}
+
+function formatGolfCameraViewBox(frame) {
+  return `${roundCameraValue(frame.x)} ${roundCameraValue(frame.y)} ${roundCameraValue(frame.width)} ${roundCameraValue(frame.height)}`;
+}
+
+function roundCameraValue(value) {
+  return Math.round(value * 100) / 100;
+}
+
+function normalizeGolfVector(vector) {
+  const length = Math.hypot(vector.x, vector.y) || 1;
+  return { x: vector.x / length, y: vector.y / length };
 }
 
 function getVisibleAimLineLength(origin, angle) {
