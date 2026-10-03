@@ -1307,13 +1307,13 @@ h2 {
   min-height: 480px;
   margin: 0 auto;
   overflow: hidden;
-  border: 2px solid #141719;
+  border: 1.5px solid rgba(20, 23, 25, 0.9);
   border-radius: 18px;
   background:
     radial-gradient(circle at 14% 0%, rgba(189, 238, 226, 0.36), transparent 34%),
     linear-gradient(180deg, rgba(255, 254, 250, 0.98), rgba(246, 242, 230, 0.94)),
     var(--panel);
-  box-shadow: 0 20px 55px rgba(39, 60, 50, 0.1);
+  box-shadow: 0 18px 54px rgba(28, 50, 39, 0.12), 0 1px 0 rgba(255, 254, 250, 0.72) inset;
 }
 
 .golf-game-header {
@@ -1324,7 +1324,8 @@ h2 {
   flex: 0 0 auto;
   min-height: 42px;
   padding: 7px 13px;
-  background: rgba(255, 254, 250, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.92), rgba(250, 248, 240, 0.78));
 }
 
 .golf-game-header strong {
@@ -1359,7 +1360,7 @@ h2 {
   grid-template-columns: repeat(9, minmax(0, 1fr));
   flex: 0 0 auto;
   overflow: hidden;
-  border-block: 1px solid rgba(39, 60, 50, 0.12);
+  border-block: 1px solid rgba(39, 60, 50, 0.1);
   border-radius: 0;
   background: rgba(251, 249, 241, 0.72);
 }
@@ -1369,7 +1370,7 @@ h2 {
   gap: 1px;
   min-width: 0;
   padding: 4px 3px 3px;
-  border-right: 1px solid rgba(39, 60, 50, 0.1);
+  border-right: 1px solid rgba(39, 60, 50, 0.08);
   color: var(--muted);
   text-align: center;
   font-size: 0.7rem;
@@ -1383,9 +1384,9 @@ h2 {
 
 .golf-score-hole.current {
   background:
-    linear-gradient(180deg, rgba(225, 246, 235, 0.92), rgba(237, 249, 242, 0.78));
+    linear-gradient(180deg, rgba(217, 244, 229, 0.96), rgba(238, 249, 240, 0.8));
   color: #087255;
-  box-shadow: inset 0 4px 0 rgba(8, 114, 85, 0.7);
+  box-shadow: inset 0 3px 0 rgba(8, 114, 85, 0.58);
 }
 
 .golf-score-hole.done {
@@ -1530,9 +1531,41 @@ h2 {
   border-radius: 0;
   background: #dfe9d5;
   box-shadow:
-    inset 0 0 110px rgba(39, 60, 50, 0.16),
+    inset 0 0 86px rgba(39, 60, 50, 0.13),
     0 14px 28px rgba(39, 60, 50, 0.08);
   touch-action: pan-y;
+}
+
+.golf-course-map .course-water-wave {
+  animation: waterShimmer 5.8s ease-in-out infinite alternate;
+}
+
+.golf-course-map .course-target-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: targetBreathe 1.8s ease-in-out infinite;
+}
+
+.golf-course-map .golf-aim-layer {
+  filter: drop-shadow(0 1px 1px rgba(20, 23, 25, 0.18));
+}
+
+.golf-course-map .golf-ball-marker {
+  filter: drop-shadow(0 1px 1px rgba(20, 23, 25, 0.28));
+}
+
+.golf-course-map .pin-flag {
+  filter: drop-shadow(0 0.7px 0.6px rgba(20, 23, 25, 0.24));
+}
+
+@keyframes waterShimmer {
+  from { opacity: 0.18; transform: translateX(-0.5px); }
+  to { opacity: 0.36; transform: translateX(0.7px); }
+}
+
+@keyframes targetBreathe {
+  0%, 100% { opacity: 0.58; }
+  50% { opacity: 0.86; }
 }
 
 .golf-course-map text {
@@ -1610,9 +1643,10 @@ h2 {
   gap: 2px;
   min-height: 38px;
   padding: 4px;
-  border: 1px solid rgba(39, 60, 50, 0.14);
-  border-radius: 11px;
-  background: rgba(255, 254, 250, 0.7);
+  border: 1px solid rgba(39, 60, 50, 0.12);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 250, 0.9), rgba(248, 246, 236, 0.72));
   color: var(--muted);
   font-weight: 850;
   text-align: center;
@@ -1639,9 +1673,9 @@ h2 {
 .club-button.active {
   border-color: #087255;
   background:
-    linear-gradient(180deg, rgba(220, 246, 235, 0.96), rgba(242, 250, 244, 0.94));
+    linear-gradient(180deg, rgba(216, 246, 232, 0.98), rgba(240, 251, 243, 0.94));
   color: #087255;
-  box-shadow: 0 12px 24px rgba(8, 114, 85, 0.14);
+  box-shadow: 0 9px 18px rgba(8, 114, 85, 0.13), inset 0 1px 0 rgba(255, 254, 250, 0.7);
 }
 
 .swing-meter {
@@ -1763,18 +1797,19 @@ h2 {
   min-width: 0;
   height: 28px;
   overflow: hidden;
-  border: 2px solid rgba(20, 23, 25, 0.76);
+  border: 1.5px solid rgba(20, 23, 25, 0.72);
   border-radius: 999px;
   background:
     linear-gradient(90deg,
-      #f26d5b 0%,
-      #f5954b calc(var(--green-warm-start) * 1%),
-      #efbd3a calc(var(--green-start) * 1%),
-      #16a878 calc(var(--green-start) * 1%),
-      #16a878 calc(var(--green-end) * 1%),
-      #efbd3a calc(var(--green-end) * 1%),
-      #f5954b calc(var(--green-warm-end) * 1%),
-      #f26d5b 100%);
+      #ec715d 0%,
+      #f2a24d calc(var(--green-warm-start) * 1%),
+      #e8c446 calc(var(--green-start) * 1%),
+      #18a871 calc(var(--green-start) * 1%),
+      #0c9163 calc(var(--green-end) * 1%),
+      #e8c446 calc(var(--green-end) * 1%),
+      #f2a24d calc(var(--green-warm-end) * 1%),
+      #ec715d 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 254, 250, 0.5), 0 6px 16px rgba(39, 60, 50, 0.08);
 }
 
 .power-meter::before {
@@ -1809,11 +1844,11 @@ h2 {
   z-index: 3;
   top: -5px;
   left: calc(var(--power-marker) * 1%);
-  width: 8px;
+  width: 7px;
   height: 38px;
   border-radius: 999px;
   background: #fffefa;
-  box-shadow: 0 0 0 3px rgba(20, 23, 25, 0.9), 0 0 18px rgba(255, 254, 250, 0.95);
+  box-shadow: 0 0 0 2px rgba(20, 23, 25, 0.9), 0 0 18px rgba(255, 254, 250, 0.95);
   transform: translateX(-50%);
 }
 
@@ -1835,8 +1870,9 @@ h2 {
 .tap-panel {
   border-color: rgba(6, 70, 50, 0.95);
   background:
-    linear-gradient(180deg, #183e31, #0d2820);
+    linear-gradient(180deg, #1c5a3c, #103c2b);
   color: var(--paper);
+  box-shadow: 0 14px 25px rgba(6, 70, 50, 0.18);
 }
 
 .tap-panel:hover {
@@ -3330,40 +3366,74 @@ function renderGolfCourseSvg(play, hole, target, displayAimAngle, phase) {
   const lockPulse = phase === "aim-locked"
     ? `<circle cx="${target.x}" cy="${target.y}" r="2.2" fill="#fffefa" stroke="#b12a1c" stroke-width="0.75" opacity="0.8"><animate attributeName="r" values="2.2;5.4;2.6" dur="0.5s" fill="freeze"></animate><animate attributeName="opacity" values="0.8;0.18;0" dur="0.5s" fill="freeze"></animate></circle>`
     : "";
+  const fairwayFringe = fairwayPathWithWidth(hole, 7);
+  const fairwayCore = fairwayPath(hole);
   return `
     <svg class="golf-course-map" viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(hole.name)} course map">
       <defs>
-        <pattern id="fairway-stripes-${hole.number}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
-          <rect width="8" height="8" fill="#a9d88f"></rect>
-          <rect width="4" height="8" fill="#c5e8a8"></rect>
+        <filter id="course-shadow-${hole.number}" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0.8" stdDeviation="0.65" flood-color="#273c32" flood-opacity="0.18"></feDropShadow>
+        </filter>
+        <pattern id="rough-texture-${hole.number}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+          <rect width="7" height="7" fill="transparent"></rect>
+          <path d="M1 6 l1.2 -2.2 M4.6 5.5 l0.9 -2" stroke="#4f7551" stroke-width="0.22" opacity="0.24" stroke-linecap="round"></path>
+        </pattern>
+        <pattern id="fairway-stripes-${hole.number}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+          <rect width="10" height="10" fill="#a8d98a"></rect>
+          <rect width="5" height="10" fill="#c2e8a0" opacity="0.78"></rect>
+          <path d="M0 9 H10" stroke="#e8f7d6" stroke-width="0.18" opacity="0.36"></path>
         </pattern>
         <radialGradient id="green-glow-${hole.number}" cx="50%" cy="50%" r="55%">
-          <stop offset="0%" stop-color="#e6f6d7" stop-opacity="0.92"></stop>
-          <stop offset="68%" stop-color="#bdeee2" stop-opacity="0.74"></stop>
-          <stop offset="100%" stop-color="#87b978" stop-opacity="0.28"></stop>
+          <stop offset="0%" stop-color="#f0f9df" stop-opacity="0.98"></stop>
+          <stop offset="58%" stop-color="#beeaa7" stop-opacity="0.86"></stop>
+          <stop offset="100%" stop-color="#78ac68" stop-opacity="0.38"></stop>
+        </radialGradient>
+        <linearGradient id="water-fill-${hole.number}" x1="0%" x2="100%" y1="0%" y2="100%">
+          <stop offset="0%" stop-color="#bce6e6" stop-opacity="0.76"></stop>
+          <stop offset="100%" stop-color="#5caec3" stop-opacity="0.84"></stop>
+        </linearGradient>
+        <radialGradient id="sand-fill-${hole.number}" cx="42%" cy="35%" r="76%">
+          <stop offset="0%" stop-color="#f5e5ae"></stop>
+          <stop offset="100%" stop-color="#d8bc75"></stop>
+        </radialGradient>
+        <radialGradient id="tee-fill-${hole.number}" cx="50%" cy="42%" r="64%">
+          <stop offset="0%" stop-color="#fffefa"></stop>
+          <stop offset="100%" stop-color="#d9dfd2"></stop>
         </radialGradient>
       </defs>
       <rect width="100" height="100" fill="${escapeHtml(hole.palette.rough)}"></rect>
-      <rect width="100" height="100" fill="#fffefa" opacity="0.08"></rect>
-      ${hole.treeZones.map((zone) => `<ellipse cx="${zone.x}" cy="${zone.y}" rx="${zone.rx}" ry="${zone.ry}" fill="#456f4d" opacity="0.24"></ellipse>`).join("")}
-      ${hole.water.map((water) => `<ellipse cx="${water.x}" cy="${water.y}" rx="${water.rx}" ry="${water.ry}" fill="#7fc3d8" opacity="0.72"></ellipse>`).join("")}
-      <path d="${escapeHtml(fairwayPath(hole))}" fill="url(#fairway-stripes-${hole.number})" opacity="0.88"></path>
-      ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d9d1bd" stroke-width="${path.width}" stroke-linecap="round" opacity="0.7"></path>`).join("")}
-      ${hole.bunkers.map((bunker) => `<ellipse cx="${bunker.x}" cy="${bunker.y}" rx="${bunker.rx}" ry="${bunker.ry}" fill="#ead58f" stroke="#c7ac65" stroke-width="0.28" opacity="0.82"></ellipse>`).join("")}
-      <circle cx="${target.x}" cy="${target.y}" r="${landingRadius}" fill="#7fc3d8" opacity="0.16" stroke="#5fa6bd" stroke-width="0.38"></circle>
-      <circle cx="${target.x}" cy="${target.y}" r="${Math.max(4, landingRadius * 0.28)}" fill="#fffefa" opacity="0.24" stroke="#273c32" stroke-width="0.28" stroke-dasharray="1.2 1.2"></circle>
-      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 4}" fill="#a7df4e" opacity="0.22"></circle>
-      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="url(#green-glow-${hole.number})" stroke="#76a96a" stroke-width="0.45"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.74" opacity="0.62"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#273c32" stroke-width="0.52" opacity="0.72"></circle>
+      <rect width="100" height="100" fill="url(#rough-texture-${hole.number})" opacity="0.58"></rect>
+      <rect width="100" height="100" fill="#fffefa" opacity="0.06"></rect>
+      ${hole.treeZones.map((zone, index) => renderGolfTreeZone(zone, index)).join("")}
+      ${hole.water.map((water, index) => renderGolfWater(water, index, hole.number)).join("")}
+      <path d="${escapeHtml(fairwayFringe)}" fill="#8fbd7a" opacity="0.35"></path>
+      <path d="${escapeHtml(fairwayCore)}" fill="url(#fairway-stripes-${hole.number})" opacity="0.94" filter="url(#course-shadow-${hole.number})"></path>
+      <path d="${escapeHtml(fairwayCore)}" fill="none" stroke="#e9f6d4" stroke-width="0.55" opacity="0.28"></path>
+      ${hole.cartPaths.map((path) => `<path d="${escapeHtml(path.d)}" fill="none" stroke="#d8cdb5" stroke-width="${path.width + 1.15}" stroke-linecap="round" opacity="0.3"></path><path d="${escapeHtml(path.d)}" fill="none" stroke="#eee4cf" stroke-width="${path.width}" stroke-linecap="round" opacity="0.68"></path>`).join("")}
+      ${hole.bunkers.map((bunker, index) => renderGolfBunker(bunker, index, hole.number)).join("")}
+      <g class="course-target-ring">
+        <circle cx="${target.x}" cy="${target.y}" r="${landingRadius}" fill="#7fc3d8" opacity="0.13" stroke="#5fa6bd" stroke-width="0.32" stroke-dasharray="1.8 1.5"></circle>
+        <circle cx="${target.x}" cy="${target.y}" r="${Math.max(4, landingRadius * 0.28)}" fill="#fffefa" opacity="0.26" stroke="#273c32" stroke-width="0.3" stroke-dasharray="1.2 1.2"></circle>
+      </g>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 5.2}" fill="#8ec674" opacity="0.3"></circle>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r + 2.4}" fill="#d6f0bd" opacity="0.42"></circle>
+      <circle cx="${hole.green.x}" cy="${hole.green.y}" r="${hole.green.r}" fill="url(#green-glow-${hole.number})" stroke="#6f9e64" stroke-width="0.38" filter="url(#course-shadow-${hole.number})"></circle>
+      <path d="M ${hole.green.x - hole.green.r * 0.7} ${hole.green.y + 1.3} C ${hole.green.x - 2.5} ${hole.green.y - 2.3} ${hole.green.x + 2.4} ${hole.green.y + 3.7} ${hole.green.x + hole.green.r * 0.72} ${hole.green.y - 0.6}" fill="none" stroke="#fffefa" stroke-width="0.38" opacity="0.48"></path>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.two}" fill="none" stroke="#fffefa" stroke-width="0.55" opacity="0.48"></circle>
+      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="${hole.puttZones.one}" fill="none" stroke="#224238" stroke-width="0.42" opacity="0.62"></circle>
       ${aimLine}
       ${lockPulse}
-      <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#273c32" stroke-width="0.32" stroke-dasharray="2 2" opacity="0.36"></line>
+      <line x1="${ball.x}" y1="${ball.y}" x2="${target.x}" y2="${target.y}" stroke="#273c32" stroke-width="0.28" stroke-dasharray="2 2" opacity="0.26"></line>
       ${play.lastShot ? `<line x1="${play.lastShot.start.x}" y1="${play.lastShot.start.y}" x2="${play.lastShot.final.x}" y2="${play.lastShot.final.y}" stroke="#fffefa" stroke-width="1.05" opacity="0.78"></line>` : ""}
-      <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="none" stroke="#273c32" stroke-width="0.52" stroke-dasharray="1.5 1.5"></circle>
-      <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.25" fill="#273c32"></circle>
-      <path d="M ${hole.pin.x} ${hole.pin.y} v -6 l 5 2 l -5 2" fill="#ee6e5b" stroke="#273c32" stroke-width="0.28"></path>
-      <circle cx="${hole.tee.x}" cy="${hole.tee.y}" r="2.5" fill="none" stroke="#273c32" stroke-width="0.32" opacity="0.38"></circle>
+      <circle cx="${target.x}" cy="${target.y}" r="2.4" fill="rgba(255, 254, 250, 0.24)" stroke="#273c32" stroke-width="0.46" stroke-dasharray="1.5 1.5"></circle>
+      <g class="pin-flag">
+        <ellipse cx="${hole.pin.x}" cy="${hole.pin.y + 0.35}" rx="1.75" ry="1.05" fill="#11211d" opacity="0.24"></ellipse>
+        <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="1.14" fill="#1d332b"></circle>
+        <circle cx="${hole.pin.x}" cy="${hole.pin.y}" r="0.62" fill="#cbead5"></circle>
+        <path d="M ${hole.pin.x + 0.05} ${hole.pin.y + 0.2} v -6.6" fill="none" stroke="#263c32" stroke-width="0.46" stroke-linecap="round"></path>
+        <path d="M ${hole.pin.x + 0.2} ${hole.pin.y - 6.3} C ${hole.pin.x + 2.1} ${hole.pin.y - 5.8} ${hole.pin.x + 3.2} ${hole.pin.y - 5} ${hole.pin.x + 4.8} ${hole.pin.y - 4.25} C ${hole.pin.x + 3.1} ${hole.pin.y - 3.55} ${hole.pin.x + 2.1} ${hole.pin.y - 2.9} ${hole.pin.x + 0.2} ${hole.pin.y - 2.4} Z" fill="#ee6e5b" stroke="#263c32" stroke-width="0.25"></path>
+      </g>
+      <ellipse cx="${hole.tee.x}" cy="${hole.tee.y}" rx="2.85" ry="1.9" fill="url(#tee-fill-${hole.number})" stroke="#273c32" stroke-width="0.32" opacity="0.86"></ellipse>
       ${ballMarker}
     </svg>
   `;
@@ -3380,6 +3450,57 @@ function renderGolfBallMarker(ball) {
       <circle cx="${ball.x - 0.05}" cy="${ball.y + 0.42}" r="0.15" fill="#cfd6d0"></circle>
     </g>
   `;
+}
+
+function renderGolfWater(water, index, holeNumber) {
+  const shape = organicOvalPath(water, 0.18, index + 1);
+  const waveY = water.y - water.ry * 0.2;
+  return `
+    <g class="course-water">
+      <path d="${shape}" fill="url(#water-fill-${holeNumber})" opacity="0.86"></path>
+      <path d="${shape}" fill="none" stroke="#e4f4ef" stroke-width="0.72" opacity="0.34"></path>
+      <path class="course-water-wave" d="M ${water.x - water.rx * 0.62} ${waveY} C ${water.x - water.rx * 0.2} ${waveY - 1.4} ${water.x + water.rx * 0.18} ${waveY + 1.2} ${water.x + water.rx * 0.62} ${waveY - 0.3}" fill="none" stroke="#effff8" stroke-width="0.42" stroke-linecap="round"></path>
+      <path class="course-water-wave" d="M ${water.x - water.rx * 0.42} ${water.y + water.ry * 0.32} C ${water.x - water.rx * 0.1} ${water.y + water.ry * 0.9} ${water.x + water.rx * 0.22} ${water.y + water.ry * 0.1} ${water.x + water.rx * 0.48} ${water.y + water.ry * 0.46}" fill="none" stroke="#effff8" stroke-width="0.32" stroke-linecap="round"></path>
+    </g>
+  `;
+}
+
+function renderGolfBunker(bunker, index, holeNumber) {
+  const shape = organicOvalPath(bunker, 0.2, index + 6);
+  return `
+    <g class="course-bunker">
+      <path d="${shape}" fill="url(#sand-fill-${holeNumber})" stroke="#bda462" stroke-width="0.34" opacity="0.95"></path>
+      <path d="${shape}" fill="none" stroke="#fff4c9" stroke-width="0.45" opacity="0.42"></path>
+      <path d="M ${bunker.x - bunker.rx * 0.45} ${bunker.y + 0.2} C ${bunker.x - 1.5} ${bunker.y - bunker.ry * 0.42} ${bunker.x + 1.5} ${bunker.y + bunker.ry * 0.44} ${bunker.x + bunker.rx * 0.48} ${bunker.y - 0.1}" fill="none" stroke="#b89e5d" stroke-width="0.25" opacity="0.4"></path>
+    </g>
+  `;
+}
+
+function renderGolfTreeZone(zone, index) {
+  const base = `<ellipse cx="${zone.x}" cy="${zone.y}" rx="${zone.rx}" ry="${zone.ry}" fill="#315b3f" opacity="0.2"></ellipse>`;
+  const trees = Array.from({ length: 10 }, (_, item) => {
+    const angle = item * 2.38 + index * 0.9;
+    const radius = 0.25 + ((item * 37 + index * 11) % 58) / 100;
+    const x = zone.x + Math.cos(angle) * zone.rx * radius;
+    const y = zone.y + Math.sin(angle) * zone.ry * radius;
+    const size = 1.25 + ((item * 17 + index * 5) % 8) * 0.22;
+    const fill = item % 3 === 0 ? "#6f9766" : item % 3 === 1 ? "#517b57" : "#8bac72";
+    return `<g opacity="0.76"><ellipse cx="${x + 0.45}" cy="${y + 0.75}" rx="${size * 0.9}" ry="${size * 0.52}" fill="#273c32" opacity="0.1"></ellipse><circle cx="${x}" cy="${y}" r="${size}" fill="${fill}"></circle><circle cx="${x - size * 0.28}" cy="${y - size * 0.32}" r="${size * 0.34}" fill="#d5e8cf" opacity="0.58"></circle></g>`;
+  }).join("");
+  return `<g class="course-tree-zone">${base}${trees}</g>`;
+}
+
+function organicOvalPath(shape, wobble, phase) {
+  const rx = shape.rx;
+  const ry = shape.ry;
+  const x = shape.x;
+  const y = shape.y;
+  const a = 0.552;
+  const w1 = 1 + Math.sin(phase * 1.7) * wobble;
+  const w2 = 1 + Math.cos(phase * 1.3) * wobble;
+  const w3 = 1 - Math.sin(phase * 1.1) * wobble * 0.8;
+  const w4 = 1 - Math.cos(phase * 1.9) * wobble * 0.7;
+  return `M ${x} ${y - ry * w1} C ${x + rx * a * w2} ${y - ry * w1} ${x + rx * w2} ${y - ry * a * w2} ${x + rx * w2} ${y} C ${x + rx * w2} ${y + ry * a * w3} ${x + rx * a * w3} ${y + ry * w3} ${x} ${y + ry * w3} C ${x - rx * a * w4} ${y + ry * w3} ${x - rx * w4} ${y + ry * a * w4} ${x - rx * w4} ${y} C ${x - rx * w4} ${y - ry * a * w1} ${x - rx * a * w1} ${y - ry * w1} ${x} ${y - ry * w1} Z`;
 }
 
 function renderHoopsBoard(play) {
@@ -4095,10 +4216,14 @@ function isPointOnFairway(hole, point) {
 }
 
 function fairwayPath(hole) {
+  return fairwayPathWithWidth(hole, 0);
+}
+
+function fairwayPathWithWidth(hole, extraWidth) {
   const tee = hole.tee;
   const mid = { x: hole.fairway.doglegX, y: 52 };
   const green = { x: hole.fairway.greenX, y: 16 };
-  const width = hole.fairway.width;
+  const width = hole.fairway.width + extraWidth;
   return `M ${tee.x - width / 2} ${tee.y} C ${mid.x - width} 75 ${mid.x - width} 62 ${mid.x - width / 2} ${mid.y} C ${green.x - width / 2} 38 ${green.x - width / 2} 25 ${green.x - width / 2} ${green.y} L ${green.x + width / 2} ${green.y} C ${green.x + width / 2} 25 ${mid.x + width / 2} 38 ${mid.x + width / 2} ${mid.y} C ${mid.x + width} 66 ${tee.x + width / 2} 72 ${tee.x + width / 2} ${tee.y} Z`;
 }
 
