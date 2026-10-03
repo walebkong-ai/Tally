@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <div class="app" id="app">
@@ -283,7 +283,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js" type="module"></script>
+    <script src="app.js?v=7" type="module"></script>
   </body>
 </html>
 """#
@@ -2527,10 +2527,32 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
     padding: 0;
   }
 
+  body.solvry-holes-focus .topbar {
+    position: static;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 16px 10px;
+  }
+
+  body.solvry-holes-focus .brand {
+    display: none;
+  }
+
+  body.solvry-holes-focus .date-control,
+  body.solvry-holes-focus .account-controls {
+    display: none;
+  }
+
+  body.solvry-holes-focus .topnav {
+    justify-self: stretch;
+    justify-content: center;
+    overflow-x: auto;
+  }
+
   body.solvry-holes-focus .daily-golf {
     width: 100%;
     max-width: 100%;
-    height: min(660px, calc(100dvh - 14px));
+    height: min(650px, calc(100dvh - 86px));
     border-radius: 0;
   }
 
@@ -2582,7 +2604,7 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
 
   .play-card.primary.golf-map-card,
   .golf-map-card {
-    gap: 12px;
+    gap: 0;
   }
 
   .golf-hud {
@@ -2603,7 +2625,15 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
   }
 
   .club-grid {
-    grid-template-columns: repeat(7, 58px);
+    grid-template-columns: repeat(7, minmax(48px, 1fr));
+    gap: 3px;
+    overflow-x: hidden;
+  }
+
+  .club-button {
+    min-height: 36px;
+    padding: 3px;
+    border-radius: 9px;
   }
 
   .golf-course-map {
@@ -2655,6 +2685,22 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
 
   .golf-course-map {
     height: 100%;
+  }
+
+  .club-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    padding-inline: 0;
+  }
+
+  .club-button {
+    min-width: 0;
+    min-height: 36px;
+    padding: 3px 2px;
+  }
+
+  .club-button span {
+    font-size: 0.58rem;
   }
 
   .golf-score-hole {
