@@ -39,3 +39,15 @@ Required Firebase products:
 - Authentication with Google and Apple providers enabled
 - Firestore collections for `users` and `friendRequests`
 - Security rules that let signed-in users read/write their own profile and scores, read accepted friends' public score data, and create/respond to their own friend requests
+
+## Current verification baseline
+
+Use this as the stable checkpoint for future Solvry work:
+
+- Solvry Holes desktop browser flow visually verified
+- One 2-shot hole verified
+- One 3+ shot par 5 progression verified
+- `swift run solvry-site` passed
+- `node --check dist/app.js` passed
+- `git diff --check` passed
+- Targeted parser/import checks passed
