@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=13" />
   </head>
   <body>
     <div class="app" id="app">
@@ -284,7 +284,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=12" type="module"></script>
+    <script src="app.js?v=13" type="module"></script>
   </body>
 </html>
 """#
@@ -1555,6 +1555,46 @@ h2 {
   filter: drop-shadow(0 1px 1px rgba(20, 23, 25, 0.28));
 }
 
+.golf-flight-preview .flight-trail-shadow {
+  stroke-dasharray: 2.2 2.4;
+  animation: flightTrace 1.26s ease-out forwards;
+}
+
+.golf-flight-preview .flight-trail-main {
+  stroke-dasharray: 1.6 1.7;
+  animation: flightTrace 1.26s ease-out forwards;
+}
+
+.golf-flight-preview .rollout-line {
+  stroke-dasharray: 1.2 1.2;
+  animation: rolloutTrace 1.26s ease-out forwards;
+}
+
+.golf-flight-preview .flight-ball {
+  filter: drop-shadow(0 0.9px 1px rgba(20, 23, 25, 0.42));
+}
+
+.golf-flight-preview .flight-shadow {
+  filter: blur(0.12px);
+}
+
+.landing-ring {
+  animation: landingPop 1.05s ease-out forwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.rollout-dot {
+  animation: rolloutSettle 1.1s ease-out forwards;
+}
+
+.shot-callout text {
+  paint-order: stroke;
+  stroke: rgba(255, 254, 250, 0.86);
+  stroke-width: 1.45px;
+  stroke-linejoin: round;
+}
+
 .golf-course-map .pin-flag {
   filter: drop-shadow(0 0.7px 0.6px rgba(20, 23, 25, 0.24));
 }
@@ -1567,6 +1607,29 @@ h2 {
 @keyframes targetBreathe {
   0%, 100% { opacity: 0.58; }
   50% { opacity: 0.86; }
+}
+
+@keyframes flightTrace {
+  from { stroke-dashoffset: 18; opacity: 0.2; }
+  42% { opacity: 0.96; }
+  to { stroke-dashoffset: 0; opacity: 0.72; }
+}
+
+@keyframes rolloutTrace {
+  from { stroke-dashoffset: 9; opacity: 0; }
+  54% { opacity: 0; }
+  to { stroke-dashoffset: 0; opacity: 0.78; }
+}
+
+@keyframes landingPop {
+  0%, 48% { opacity: 0; transform: scale(0.45); }
+  64% { opacity: 0.94; transform: scale(1.14); }
+  100% { opacity: 0.54; transform: scale(1); }
+}
+
+@keyframes rolloutSettle {
+  0%, 72% { opacity: 0; transform: scale(0.52); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .golf-course-map text {
@@ -1770,6 +1833,63 @@ h2 {
   min-width: 148px;
   background: rgba(255, 250, 224, 0.94);
   color: #103c2b;
+}
+
+.hole-complete-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 96px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255, 226, 138, 0.48), transparent 28%),
+    radial-gradient(circle at 74% 30%, rgba(16, 167, 122, 0.22), transparent 25%),
+    rgba(255, 254, 250, 0.7);
+}
+
+.hole-complete-stage::before,
+.hole-complete-stage::after {
+  content: "";
+  position: absolute;
+  inset: 14px 18px auto auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #efbd3a;
+  box-shadow:
+    -34px 10px 0 #10a77a,
+    -62px -2px 0 #f26d5b,
+    -92px 15px 0 #7fc3d8,
+    -122px -6px 0 #efbd3a;
+  animation: holeSparkle 1.15s ease-out both;
+}
+
+.hole-complete-stage::after {
+  inset: auto auto 16px 26px;
+  animation-delay: 0.08s;
+}
+
+.hole-complete-stage .score-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 58px;
+  min-height: 58px;
+  margin: 2px auto 6px;
+  border: 2px solid rgba(16, 167, 122, 0.4);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, #fffefa, #e9f6d4 64%, #c5e49f);
+  color: #0e4d37;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  line-height: 1;
+  box-shadow: 0 12px 24px rgba(8, 114, 85, 0.12);
+  animation: golfLockPulse 0.72s ease-out;
+}
+
+@keyframes holeSparkle {
+  0% { opacity: 0; transform: translateY(12px) scale(0.7); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-12px) scale(1.05); }
 }
 
 .shot-stage:not(.swing-stage) > strong {
@@ -1977,6 +2097,103 @@ h2 {
 
 .scorecard-table tr:last-child td {
   border-bottom: 0;
+}
+
+.results-card {
+  gap: 14px;
+}
+
+.round-recap-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid rgba(39, 60, 50, 0.14);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255, 226, 138, 0.44), transparent 32%),
+    linear-gradient(135deg, rgba(226, 247, 222, 0.84), rgba(255, 254, 250, 0.82));
+}
+
+.round-recap-hero strong {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(2.35rem, 7vw, 4.4rem);
+  line-height: 0.9;
+  color: #101817;
+}
+
+.round-recap-hero span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.round-recap-hero em {
+  display: block;
+  margin-top: 5px;
+  color: #273c32;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.round-recap-badge {
+  display: grid;
+  min-width: 92px;
+  min-height: 92px;
+  place-items: center;
+  border: 2px solid rgba(16, 167, 122, 0.34);
+  border-radius: 50%;
+  background: #fffefa;
+  color: #087255;
+  text-align: center;
+  font-weight: 950;
+  box-shadow: 0 16px 30px rgba(8, 114, 85, 0.12);
+}
+
+.round-recap-badge small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recap-highlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.recap-chip {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(39, 60, 50, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 254, 250, 0.72);
+}
+
+.recap-chip span,
+.recap-chip strong {
+  display: block;
+}
+
+.recap-chip span {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recap-chip strong {
+  margin-top: 3px;
+  color: #101817;
+  font-size: 0.92rem;
+  line-height: 1.1;
 }
 
 .play-result {
@@ -2648,6 +2865,8 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
   .golf-hero-grid,
   .hole-card-grid,
   .results-grid,
+  .recap-highlights,
+  .round-recap-hero,
   .strategy-actions,
   .play-actions.three {
     grid-template-columns: 1fr;
@@ -3710,10 +3929,12 @@ function renderGolfShotControls(play, hole, selectedClub, phase) {
 
   if (phase === "hole-complete") {
     const feedback = play.holeCompleteFeedback;
+    const scoreBadge = feedback ? formatRelativeScore(feedback.relative) : "✓";
     return `
       <div class="shot-stage locked hole-complete-stage">
+        <span class="score-badge">${escapeHtml(scoreBadge)}</span>
         <strong>${escapeHtml(feedback?.label || "Hole complete")}</strong>
-        <p>${feedback?.strokes || play.holeStrokes} strokes${feedback?.putts ? ` · ${feedback.putts} putt${feedback.putts === 1 ? "" : "s"}` : ""}</p>
+        <p>${feedback?.strokes || play.holeStrokes} strokes${feedback?.putts ? ` · ${feedback.putts} putt${feedback.putts === 1 ? "" : "s"}` : feedback?.putts === 0 ? " · holed out" : ""}</p>
       </div>
     `;
   }
@@ -3791,6 +4012,7 @@ function renderGolfHoleCard(play, hole) {
 
 function renderGolfResults(play) {
   const relative = getGolfRelativeScore(play);
+  const recap = getGolfRoundRecap(play);
   const birdies = play.holeResults.filter((result) => result.relative === -1).length;
   const eagles = play.holeResults.filter((result) => result.relative <= -2).length;
   const pars = play.holeResults.filter((result) => result.relative === 0).length;
@@ -3801,12 +4023,18 @@ function renderGolfResults(play) {
       ${renderGolfGameHeader(play)}
       ${renderGolfScoreStrip(play)}
       <section class="results-card">
-        <div class="play-topline">
+        <div class="round-recap-hero">
           <div>
-            <p class="eyebrow">Daily Golf ${escapeHtml(play.course.dailyNumber)}</p>
-            <h3>${formatRelativeScore(relative)}</h3>
+            <span>Daily Golf ${escapeHtml(play.course.dailyNumber)}</span>
+            <strong>${formatRelativeScore(relative)}</strong>
+            <em>${play.totalStrokes} strokes on ${escapeHtml(play.course.name)}</em>
           </div>
-          <span class="pill">Locked score</span>
+          <span class="round-recap-badge">${play.totalStrokes}<small>strokes</small></span>
+        </div>
+        <div class="recap-highlights">
+          <div class="recap-chip"><span>Best hole</span><strong>${escapeHtml(recap.bestHole)}</strong></div>
+          <div class="recap-chip"><span>Toughest</span><strong>${escapeHtml(recap.toughestHole)}</strong></div>
+          <div class="recap-chip"><span>Putting</span><strong>${escapeHtml(recap.putting)}</strong></div>
         </div>
         <div class="results-grid">
           <div class="golf-stat"><span>Total strokes</span><strong>${play.totalStrokes}</strong></div>
@@ -3859,11 +4087,11 @@ function renderGolfScoreStrip(play) {
 function renderGolfScorecardTable(play) {
   return `
     <table class="scorecard-table">
-      <thead><tr><th>Hole</th><th>Par</th><th>Strokes</th><th>Score</th></tr></thead>
+      <thead><tr><th>Hole</th><th>Par</th><th>Strokes</th><th>Putts</th><th>Score</th></tr></thead>
       <tbody>
         ${play.course.holes.map((hole, index) => {
           const result = play.holeResults[index];
-          return `<tr><td>${hole.number}</td><td>${hole.par}</td><td>${result?.strokes || "-"}</td><td>${result ? formatRelativeScore(result.relative) : "-"}</td></tr>`;
+          return `<tr><td>${hole.number}</td><td>${hole.par}</td><td>${result?.strokes || "-"}</td><td>${result?.putts ?? "-"}</td><td>${result ? formatRelativeScore(result.relative) : "-"}</td></tr>`;
         }).join("")}
       </tbody>
     </table>
@@ -3980,21 +4208,39 @@ function renderGolfFlightPath(outcome, phase) {
   const start = outcome.start;
   const landing = outcome.landing;
   const final = outcome.final;
-  const apexY = Math.max(5, Math.min(start.y, landing.y) - 13);
-  const controlOne = { x: start.x + (landing.x - start.x) * 0.3, y: apexY };
-  const controlTwo = { x: start.x + (landing.x - start.x) * 0.76 + outcome.crossWind.x * 0.35, y: apexY + 2 };
+  const flightDistance = distance(start, landing);
+  const apexY = Math.max(4, Math.min(start.y, landing.y) - clamp(flightDistance * 0.18, 8, 18));
+  const controlOne = { x: start.x + (landing.x - start.x) * 0.26 - outcome.crossWind.x * 0.12, y: apexY };
+  const controlTwo = { x: start.x + (landing.x - start.x) * 0.72 + outcome.crossWind.x * 0.48, y: apexY + 2.4 };
   const arc = `M ${start.x} ${start.y} C ${controlOne.x} ${controlOne.y} ${controlTwo.x} ${controlTwo.y} ${landing.x} ${landing.y}`;
-  const rollout = distance(landing, final) > 1.2 ? ` L ${final.x} ${final.y}` : "";
-  const motionPath = `${arc}${rollout}`;
+  const hasRollout = distance(landing, final) > 1.2;
+  const labelsClose = distance(landing, final) < 7;
+  const rollout = hasRollout ? `M ${landing.x} ${landing.y} L ${final.x} ${final.y}` : "";
+  const motionPath = `${arc}${hasRollout ? ` L ${final.x} ${final.y}` : ""}`;
+  const carryLabel = `${Math.round(outcome.carryYards)}y carry`;
+  const rolloutLabel = outcome.penalty
+    ? "+1 drop"
+    : hasRollout ? `${Math.round(outcome.rolloutYards)}y roll` : surfaceLabel(outcome.finalSurface);
+  const combinedLabel = `${carryLabel} · ${rolloutLabel}`;
   return `
     <g class="golf-flight-preview" aria-hidden="true">
-      <path d="${motionPath}" fill="none" stroke="#fffefa" stroke-width="1.05" opacity="0.58" stroke-linecap="round"></path>
-      <path d="${motionPath}" fill="none" stroke="#9c2f23" stroke-width="0.54" opacity="0.74" stroke-linecap="round" stroke-dasharray="1.4 1.6"></path>
-      <circle r="1.5" fill="#fffefa" stroke="#141719" stroke-width="0.48">
-        <animateMotion path="${motionPath}" dur="0.72s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.18 0.78 0.2 1"></animateMotion>
+      <path class="flight-trail-shadow" d="${arc}" fill="none" stroke="#fffefa" stroke-width="1.25" opacity="0.72" stroke-linecap="round"></path>
+      <path class="flight-trail-main" d="${arc}" fill="none" stroke="#9c2f23" stroke-width="0.62" opacity="0.82" stroke-linecap="round"></path>
+      ${hasRollout ? `<path class="rollout-line" d="${rollout}" fill="none" stroke="#273c32" stroke-width="0.42" opacity="0.78" stroke-linecap="round"></path>` : ""}
+      <circle class="landing-ring" cx="${landing.x}" cy="${landing.y}" r="3.8" fill="none" stroke="${outcome.penalty ? "#2f7fa3" : "#fffefa"}" stroke-width="0.7"></circle>
+      ${hasRollout ? `<circle class="rollout-dot" cx="${final.x}" cy="${final.y}" r="1.55" fill="#fffefa" stroke="#141719" stroke-width="0.42"></circle>` : ""}
+      <g class="shot-callout">
+        ${labelsClose
+          ? `<text x="${clamp(landing.x + 2.4, 8, 76)}" y="${clamp(landing.y - 3.5, 8, 92)}" fill="#17231f" font-size="2.72" font-weight="900">${escapeHtml(combinedLabel)}</text>`
+          : `<text x="${clamp(landing.x + 2.8, 8, 84)}" y="${clamp(landing.y - 3.2, 8, 92)}" fill="#17231f" font-size="2.9" font-weight="900">${escapeHtml(carryLabel)}</text><text x="${clamp(final.x + 2.2, 8, 86)}" y="${clamp(final.y + 4.5, 8, 94)}" fill="#17231f" font-size="2.9" font-weight="900">${escapeHtml(rolloutLabel)}</text>`}
+      </g>
+      <circle class="flight-ball" r="1.55" fill="#fffefa" stroke="#141719" stroke-width="0.48">
+        <animateMotion path="${motionPath}" dur="1.16s" fill="freeze" calcMode="spline" keyTimes="0;0.72;1" keySplines="0.18 0.78 0.2 1;0.16 0.7 0.28 1"></animateMotion>
+        <animate attributeName="r" values="1.3;2.15;1.55" dur="1.16s" fill="freeze"></animate>
       </circle>
-      <ellipse rx="2.7" ry="0.8" fill="#273c32" opacity="0.2">
-        <animateMotion path="M ${start.x} ${start.y + 2.4} L ${landing.x} ${landing.y + 1.7}${rollout ? ` L ${final.x} ${final.y + 1.2}` : ""}" dur="0.72s" fill="freeze"></animateMotion>
+      <ellipse class="flight-shadow" rx="2.9" ry="0.85" fill="#273c32" opacity="0.22">
+        <animateMotion path="M ${start.x} ${start.y + 2.5} L ${landing.x} ${landing.y + 1.65}${hasRollout ? ` L ${final.x} ${final.y + 1.15}` : ""}" dur="1.16s" fill="freeze"></animateMotion>
+        <animate attributeName="opacity" values="0.12;0.28;0.2" dur="1.16s" fill="freeze"></animate>
       </ellipse>
     </g>
   `;
@@ -4254,7 +4500,7 @@ function lockGolfPower(play, game) {
       playGolfSwing(play, game, lockedPower, play.flightPreview);
       saveState();
       render();
-    }, 760);
+    }, 1220);
   }, 560);
 }
 
@@ -4285,6 +4531,7 @@ function computeGolfShotOutcome(play, powerPosition) {
   const waterPenalty = landingSurface === "water";
   const surface = GOLF_SURFACES[landingSurface] || GOLF_SURFACES.rough;
   const rolloutUnits = waterPenalty ? 0 : club.rollout * surface.rollout * quality.rollout / yardsPerUnit;
+  const rolloutYards = rolloutUnits * yardsPerUnit;
   let final = clampPoint({
     x: landing.x + direction.x * rolloutUnits,
     y: landing.y + direction.y * rolloutUnits
@@ -4318,6 +4565,7 @@ function computeGolfShotOutcome(play, powerPosition) {
     landing,
     landingSurface,
     rolloutUnits,
+    rolloutYards,
     final,
     finalSurface,
     penalty: endedInWater ? 1 : 0
@@ -4333,7 +4581,7 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
     "ball-flight"
   );
   const outcome = preparedOutcome || computeGolfShotOutcome(play, powerPosition);
-  const { hole, club, quality, start, carryYards, landing, final, finalSurface } = outcome;
+  const { hole, club, quality, start, carryYards, landing, final, finalSurface, rolloutYards } = outcome;
   const shotNumber = play.holeStrokes + 1;
   let penalty = 0;
 
@@ -4362,9 +4610,10 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
     landing,
     final,
     landingSurface: outcome.landingSurface,
+    rolloutDistance: Math.round(rolloutYards),
     surface: finalSurface,
     penalty,
-    summary: `${club.name} · ${quality.label} strike · ${Math.round(carryYards)} yd carry${penalty ? " · water penalty" : ""}`
+    summary: summarizeGolfShot(outcome, penalty)
   };
   play.shotLog.push(play.lastShot);
 
@@ -4390,7 +4639,7 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
   play.powerWindow = null;
   const resultMessage = penalty
     ? `WATER +1. ${remaining} yds left from ${surfaceLabel(finalSurface).toLowerCase()}.`
-    : `${quality.label.toUpperCase()} · ${surfaceLabel(finalSurface).toUpperCase()} · ${remaining} yds left.`;
+    : `${quality.label.toUpperCase()} · landed ${surfaceLabel(outcome.landingSurface).toLowerCase()} · ${Math.round(rolloutYards)} yd rollout · ${remaining} yds left.`;
   play.message = resultMessage;
   window.setTimeout(() => {
     if (play.completed || play.shotPhase !== "shot-result") return;
@@ -4399,6 +4648,15 @@ function playGolfSwing(play, game, powerPosition, preparedOutcome = null) {
     saveState();
     render();
   }, 360);
+}
+
+function summarizeGolfShot(outcome, penalty) {
+  const carry = Math.round(outcome.carryYards);
+  const rollout = Math.round(outcome.rolloutYards || 0);
+  const landing = surfaceLabel(outcome.landingSurface).toLowerCase();
+  const finish = surfaceLabel(outcome.finalSurface).toLowerCase();
+  if (penalty) return `${outcome.club.name} · ${outcome.quality.label} strike · ${carry} yd carry · water penalty`;
+  return `${outcome.club.name} · ${outcome.quality.label} strike · ${carry} yd carry · ${rollout} yd rollout · ${finish}${landing !== finish ? ` from ${landing}` : ""}`;
 }
 
 function handleHoopsAction(play, action, game) {
@@ -4704,7 +4962,7 @@ function scheduleGolfHoleAdvance(play, game) {
     advanceGolfAfterHole(play, game);
     saveState();
     render();
-  }, 1450);
+  }, 1900);
 }
 
 function advanceGolfAfterHole(play, game) {
@@ -5100,6 +5358,24 @@ function getDropPoint(hole, start) {
 
 function getGolfRelativeScore(play) {
   return play.holeResults.reduce((total, result) => total + (result?.relative || 0), 0);
+}
+
+function getGolfRoundRecap(play) {
+  const completed = play.holeResults.filter(Boolean);
+  if (!completed.length) {
+    return { bestHole: "Not started", toughestHole: "Not started", putting: "0 putts" };
+  }
+
+  const best = [...completed].sort((a, b) => a.relative - b.relative || a.strokes - b.strokes)[0];
+  const toughest = [...completed].sort((a, b) => b.relative - a.relative || b.strokes - a.strokes)[0];
+  const totalPutts = completed.reduce((total, result) => total + (result.putts || 0), 0);
+  const onePutts = completed.filter((result) => result.putts === 1).length;
+  const penalties = completed.reduce((total, result) => total + (result.penaltyStrokes || 0), 0);
+  return {
+    bestHole: `#${best.holeIndex + 1} ${getGolfScoreName(best.relative)}`,
+    toughestHole: `#${toughest.holeIndex + 1} ${formatRelativeScore(toughest.relative)}`,
+    putting: `${totalPutts} putts${onePutts ? ` · ${onePutts} one-putt${onePutts === 1 ? "" : "s"}` : ""}${penalties ? ` · ${penalties} penalty` : ""}`
+  };
 }
 
 function syncGolfRoundState(play) {
