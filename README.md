@@ -26,7 +26,7 @@ The build writes the deployable site to `dist/`.
 - Friend requests, friend leaderboards, and cloud-ready saved profiles/scores
 - Spoiler-safe answer sharing
 - Official game links
-- Clipboard and paste import for supported official share results
+- Clipboard and paste import for supported official share results, with game-specific parsing errors when a pasted result is incomplete
 - Add-friend and add-game flows
 - Browser-local fallback when cloud config is not connected
 

@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
   </head>
   <body>
     <div class="app" id="app">
@@ -156,7 +156,7 @@ let html = #"""
               Paste fallback
               <textarea id="shareTextInput" class="share-input" rows="6" placeholder="Wordle 1,234 4/6&#10;&#10;⬛🟨⬛🟩⬛&#10;🟩🟩🟩🟩🟩"></textarea>
             </label>
-            <div class="import-status" id="importStatus" role="status">Ready for Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text.</div>
+            <div class="import-status" id="importStatus" role="status">Ready for Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text. If something is missing, Solvry will tell you what to fix.</div>
             <div class="share-preview" id="sharePreview" hidden></div>
           </div>
 
@@ -284,7 +284,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=11" type="module"></script>
+    <script src="app.js?v=12" type="module"></script>
   </body>
 </html>
 """#
@@ -5688,14 +5688,15 @@ function renderAnswers() {
 }
 
 function importShareText(text) {
-  const parsed = parseShareText(text);
-  if (!parsed) {
+  const importResult = parseShareText(text);
+  if (!importResult.parsed) {
     elements.sharePreview.hidden = true;
     elements.sharePreview.innerHTML = "";
-    setImportStatus("Could not read that result yet. Try Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text.", "error");
+    setImportStatus(importResult.error, "error");
     return;
   }
 
+  const parsed = importResult.parsed;
   const game = state.games.find((item) => item.id === parsed.gameId) || state.games[0];
   state.activeGameId = game.id;
   const gameEntries = getGameEntries(state.selectedDate, game.id);
@@ -5718,136 +5719,215 @@ function importShareText(text) {
 
 function parseShareText(text) {
   const cleaned = String(text || "").trim();
-  if (!cleaned) return null;
+  if (!cleaned) return { parsed: null, error: "Paste a share result first." };
 
-  const lines = cleaned.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  return parseWordleShare(lines)
-    || parseConnectionsShare(lines)
-    || parseStrandsShare(lines)
-    || parseMiniCrosswordShare(lines)
-    || parseSpellingBeeShare(lines)
-    || parseKrillionShare(lines);
+  const lines = normalizeShareLines(cleaned);
+  const attempts = [
+    parseWordleShare(lines),
+    parseConnectionsShare(lines),
+    parseStrandsShare(lines),
+    parseMiniCrosswordShare(lines),
+    parseSpellingBeeShare(lines),
+    parseKrillionShare(lines)
+  ];
+  const parsedAttempt = attempts.find((attempt) => attempt.parsed);
+  if (parsedAttempt) return parsedAttempt;
+
+  const knownError = attempts.find((attempt) => attempt.error);
+  return knownError || {
+    parsed: null,
+    error: "I could not tell which game this came from. Try pasting the full share text from Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion."
+  };
 }
 
 function parseWordleShare(lines) {
-  const wordleLine = lines.find((line) => /^Wordle\s+[\d,]+\s+[1-6X]\/6\*?$/i.test(line));
-  if (!wordleLine) return null;
+  const wordleLine = lines.find((line) => /^Wordle\b/i.test(line));
+  if (!wordleLine) return { parsed: null };
 
-  const scoreMatch = wordleLine.match(/^Wordle\s+([\d,]+)\s+([1-6X])\/6\*?$/i);
-  if (!scoreMatch) return null;
+  const scoreMatch = wordleLine.match(/^Wordle\s+#?([\d,]+)?\s*([1-6X])\/6\*?/i)
+    || lines.join(" ").match(/\bWordle\b.*?\b#?([\d,]+)?\s*([1-6X])\/6\*?/i);
+  if (!scoreMatch) {
+    return {
+      parsed: null,
+      error: "I found Wordle, but I could not find a score like 4/6 or X/6. Paste the result line plus the emoji grid."
+    };
+  }
 
   const gridPattern = /^[\u{1F7E9}\u{1F7E8}\u{2B1B}\u{2B1C}\u{1F7E6}]+$/u;
-  const grid = lines.filter((line) => gridPattern.test(line));
+  const grid = lines
+    .map(compactEmojiLine)
+    .filter((line) => gridPattern.test(line));
   const rawScore = scoreMatch[2].toUpperCase();
   const score = `${rawScore}/6`;
 
   return {
-    gameId: "wordle",
-    score,
-    result: rawScore === "X" ? "missed" : "solved",
-    note: `Imported official Wordle #${scoreMatch[1]}${grid.length ? ` with ${grid.length} rows` : ""}`,
-    grid
+    parsed: {
+      gameId: "wordle",
+      score,
+      result: rawScore === "X" ? "missed" : "solved",
+      note: `Imported official Wordle${scoreMatch[1] ? ` #${scoreMatch[1]}` : ""}${grid.length ? ` with ${grid.length} rows` : ""}`,
+      grid
+    }
   };
 }
 
 function parseConnectionsShare(lines) {
-  const header = lines.find((line) => /^Connections\b/i.test(line));
-  if (!header) return null;
+  const text = lines.join(" ");
+  const header = lines.find((line) => /^Connections\b/i.test(line)) || (/\bConnections\b/i.test(text) ? text : "");
+  if (!header) return { parsed: null };
 
   const gridPattern = /^[\u{1F7E8}\u{1F7E9}\u{1F7E6}\u{1F7EA}]{4}$/u;
-  const grid = lines.filter((line) => gridPattern.test(line));
-  if (!grid.length) return null;
+  const grid = lines
+    .map(compactEmojiLine)
+    .filter((line) => gridPattern.test(line));
+  if (!grid.length) {
+    return {
+      parsed: null,
+      error: "I found Connections, but I could not find the four-color emoji grid. Paste the full shared result, including the colored square rows."
+    };
+  }
 
-  const puzzleMatch = lines.join(" ").match(/#?([\d,]+)/);
+  const puzzleMatch = text.match(/(?:Puzzle\s*)?#\s*([\d,]+)/i) || text.match(/\bConnections\s+#?([\d,]+)/i);
   const solvedRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line)).length;
   const mistakes = Math.max(0, grid.length - 4);
 
   return {
-    gameId: "connections",
-    score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
-    result: solvedRows >= 4 ? "solved" : "played",
-    note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
-    grid
+    parsed: {
+      gameId: "connections",
+      score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
+      result: solvedRows >= 4 ? "solved" : "played",
+      note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
+      grid
+    }
   };
 }
 
 function parseStrandsShare(lines) {
-  const header = lines.find((line) => /^Strands\b/i.test(line));
-  if (!header) return null;
+  const text = lines.join(" ");
+  const header = lines.find((line) => /^Strands\b/i.test(line)) || (/\bStrands\b/i.test(text) ? text : "");
+  if (!header) return { parsed: null };
 
-  const grid = lines.filter((line) => /[\u{1F535}\u{1F7E1}\u{1F4A1}]/u.test(line));
-  if (!grid.length) return null;
+  const grid = lines
+    .map(compactEmojiLine)
+    .filter((line) => /^[\u{1F535}\u{1F7E1}\u{1F4A1}]+$/u.test(line));
+  if (!grid.length) {
+    return {
+      parsed: null,
+      error: "I found Strands, but I could not find the blue/yellow/hint emoji recap. Paste the full shared result."
+    };
+  }
 
-  const puzzleMatch = lines.join(" ").match(/#?([\d,]+)/);
+  const puzzleMatch = text.match(/#\s*([\d,]+)/i) || text.match(/\bStrands\s+#?([\d,]+)/i);
   const hintCount = (grid.join("").match(/\u{1F4A1}/gu) || []).length;
   const foundSpangram = grid.some((line) => /\u{1F7E1}/u.test(line));
   const score = hintCount ? `${hintCount} hint${hintCount === 1 ? "" : "s"}` : "No hints";
 
   return {
-    gameId: "strands",
-    score,
-    result: foundSpangram ? "solved" : "played",
-    note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}`,
-    grid
+    parsed: {
+      gameId: "strands",
+      score,
+      result: foundSpangram ? "solved" : "played",
+      note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}`,
+      grid
+    }
   };
 }
 
 function parseMiniCrosswordShare(lines) {
   const text = lines.join(" ");
-  if (!/\b(Mini Crossword|The Mini)\b/i.test(text)) return null;
+  if (!/\b(Mini Crossword|The Mini|NYT Mini|New York Times Mini)\b/i.test(text)) return { parsed: null };
 
-  const timeMatch = text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
-  if (!timeMatch) return null;
+  const timeMatch = text.match(/\b(?:in|time:|time\s*)\s*(\d{1,2}:\d{2}(?::\d{2})?)\b/i)
+    || text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+  if (!timeMatch) {
+    return {
+      parsed: null,
+      error: "I found Mini Crossword, but I could not find a completion time like 0:54 or 12:03."
+    };
+  }
 
   return {
-    gameId: "mini-crossword",
-    score: normalizeTimeScore(timeMatch[1]),
-    result: "solved",
-    note: "Imported official Mini Crossword time",
-    grid: []
+    parsed: {
+      gameId: "mini-crossword",
+      score: normalizeTimeScore(timeMatch[1]),
+      result: "solved",
+      note: "Imported official Mini Crossword time",
+      grid: []
+    }
   };
 }
 
 function parseSpellingBeeShare(lines) {
   const text = lines.join(" ");
-  if (!/Spelling Bee/i.test(text)) return null;
+  if (!/Spelling Bee/i.test(text)) return { parsed: null };
 
   const ranks = ["Queen Bee", "Genius", "Amazing", "Great", "Nice", "Solid", "Good", "Moving", "Good Start", "Beginner"];
   const rank = ranks.find((item) => new RegExp(`\\b${item}\\b`, "i").test(text));
-  if (!rank) return null;
+  if (!rank) {
+    return {
+      parsed: null,
+      error: "I found Spelling Bee, but I could not find a rank like Genius, Amazing, or Queen Bee."
+    };
+  }
 
   const pointMatch = text.match(/\b(\d{1,4})\s*(?:points?|pts?)\b/i);
   const score = pointMatch ? `${rank} · ${pointMatch[1]} pts` : rank;
 
   return {
-    gameId: "spelling-bee",
-    score,
-    result: "played",
-    note: `Imported official Spelling Bee rank: ${rank}`,
-    grid: []
+    parsed: {
+      gameId: "spelling-bee",
+      score,
+      result: rank === "Queen Bee" ? "solved" : "played",
+      note: `Imported official Spelling Bee rank: ${rank}`,
+      grid: []
+    }
   };
 }
 
 function parseKrillionShare(lines) {
-  const header = lines.find((line) => /^Krillion\s+#?[\d,]+/i.test(line));
-  if (!header) return null;
+  const text = lines.join(" ");
+  const header = lines.find((line) => /^Krillion\b/i.test(line)) || (/\bKrillion\b/i.test(text) ? text : "");
+  if (!header) return { parsed: null };
 
   const headerIndex = lines.indexOf(header);
-  const scoreLine = lines.slice(headerIndex + 1).find((line) => /^\d{1,4}$/.test(line));
-  if (!scoreLine) return null;
+  const searchableLines = headerIndex >= 0 ? lines.slice(headerIndex + 1) : lines;
+  const directScore = searchableLines.find((line) => /^\d{1,4}$/.test(line));
+  const labeledScore = text.match(/\b(?:score|depth|total)\s*:?\s*(\d{1,4})\b/i)
+    || text.match(/\b(\d{1,4})\s*(?:depth\s*)?(?:points?|pts?)\b/i);
+  const scoreLine = directScore || labeledScore?.[1];
+  if (!scoreLine) {
+    return {
+      parsed: null,
+      error: "I found Krillion, but I could not find the total depth score. Paste the line with the final number, like 110."
+    };
+  }
 
-  const numberMatch = header.match(/^Krillion\s+#?([\d,]+)/i);
+  const numberMatch = text.match(/\bKrillion\s+#?([\d,]+)/i);
   const grid = lines
-    .slice(lines.indexOf(scoreLine) + 1)
-    .filter((line) => !/^https?:\/\//i.test(line));
+    .slice(Math.max(lines.indexOf(String(scoreLine)) + 1, 0))
+    .filter((line) => !/^https?:\/\//i.test(line) && line !== scoreLine && !/^Krillion\b/i.test(line));
 
   return {
-    gameId: "krillion",
-    score: scoreLine,
-    result: Number(scoreLine) > 0 ? "played" : "missed",
-    note: `Imported official Krillion #${numberMatch?.[1] || "daily dive"} with ${scoreLine} depth points`,
-    grid
+    parsed: {
+      gameId: "krillion",
+      score: scoreLine,
+      result: Number(scoreLine) > 0 ? "played" : "missed",
+      note: `Imported official Krillion #${numberMatch?.[1] || "daily dive"} with ${scoreLine} depth points`,
+      grid
+    }
   };
+}
+
+function normalizeShareLines(text) {
+  return text
+    .replace(/\uFE0F/g, "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function compactEmojiLine(line) {
+  return line.replace(/[\s\u200B-\u200D]/g, "");
 }
 
 function normalizeTimeScore(score) {
