@@ -28,6 +28,7 @@ The build writes the deployable site to `dist/`.
 - Spoiler-safe answer sharing
 - Official game links
 - Clipboard and paste import for supported official share results, with game-specific parsing errors when a pasted result is incomplete
+- Paste-first Add score flow with automatic game detection, score/date preview, explicit save or replacement, duplicate protection, and sample results for all six supported games
 - Add-friend and add-game flows
 - Browser-local fallback when cloud config is not connected
 
@@ -52,3 +53,11 @@ Use this as the stable checkpoint for future Solvry work:
 - `node --check dist/app.js` passed
 - `git diff --check` passed
 - Targeted parser/import checks passed
+
+## Score import checks (2026-10-26)
+
+Run `swift run solvry-site`, then `node --test Tests/share-import.test.cjs` for the shipped share parsers. The 20 checks cover all six games, failed and incomplete results, ambiguous mixed-game pastes, invalid times, and emoji normalization.
+
+Browser QA covered desktop (1366x900) and mobile (390x844): previews before saving, all six imports, reload persistence, duplicate detection, explicit score replacement preserving answers/notes/privacy, date validation, clipboard success/denial, storage-failure retry, manual entry, examples, and navigation from Solvry Holes. Clipboard and storage failures were simulated. These checks use representative fixtures, not a guarantee of compatibility with every future publisher format.
+
+Imports use the explicitly selected Played on date; puzzle numbers are not converted into calendar dates. Saving updates the existing local/cloud adapter and does not enable account sync without Firebase configuration.

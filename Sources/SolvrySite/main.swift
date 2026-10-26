@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=14" />
   </head>
   <body>
     <div class="app" id="app">
@@ -54,7 +54,7 @@ let html = #"""
         <nav class="topnav" aria-label="Primary">
           <a href="#today">Today</a>
           <a href="#friends">Friends</a>
-          <a href="#import">Import</a>
+          <a href="#import">Add score</a>
           <a href="#answers">Answers</a>
         </nav>
         <div class="top-actions">
@@ -97,6 +97,8 @@ let html = #"""
             <div class="current-result" id="currentResult"></div>
             <div class="solvry-game" id="solvryGame" hidden></div>
             <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
+            <details class="manual-entry" id="manualEntry">
+              <summary>Add or edit a score manually</summary>
             <form class="entry-form" id="entryForm">
               <div class="field-grid">
                 <label>
@@ -132,32 +134,42 @@ let html = #"""
               </div>
               <div class="save-status" id="saveStatus" role="status"></div>
             </form>
+            </details>
           </div>
 
           <div class="import-surface" id="import">
             <div>
-              <p class="eyebrow">Official results</p>
-              <h2>Import a share result</h2>
+              <p class="eyebrow">From your daily games</p>
+              <h2>Add a score</h2>
             </div>
-            <p class="import-copy">Play on the official site, use its Share button, then import the copied result here.</p>
-          <div class="support-row">
-              <span>Wordle import</span>
-              <span>Connections import</span>
-              <span>Strands import</span>
-              <span>Mini import</span>
-              <span>Spelling Bee import</span>
-              <span>Krillion import</span>
+            <div class="import-input-head">
+              <label for="shareTextInput">Your copied result</label>
+              <button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button>
             </div>
-            <div class="import-actions">
-              <button class="primary-button" id="importClipboardButton" type="button">Import copied result</button>
-              <button class="ghost-button" id="importPasteButton" type="button">Import pasted text</button>
-            </div>
-            <label>
-              Paste fallback
-              <textarea id="shareTextInput" class="share-input" rows="6" placeholder="Wordle 1,234 4/6&#10;&#10;⬛🟨⬛🟩⬛&#10;🟩🟩🟩🟩🟩"></textarea>
+            <textarea id="shareTextInput" class="share-input" rows="4" aria-describedby="importStatus" placeholder="Paste your game's shared result here" spellcheck="false"></textarea>
+            <label class="import-date">
+              Played on
+              <input id="importDate" type="date" required />
             </label>
-            <div class="import-status" id="importStatus" role="status">Ready for Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion share text. If something is missing, Solvry will tell you what to fix.</div>
+            <div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
             <div class="share-preview" id="sharePreview" hidden></div>
+            <div class="import-actions">
+              <button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button>
+              <button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button>
+            </div>
+            <details class="import-help">
+              <summary>Supported games &amp; sample results</summary>
+              <label>Game<select id="importExampleGame">
+                <option value="wordle">Wordle</option>
+                <option value="connections">Connections</option>
+                <option value="strands">Strands</option>
+                <option value="mini-crossword">Mini Crossword</option>
+                <option value="spelling-bee">Spelling Bee</option>
+                <option value="krillion">Krillion</option>
+              </select></label>
+              <pre id="importExampleText" class="share-grid"></pre>
+              <a id="importExampleLink" target="_blank" rel="noopener">Open game</a>
+            </details>
           </div>
 
           <div class="metrics" aria-label="Summary">
@@ -284,7 +296,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=13" type="module"></script>
+    <script src="app.js?v=14" type="module"></script>
   </body>
 </html>
 """#
@@ -879,9 +891,34 @@ h2 {
   gap: 12px;
   margin-top: 18px;
   padding: clamp(16px, 3vw, 22px);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 254, 250, 0.76);
+  border-top: 3px solid var(--green);
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  margin-bottom: 18px;
+  scroll-margin-top: 110px;
+}
+
+.import-input-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.import-input-head label { margin: 0; }
+.import-date { display: grid; grid-template-columns: auto minmax(0, 190px); align-items: center; justify-content: start; gap: 12px; }
+.import-surface button:disabled { opacity: 0.55; cursor: not-allowed; }
+.import-surface textarea { min-width: 0; width: 100%; font-weight: 500; font-size: 16px; resize: vertical; }
+.import-status:empty { display: none; }
+.import-help, .manual-entry { min-width: 0; }
+.import-help summary, .manual-entry summary { cursor: pointer; padding: 12px 0; font-weight: 700; }
+.import-help[open] { display: grid; gap: 12px; }
+.import-help pre { margin: 12px 0; padding: 12px; background: #f1f6f8; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 14px; }
+.manual-entry[open] .entry-form { margin-top: 16px; }
+.import-result-head { display: flex; gap: 12px; align-items: center; }
+.import-result-head .game-logo { width: 44px; height: 44px; flex: 0 0 44px; }
+.import-result-head > div { display: grid; gap: 4px; min-width: 0; }
+.import-result-head small { color: var(--muted); }
+.import-warning { margin: 0; color: #8a4c12; font-size: 14px; line-height: 1.5; }
+.share-preview { overflow-wrap: anywhere; }
+.share-preview details summary { cursor: pointer; font-size: 14px; }
+.share-preview .share-grid { margin-top: 10px; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .import-date { grid-template-columns: minmax(0, 1fr); justify-content: stretch; gap: 6px; }
 }
 
 .import-surface h2 {
@@ -3150,6 +3187,12 @@ const elements = {
   officialLink: document.querySelector("#officialLink"),
   importClipboardButton: document.querySelector("#importClipboardButton"),
   importPasteButton: document.querySelector("#importPasteButton"),
+  importClearButton: document.querySelector("#importClearButton"),
+  importDate: document.querySelector("#importDate"),
+  importExampleGame: document.querySelector("#importExampleGame"),
+  importExampleText: document.querySelector("#importExampleText"),
+  importExampleLink: document.querySelector("#importExampleLink"),
+  manualEntry: document.querySelector("#manualEntry"),
   shareTextInput: document.querySelector("#shareTextInput"),
   importStatus: document.querySelector("#importStatus"),
   sharePreview: document.querySelector("#sharePreview"),
@@ -3182,11 +3225,16 @@ let cloudBackend = {
 };
 
 elements.playDate.value = state.selectedDate;
+elements.importDate.value = state.selectedDate;
+elements.importDate.max = today;
+elements.currentResult.closest(".play-surface").before(elements.importSurface);
+renderImportExample();
 
 window.addEventListener("hashchange", renderNav);
 
 elements.playDate.addEventListener("change", (event) => {
   state.selectedDate = event.target.value || today;
+  elements.importDate.value = state.selectedDate;
   saveState();
   render();
 });
@@ -3280,13 +3328,36 @@ elements.copyButton.addEventListener("click", async () => {
 });
 
 elements.importClipboardButton.addEventListener("click", async () => {
+  const previousText = elements.shareTextInput.value;
+  elements.importClipboardButton.disabled = true;
   try {
     const text = await navigator.clipboard.readText();
+    if (elements.shareTextInput.value !== previousText) return;
     elements.shareTextInput.value = text;
-    importShareText(text);
+    previewImport(true);
   } catch {
-    setImportStatus("Clipboard access was blocked. Paste the result below instead.", "error");
+    setImportStatus("Clipboard unavailable. Paste directly into the result box instead.", "error");
+    elements.shareTextInput.focus();
+  } finally {
+    elements.importClipboardButton.disabled = false;
   }
+});
+
+elements.shareTextInput.addEventListener("input", () => previewImport());
+elements.importDate.addEventListener("change", () => previewImport());
+elements.importExampleGame.addEventListener("change", renderImportExample);
+elements.importClearButton.addEventListener("click", () => {
+  elements.shareTextInput.value = "";
+  previewImport();
+  elements.shareTextInput.focus();
+});
+elements.navLinks.find((link) => link.hash === "#import").addEventListener("click", () => {
+  if (gameSource(getActiveGame()) === "solvry") {
+    state.activeGameId = "wordle";
+    render();
+  }
+  elements.importSurface.scrollIntoView({ block: "start", behavior: "smooth" });
+  elements.shareTextInput.focus({ preventScroll: true });
 });
 
 elements.importPasteButton.addEventListener("click", () => {
@@ -3362,6 +3433,7 @@ function render() {
   renderScoreboards(activeGame);
   renderFriendSync();
   renderAnswers();
+  previewImport();
   focusHolesViewport(activeGame);
 }
 
@@ -5677,26 +5749,13 @@ function renderOfficialLink(game) {
 }
 
 function renderBoard(seedText) {
-  if (gameSource(getActiveGame()) === "solvry") {
-    elements.letterBoard.hidden = true;
-    elements.letterBoard.innerHTML = "";
-    return;
-  }
-
-  elements.letterBoard.hidden = false;
-  const letters = (seedText.toUpperCase().replace(/[^A-Z]/g, "") + "SOLVRY").slice(0, 10);
-  const classes = ["hit", "warn", "miss", "", "hit", "", "warn", "hit", "miss", ""];
+  elements.letterBoard.hidden = true;
   elements.letterBoard.innerHTML = "";
-  letters.split("").forEach((letter, index) => {
-    const tile = document.createElement("span");
-    tile.className = `letter-tile ${classes[index]}`.trim();
-    tile.textContent = letter;
-    elements.letterBoard.append(tile);
-  });
 }
 
 function renderForm(entry) {
   const activeGame = getActiveGame();
+  elements.manualEntry.hidden = gameSource(activeGame) === "solvry";
   if (gameSource(activeGame) === "solvry") {
     elements.entryForm.hidden = true;
     return;
@@ -5963,39 +6022,104 @@ function renderAnswers() {
     .join("");
 }
 
-function importShareText(text) {
-  const importResult = parseShareText(text);
-  if (!importResult.parsed) {
-    elements.sharePreview.hidden = true;
-    elements.sharePreview.innerHTML = "";
-    setImportStatus(importResult.error, "error");
-    return;
-  }
+function renderImportExample() {
+  const examples = {
+    wordle: "Wordle 1,234 3/6\n\n⬛🟨⬛⬛⬛\n🟩🟩🟨⬛⬛\n🟩🟩🟩🟩🟩",
+    connections: "Connections\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪",
+    strands: "Strands #123\n🔵🔵🟡🔵🔵🔵🔵",
+    "mini-crossword": "I solved the Mini Crossword in 0:54!",
+    "spelling-bee": "Spelling Bee\nGenius · 150 points",
+    krillion: "Krillion #77\n110"
+  };
+  const id = elements.importExampleGame.value;
+  elements.importExampleText.textContent = examples[id];
+  elements.importExampleLink.href = state.games.find((game) => game.id === id)?.officialUrl || "#";
+}
 
-  const parsed = importResult.parsed;
-  const game = state.games.find((item) => item.id === parsed.gameId) || state.games[0];
-  state.activeGameId = game.id;
-  const gameEntries = getGameEntries(state.selectedDate, game.id);
-  gameEntries.you = {
+function sameImportedScore(entry, parsed) {
+  return entry?.source === "official-share" && entry.result === parsed.result && entry.score === parsed.score
+    && entry.shareText === elements.shareTextInput.value.trim();
+}
+
+function previewImport(showEmptyError = false) {
+  const text = elements.shareTextInput.value.trim();
+  const { parsed, error } = parseShareText(text);
+  elements.importPasteButton.disabled = true;
+  elements.importPasteButton.textContent = "Save score";
+  elements.sharePreview.hidden = true;
+  elements.sharePreview.innerHTML = "";
+  elements.importClearButton.hidden = !text;
+  elements.importClearButton.textContent = "Clear";
+  elements.shareTextInput.removeAttribute("aria-invalid");
+  if (!text && !showEmptyError) { setImportStatus(""); return null; }
+  if (!parsed) {
+    elements.shareTextInput.setAttribute("aria-invalid", "true");
+    setImportStatus(error, "error");
+    return null;
+  }
+  const game = state.games.find((item) => item.id === parsed.gameId);
+  if (!game) { setImportStatus("This game isn't available in your game list.", "error"); return null; }
+  const date = elements.importDate.value;
+  if (!date || !elements.importDate.validity.valid) {
+    setImportStatus("Choose the day you played, up to today.", "error");
+    return null;
+  }
+  const existing = state.entries[date]?.[game.id]?.you;
+  const duplicate = sameImportedScore(existing, parsed);
+  renderSharePreview(parsed, game, date, existing, duplicate);
+  if (duplicate) {
+    setImportStatus(`Already saved for ${date}. No duplicate added.`, "success");
+    elements.importPasteButton.textContent = "Already saved";
+    elements.importClearButton.textContent = "Add another score";
+    return null;
+  }
+  elements.importPasteButton.disabled = false;
+  elements.importPasteButton.textContent = existing ? "Replace saved score" : "Save score";
+  setImportStatus("");
+  return { parsed, game, date, existing };
+}
+
+function importShareText(text) {
+  const draft = previewImport(true);
+  if (!draft) return;
+  const { parsed, game, date, existing } = draft;
+  const entry = {
+    ...existing,
     result: parsed.result,
     score: parsed.score,
-    answer: "",
-    note: parsed.note,
-    reveal: false,
+    answer: existing?.answer || "",
+    note: existing?.note || parsed.note,
+    reveal: existing?.reveal || false,
     source: "official-share",
+    shareText: text.trim(),
     grid: parsed.grid
   };
-
-  saveState();
+  const previousDate = state.selectedDate;
+  const previousGame = state.activeGameId;
+  state.activeGameId = game.id;
+  state.selectedDate = date;
+  const gameEntries = getGameEntries(date, game.id);
+  gameEntries.you = entry;
+  try {
+    saveState();
+  } catch {
+    if (existing) gameEntries.you = existing;
+    else delete gameEntries.you;
+    state.selectedDate = previousDate;
+    state.activeGameId = previousGame;
+    setImportStatus("Couldn't save on this device. Your pasted result is still here; free some browser storage and try again.", "error");
+    return;
+  }
+  elements.playDate.value = date;
   render();
-  renderSharePreview(parsed, game);
-  setImportStatus(`Imported ${game.name}: ${parsed.score}.`, "success");
-  flashStatus(elements.saveStatus, `${game.name} imported and saved.`);
+  setImportStatus(`${game.name} saved for ${date}. Scoreboards updated.`, "success");
+  elements.importClearButton.focus({ preventScroll: true });
 }
 
 function parseShareText(text) {
   const cleaned = String(text || "").trim();
   if (!cleaned) return { parsed: null, error: "Paste a share result first." };
+  if (cleaned.length > 12000) return { parsed: null, error: "That text is too long. Paste just one game's shared result." };
 
   const lines = normalizeShareLines(cleaned);
   const attempts = [
@@ -6006,6 +6130,9 @@ function parseShareText(text) {
     parseSpellingBeeShare(lines),
     parseKrillionShare(lines)
   ];
+  if (attempts.filter((attempt) => attempt.parsed || attempt.error).length > 1) {
+    return { parsed: null, error: "There is more than one game here. Paste one result at a time so each score goes to the right scoreboard." };
+  }
   const parsedAttempt = attempts.find((attempt) => attempt.parsed);
   if (parsedAttempt) return parsedAttempt;
 
@@ -6064,14 +6191,15 @@ function parseConnectionsShare(lines) {
   }
 
   const puzzleMatch = text.match(/(?:Puzzle\s*)?#\s*([\d,]+)/i) || text.match(/\bConnections\s+#?([\d,]+)/i);
-  const solvedRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line)).length;
-  const mistakes = Math.max(0, grid.length - 4);
+  const correctRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line));
+  const solvedRows = new Set(correctRows).size;
+  const mistakes = grid.length - correctRows.length;
 
   return {
     parsed: {
       gameId: "connections",
       score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
-      result: solvedRows >= 4 ? "solved" : "played",
+      result: solvedRows >= 4 ? "solved" : mistakes >= 4 ? "missed" : "played",
       note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
       grid
     }
@@ -6121,6 +6249,9 @@ function parseMiniCrosswordShare(lines) {
       error: "I found Mini Crossword, but I could not find a completion time like 0:54 or 12:03."
     };
   }
+  if (timeMatch[1].split(":").slice(1).some((part) => Number(part) > 59)) {
+    return { parsed: null, error: "That time doesn't look right. Seconds and minutes within an hour must be between 00 and 59." };
+  }
 
   return {
     parsed: {
@@ -6137,7 +6268,7 @@ function parseSpellingBeeShare(lines) {
   const text = lines.join(" ");
   if (!/Spelling Bee/i.test(text)) return { parsed: null };
 
-  const ranks = ["Queen Bee", "Genius", "Amazing", "Great", "Nice", "Solid", "Good", "Moving", "Good Start", "Beginner"];
+  const ranks = ["Queen Bee", "Genius", "Amazing", "Great", "Nice", "Solid", "Good Start", "Good", "Moving Up", "Moving", "Beginner"];
   const rank = ranks.find((item) => new RegExp(`\\b${item}\\b`, "i").test(text));
   if (!rank) {
     return {
@@ -6211,12 +6342,16 @@ function normalizeTimeScore(score) {
   return parts.length === 2 ? score.padStart(5, "0") : score;
 }
 
-function renderSharePreview(parsed, game) {
+function renderSharePreview(parsed, game, date, existing, duplicate) {
   elements.sharePreview.hidden = false;
   elements.sharePreview.innerHTML = `
-    <strong>${escapeHtml(game.name)} imported</strong>
-    <small>${escapeHtml(parsed.score)} · saved for ${escapeHtml(state.selectedDate)}</small>
-    ${parsed.grid.length ? `<div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div>` : ""}
+    <div class="import-result-head">
+      ${gameLogo(game)}
+      <div><strong>${escapeHtml(game.name)} · ${escapeHtml(parsed.score)}</strong>
+      <small>${escapeHtml(parsed.result)} · ${escapeHtml(date)}${duplicate ? " · Saved" : " · Not saved yet"}</small></div>
+    </div>
+    ${existing && !duplicate ? `<p class="import-warning">You already saved ${escapeHtml(existing.score)} for this day. Saving will replace that score and keep your answer, note, and sharing choice.</p>` : ""}
+    ${parsed.grid.length ? `<details><summary>View shared result</summary><div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div></details>` : ""}
   `;
 }
 
