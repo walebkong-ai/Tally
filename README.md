@@ -29,6 +29,7 @@ The build writes the deployable site to `dist/`.
 - Official game links
 - Clipboard and paste import for supported official share results, with game-specific parsing errors when a pasted result is incomplete
 - Paste-first Add score flow with automatic game detection, score/date preview, explicit save or replacement, duplicate protection, and sample results for all six supported games
+- Visible Paste result / Enter manually tabs for the six existing official games, with game-specific score fields and Manual labels on saved results and individual leaderboards
 - Add-friend and add-game flows
 - Browser-local fallback when cloud config is not connected
 
@@ -61,3 +62,11 @@ Run `swift run solvry-site`, then `node --test Tests/share-import.test.cjs` for 
 Browser QA covered desktop (1366x900) and mobile (390x844): previews before saving, all six imports, reload persistence, duplicate detection, explicit score replacement preserving answers/notes/privacy, date validation, clipboard success/denial, storage-failure retry, manual entry, examples, and navigation from Solvry Holes. Clipboard and storage failures were simulated. These checks use representative fixtures, not a guarantee of compatibility with every future publisher format.
 
 Imports use the explicitly selected Played on date; puzzle numbers are not converted into calendar dates. Saving updates the existing local/cloud adapter and does not enable account sync without Firebase configuration.
+
+### Manual entry decisions and checks
+
+- Manual entry is limited to the existing official games; no custom game creation or overrides for in-app game scores were added.
+- Manual scores count on the same leaderboards as pasted scores and are labeled Manual.
+- Answer, note, and answer-sharing controls are optional. Existing scores show a replacement warning.
+- Desktop and 390x844 mobile checks covered all six games, saving and reload persistence, rank selection, missed Wordle, manual-to-paste switching, draft retention across tabs, replacement, optional fields, invalid/future dates, simulated storage failure/retry, and keyboard tabs.
+- The import suite now has 22 passing tests, including manual score normalization and validation.

@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body>
     <div class="app" id="app">
@@ -97,9 +97,13 @@ let html = #"""
             <div class="current-result" id="currentResult"></div>
             <div class="solvry-game" id="solvryGame" hidden></div>
             <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
-            <details class="manual-entry" id="manualEntry">
-              <summary>Add or edit a score manually</summary>
+            <div class="manual-entry" id="manualEntry" role="tabpanel" aria-labelledby="manualTab" hidden>
             <form class="entry-form" id="entryForm">
+              <div class="manual-grid">
+                <label>Game<select id="manualGameInput"></select></label>
+                <label>Played on<input id="manualDateInput" type="date" required /></label>
+              </div>
+              <p class="import-warning" id="manualExisting" hidden></p>
               <div class="field-grid">
                 <label>
                   Result
@@ -109,32 +113,38 @@ let html = #"""
                     <option value="played">Played</option>
                   </select>
                 </label>
-                <label>
-                  Score
-                  <input id="scoreInput" type="text" placeholder="4/6, 01:12, 3 mistakes" autocomplete="off" />
+                <div class="manual-score-field">
+                  <label id="manualScoreLabel" for="scoreInput">Guesses</label>
+                  <input id="scoreInput" type="text" autocomplete="off" aria-describedby="scoreHelp saveStatus" />
+                  <select id="manualRankInput" hidden aria-label="Spelling Bee rank">
+                    <option>Beginner</option><option>Good Start</option><option>Moving Up</option><option>Good</option><option>Solid</option><option>Nice</option><option>Great</option><option>Amazing</option><option>Genius</option><option>Queen Bee</option>
+                  </select>
                   <small class="field-help" id="scoreHelp">Example: 4/6</small>
-                </label>
+                </div>
+              </div>
+              <details class="manual-extras">
+                <summary>Answer &amp; note (optional)</summary>
                 <label>
                   Answer
                   <input id="answerInput" type="text" placeholder="Optional" autocomplete="off" />
                   <small class="field-help">Only shared when reveal is on.</small>
                 </label>
-              </div>
               <label class="wide-label">
                 Note
                 <input id="noteInput" type="text" placeholder="Close call, lucky guess, weird clue..." autocomplete="off" />
               </label>
-              <div class="form-actions">
                 <label class="switch-row">
                   <input id="revealInput" type="checkbox" />
                   <span class="switch" aria-hidden="true"></span>
                   <span>Show my answer to friends</span>
                 </label>
-                <button class="primary-button" type="submit">Save result</button>
+              </details>
+              <div class="form-actions">
+                <button class="primary-button" id="manualSaveButton" type="submit">Save score</button>
               </div>
               <div class="save-status" id="saveStatus" role="status"></div>
             </form>
-            </details>
+            </div>
           </div>
 
           <div class="import-surface" id="import">
@@ -142,6 +152,11 @@ let html = #"""
               <p class="eyebrow">From your daily games</p>
               <h2>Add a score</h2>
             </div>
+            <div class="score-tabs" role="tablist" aria-label="Add score method">
+              <button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button>
+              <button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button>
+            </div>
+            <div id="pastePanel" class="paste-panel" role="tabpanel" aria-labelledby="pasteTab">
             <div class="import-input-head">
               <label for="shareTextInput">Your copied result</label>
               <button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button>
@@ -170,6 +185,7 @@ let html = #"""
               <pre id="importExampleText" class="share-grid"></pre>
               <a id="importExampleLink" target="_blank" rel="noopener">Open game</a>
             </details>
+            </div>
           </div>
 
           <div class="metrics" aria-label="Summary">
@@ -296,7 +312,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=14" type="module"></script>
+    <script src="app.js?v=15" type="module"></script>
   </body>
 </html>
 """#
@@ -899,6 +915,24 @@ h2 {
 }
 
 .import-input-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.paste-panel { display: grid; gap: 12px; min-width: 0; }
+.score-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; gap: 4px; background: #edf3f4; border-radius: 8px; }
+.score-tabs button { min-height: 44px; padding: 10px 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 800; }
+.score-tabs button[aria-selected="true"] { background: #fff; border-color: #a7c9bd; color: #07694e; }
+.score-tabs button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.manual-grid, .manual-entry .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.manual-score-field { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.manual-entry .entry-form { margin: 0; }
+.manual-entry .form-actions { justify-content: stretch; }
+.manual-entry .form-actions button { width: 100%; }
+.manual-extras summary { padding: 8px 0; cursor: pointer; font-size: 14px; font-weight: 700; }
+.manual-extras[open] > label { margin-top: 12px; }
+.manual-entry .save-status { min-height: 0; line-height: 1.5; }
+.manual-entry .save-status.error { color: #9f3427; }
+.manual-entry .save-status.success { color: #087255; }
+@media (max-width: 480px) {
+  .manual-grid, .manual-entry .field-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .import-input-head label { margin: 0; }
 .import-date { display: grid; grid-template-columns: auto minmax(0, 190px); align-items: center; justify-content: start; gap: 12px; }
 .import-surface button:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -3193,6 +3227,15 @@ const elements = {
   importExampleText: document.querySelector("#importExampleText"),
   importExampleLink: document.querySelector("#importExampleLink"),
   manualEntry: document.querySelector("#manualEntry"),
+  pastePanel: document.querySelector("#pastePanel"),
+  pasteTab: document.querySelector("#pasteTab"),
+  manualTab: document.querySelector("#manualTab"),
+  manualGameInput: document.querySelector("#manualGameInput"),
+  manualDateInput: document.querySelector("#manualDateInput"),
+  manualRankInput: document.querySelector("#manualRankInput"),
+  manualScoreLabel: document.querySelector("#manualScoreLabel"),
+  manualExisting: document.querySelector("#manualExisting"),
+  manualSaveButton: document.querySelector("#manualSaveButton"),
   shareTextInput: document.querySelector("#shareTextInput"),
   importStatus: document.querySelector("#importStatus"),
   sharePreview: document.querySelector("#sharePreview"),
@@ -3227,31 +3270,51 @@ let cloudBackend = {
 elements.playDate.value = state.selectedDate;
 elements.importDate.value = state.selectedDate;
 elements.importDate.max = today;
+elements.manualDateInput.value = state.selectedDate;
+elements.manualDateInput.max = today;
+elements.importSurface.append(elements.manualEntry);
 elements.currentResult.closest(".play-surface").before(elements.importSurface);
 renderImportExample();
+let scoreMethod = "paste";
+let manualFormKey = "";
+let manualFormDirty = false;
 
 window.addEventListener("hashchange", renderNav);
 
 elements.playDate.addEventListener("change", (event) => {
   state.selectedDate = event.target.value || today;
   elements.importDate.value = state.selectedDate;
+  elements.manualDateInput.value = state.selectedDate;
   saveState();
   render();
 });
 
 elements.entryForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
-  gameEntries.you = {
-    result: elements.resultInput.value,
-    score: elements.scoreInput.value.trim() || defaultScoreLabel(elements.resultInput.value),
-    answer: elements.answerInput.value.trim(),
-    note: elements.noteInput.value.trim(),
-    reveal: elements.revealInput.checked
-  };
-  saveState();
+  saveManualScore();
+});
+
+elements.entryForm.addEventListener("input", () => {
+  manualFormDirty = true;
+  elements.scoreInput.setCustomValidity("");
+  elements.saveStatus.textContent = "";
+});
+elements.resultInput.addEventListener("change", updateManualScoreField);
+elements.manualGameInput.addEventListener("change", () => {
+  state.activeGameId = elements.manualGameInput.value;
+  manualFormDirty = false;
   render();
-  flashStatus(elements.saveStatus, "Saved. Scoreboards updated.");
+});
+elements.manualDateInput.addEventListener("change", () => { manualFormDirty = false; renderForm(); });
+[elements.pasteTab, elements.manualTab].forEach((tab, index, tabs) => {
+  tab.addEventListener("click", () => setScoreMethod(index ? "manual" : "paste"));
+  tab.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
+    tabs[next].click();
+    tabs[next].focus();
+  });
 });
 
 elements.friendForm.addEventListener("submit", (event) => {
@@ -3357,7 +3420,7 @@ elements.navLinks.find((link) => link.hash === "#import").addEventListener("clic
     render();
   }
   elements.importSurface.scrollIntoView({ block: "start", behavior: "smooth" });
-  elements.shareTextInput.focus({ preventScroll: true });
+  (scoreMethod === "manual" ? elements.manualGameInput : elements.shareTextInput).focus({ preventScroll: true });
 });
 
 elements.importPasteButton.addEventListener("click", () => {
@@ -3893,7 +3956,7 @@ function renderCurrentResult(game, entry) {
       <strong>${escapeHtml(summary)}</strong>
       <span>${escapeHtml(detail)}</span>
     </span>
-    <span class="pill">${entry ? "Saved" : "Open"}</span>
+    <span class="pill">${entry?.source === "manual" ? "Manual" : entry ? "Saved" : "Open"}</span>
   `;
 }
 
@@ -5753,22 +5816,137 @@ function renderBoard(seedText) {
   elements.letterBoard.innerHTML = "";
 }
 
-function renderForm(entry) {
+function setScoreMethod(method) {
+  scoreMethod = method;
+  elements.pastePanel.hidden = method !== "paste";
+  elements.manualEntry.hidden = method !== "manual";
+  [elements.pasteTab, elements.manualTab].forEach((tab, index) => {
+    const selected = (index === 1) === (method === "manual");
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  if (method === "manual") renderForm();
+}
+
+function renderForm() {
   const activeGame = getActiveGame();
-  elements.manualEntry.hidden = gameSource(activeGame) === "solvry";
+  elements.manualEntry.hidden = scoreMethod !== "manual" || gameSource(activeGame) === "solvry";
   if (gameSource(activeGame) === "solvry") {
     elements.entryForm.hidden = true;
     return;
   }
-
   elements.entryForm.hidden = false;
-  elements.resultInput.value = entry?.result || "solved";
-  elements.scoreInput.value = entry?.score || "";
-  elements.scoreInput.placeholder = scoreStyleExample(activeGame);
-  elements.scoreHelp.textContent = `Example: ${scoreStyleExample(activeGame)} · ${scoreStyleLabel(activeGame)}`;
+  elements.manualGameInput.innerHTML = state.games.filter((game) => gameSource(game) === "official")
+    .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`).join("");
+  elements.manualGameInput.value = activeGame.id;
+  const date = elements.manualDateInput.value;
+  const entry = state.entries[date]?.[activeGame.id]?.you;
+  elements.manualExisting.hidden = !entry;
+  elements.manualExisting.textContent = entry ? `${entry.score} is already saved for ${date}. Saving will replace it with a Manual entry.` : "";
+  elements.manualSaveButton.textContent = entry ? "Replace saved score" : "Save score";
+  const key = `${activeGame.id}:${date}`;
+  if (manualFormKey === key && manualFormDirty) return;
+  manualFormKey = key;
+  manualFormDirty = false;
+  elements.saveStatus.textContent = "";
+  elements.scoreInput.setCustomValidity("");
+  elements.resultInput.value = entry?.result || (activeGame.id === "krillion" || activeGame.id === "spelling-bee" ? "played" : "solved");
+  updateManualScoreField();
+  elements.scoreInput.value = activeGame.type === "time" ? entry?.score || "" : String(entry?.score || "").match(/\d+/)?.[0] || (entry?.score === "No hints" ? "0" : "");
+  if (activeGame.type === "rank") {
+    const rank = entry?.score?.split(" · ")[0];
+    elements.manualRankInput.value = rank === "Moving" ? "Moving Up" : rank || "Beginner";
+  }
   elements.answerInput.value = entry?.answer || "";
   elements.noteInput.value = entry?.note || "";
   elements.revealInput.checked = Boolean(entry?.reveal);
+}
+
+function updateManualScoreField() {
+  const game = getActiveGame();
+  const fields = {
+    wordle: ["Guesses", "3", "1 to 6 guesses", 1, 6],
+    connections: ["Mistakes", "0", "0 to 4 mistakes", 0, 4],
+    strands: ["Hints used", "0", "0 for no hints", 0, 999],
+    "mini-crossword": ["Time", "00:54", "Minutes:seconds, e.g. 00:54", 0, 0],
+    "spelling-bee": ["Rank", "", "Best rank reached", 0, 0],
+    krillion: ["Depth score", "110", "Final depth score", 0, 9999]
+  };
+  const [label, example, help, min, max] = fields[game.id] || ["Score", "0", "Final score", 0, 9999];
+  elements.manualScoreLabel.textContent = label;
+  elements.scoreHelp.textContent = help;
+  const isRank = game.type === "rank";
+  elements.manualScoreLabel.htmlFor = isRank ? "manualRankInput" : "scoreInput";
+  elements.resultInput.closest("label").hidden = isRank;
+  const missedWordle = game.id === "wordle" && elements.resultInput.value === "missed";
+  elements.scoreInput.hidden = isRank || missedWordle;
+  elements.scoreInput.disabled = isRank || missedWordle;
+  elements.scoreInput.required = !isRank && !missedWordle;
+  elements.scoreInput.type = game.type === "time" ? "text" : "number";
+  elements.scoreInput.inputMode = game.type === "time" ? "text" : "numeric";
+  elements.scoreInput.min = String(min);
+  elements.scoreInput.max = String(max);
+  elements.scoreInput.step = "1";
+  elements.scoreInput.placeholder = example;
+  elements.manualRankInput.hidden = !isRank;
+  elements.manualRankInput.disabled = !isRank;
+  if (missedWordle) elements.scoreHelp.textContent = "X/6";
+}
+
+function normalizeManualScore(gameId, result, raw, rank) {
+  const value = String(raw).trim();
+  if (gameId === "wordle" && result === "missed") return { score: "X/6", result };
+  if (gameId === "mini-crossword") {
+    if (!/^\d{1,3}:[0-5]\d$/.test(value)) return { error: "Enter a time like 00:54 or 12:03." };
+    return { score: value.padStart(5, "0"), result };
+  }
+  if (gameId === "spelling-bee") {
+    if (!["Beginner", "Good Start", "Moving Up", "Good", "Solid", "Nice", "Great", "Amazing", "Genius", "Queen Bee"].includes(rank)) return { error: "Choose your Spelling Bee rank." };
+    return { score: rank, result: rank === "Queen Bee" ? "solved" : "played" };
+  }
+  const max = { wordle: 6, connections: 4, strands: 999, krillion: 9999 }[gameId];
+  const min = gameId === "wordle" ? 1 : 0;
+  const number = Number(value);
+  if (max === undefined || !/^\d+$/.test(value) || !Number.isInteger(number) || number < min || number > max) {
+    return { error: `Enter a whole number from ${min} to ${max ?? 9999}.` };
+  }
+  if (gameId === "wordle") return { score: `${number}/6`, result };
+  if (gameId === "connections") return { score: `${number} mistake${number === 1 ? "" : "s"}`, result: number === 4 ? "missed" : result };
+  if (gameId === "strands") return { score: number ? `${number} hint${number === 1 ? "" : "s"}` : "No hints", result };
+  return { score: String(number), result };
+}
+
+function saveManualScore() {
+  const game = getActiveGame();
+  if (gameSource(game) !== "official") return;
+  const date = elements.manualDateInput.value;
+  if (!date || !elements.manualDateInput.validity.valid) { elements.manualDateInput.reportValidity(); return; }
+  const normalized = normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value);
+  if (normalized.error) {
+    elements.saveStatus.className = "save-status error";
+    elements.saveStatus.textContent = normalized.error;
+    elements.scoreInput.focus();
+    return;
+  }
+  const entries = getGameEntries(date, game.id);
+  const previous = entries.you;
+  const previousDate = state.selectedDate;
+  entries.you = { ...normalized, source: "manual", answer: elements.answerInput.value.trim(), note: elements.noteInput.value.trim(), reveal: elements.revealInput.checked };
+  state.selectedDate = date;
+  try { saveState(); } catch {
+    if (previous) entries.you = previous;
+    else delete entries.you;
+    state.selectedDate = previousDate;
+    elements.saveStatus.className = "save-status error";
+    elements.saveStatus.textContent = "Couldn't save on this device. Your entries are still here; try again.";
+    return;
+  }
+  elements.playDate.value = date;
+  elements.importDate.value = date;
+  manualFormDirty = false;
+  render();
+  elements.saveStatus.className = "save-status success";
+  elements.saveStatus.textContent = `${game.name} saved for ${date}. Manual score added to the leaderboard.`;
 }
 
 function renderMetrics() {
@@ -5885,7 +6063,7 @@ function buildGameLeaderboard(game) {
         entry,
         hasEntry: Boolean(entry),
         score,
-        detail: entry ? `${score.detail} · ${entry.result}` : "Not played",
+        detail: entry ? `${score.detail} · ${entry.result}${entry.source === "manual" ? " · Manual" : ""}` : "Not played",
         value: entry ? score.label : "-",
         subvalue: entry ? scoreStyleLabel(game) : ""
       };
@@ -6111,6 +6289,8 @@ function importShareText(text) {
     return;
   }
   elements.playDate.value = date;
+  elements.manualDateInput.value = date;
+  manualFormDirty = false;
   render();
   setImportStatus(`${game.name} saved for ${date}. Scoreboards updated.`, "success");
   elements.importClearButton.focus({ preventScroll: true });

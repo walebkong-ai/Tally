@@ -10,6 +10,33 @@ const parserSource = app.slice(app.indexOf('function parseShareText('), app.inde
 const context = vm.createContext({});
 vm.runInContext(parserSource, context);
 const parse = (text) => context.parseShareText(text);
+vm.runInContext(app.slice(app.indexOf('function normalizeManualScore('), app.indexOf('function saveManualScore(')), context);
+
+test('manual scores normalize to existing leaderboard formats', () => {
+  const fixtures = [
+    ['wordle', 'solved', '3', '', '3/6'],
+    ['wordle', 'missed', '', '', 'X/6'],
+    ['connections', 'solved', '2', '', '2 mistakes'],
+    ['strands', 'solved', '0', '', 'No hints'],
+    ['mini-crossword', 'solved', '0:54', '', '00:54'],
+    ['spelling-bee', 'played', '', 'Good Start', 'Good Start'],
+    ['krillion', 'played', '110', '', '110']
+  ];
+  for (const [game, result, value, rank, expected] of fixtures) {
+    assert.equal(context.normalizeManualScore(game, result, value, rank).score, expected);
+  }
+  assert.equal(context.normalizeManualScore('connections', 'solved', '4', '').result, 'missed');
+  assert.equal(context.normalizeManualScore('spelling-bee', 'played', '', 'Queen Bee').result, 'solved');
+});
+
+test('manual validation rejects missing, malformed, and out-of-range scores', () => {
+  for (const [game, value, rank] of [
+    ['wordle', '7', ''], ['wordle', '0', ''], ['wordle', '3.5', ''],
+    ['connections', '-1', ''], ['connections', '5', ''], ['krillion', '', ''],
+    ['mini-crossword', '0:99', ''], ['mini-crossword', 'abc', ''],
+    ['spelling-bee', '', 'Champion'], ['solvry-holes', '20', '']
+  ]) assert.ok(context.normalizeManualScore(game, 'solved', value, rank).error);
+});
 
 const fixtures = [
   ['Wordle 1,234 3/6*\n⬛🟨⬛⬛⬛\n🟩🟩🟨⬛⬛\n🟩🟩🟩🟩🟩', 'wordle', '3/6', 'solved'],
