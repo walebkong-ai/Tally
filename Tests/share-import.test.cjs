@@ -12,6 +12,35 @@ vm.runInContext(parserSource, context);
 const parse = (text) => context.parseShareText(text);
 vm.runInContext(app.slice(app.indexOf('function normalizeManualScore('), app.indexOf('function saveManualScore(')), context);
 
+test('custom game scoring supports every offered scoring style', () => {
+  for (const [type, raw, expected] of [
+    ['points', '103.5', '103.5'], ['strokes', '-2.5', '-2.5'],
+    ['time', '1:02:30', '1:02:30'], ['time', '0:54', '00:54'],
+    ['guesses', '12', '12 guesses'], ['mistakes', '0', '0 mistakes'],
+    ['complete', '', 'Complete']
+  ]) assert.equal(context.normalizeCustomScore(type, 'solved', raw).score, expected);
+  assert.equal(context.normalizeCustomScore('complete', 'missed', '').score, 'Missed');
+});
+
+test('custom game scoring rejects malformed values', () => {
+  for (const [type, raw] of [['time','1:99'], ['points',''], ['points','Infinity'],
+    ['guesses','3.2'], ['guesses','0'], ['mistakes','-1'], ['points','1000000001']]) {
+    assert.ok(context.normalizeCustomScore(type, 'solved', raw).error);
+  }
+});
+
+test('custom game definitions survive merges without replacing built-in games', () => {
+  context.scoringForType = () => ({});
+  vm.runInContext(app.slice(app.indexOf('function customScoringForType('), app.indexOf('function defaultScoreLabel(')), context);
+  const base = [{ id: 'wordle', name: 'Wordle', source: 'official' }];
+  const custom = { id: 'custom-my-puzzle-points', name: 'My Puzzle', source: 'custom', type: 'points' };
+  const merged = context.mergeCustomGames(base, [custom, custom, { ...custom, id: 'wordle' }, { ...custom, id: 'custom-invalid', type: 'unknown' }]);
+  assert.equal(merged.length, 2);
+  assert.equal(merged[0].source, 'official');
+  assert.equal(merged[1].name, 'My Puzzle');
+  assert.equal(merged[1].scoring.label, 'Highest score');
+});
+
 test('manual scores normalize to existing leaderboard formats', () => {
   const fixtures = [
     ['wordle', 'solved', '3', '', '3/6'],

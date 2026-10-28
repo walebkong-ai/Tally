@@ -65,8 +65,15 @@ Imports use the explicitly selected Played on date; puzzle numbers are not conve
 
 ### Manual entry decisions and checks
 
-- Manual entry is limited to the existing official games; no custom game creation or overrides for in-app game scores were added.
+- The initial manual entry pass covered existing official games. As of 2026-10-28, Other game also accepts a game name and scoring style; in-app game scores still cannot be overridden manually.
 - Manual scores count on the same leaderboards as pasted scores and are labeled Manual.
 - Answer, note, and answer-sharing controls are optional. Existing scores show a replacement warning.
 - Desktop and 390x844 mobile checks covered all six games, saving and reload persistence, rank selection, missed Wordle, manual-to-paste switching, draft retention across tabs, replacement, optional fields, invalid/future dates, simulated storage failure/retry, and keyboard tabs.
 - The import suite now has 22 passing tests, including manual score normalization and validation.
+
+### Custom games (2026-10-28)
+
+- Add score > Enter manually > Other game opens the game name and scoring-style form. Custom games appear under Your games and in the score picker after reload.
+- Supported scoring: higher/lower numeric score (including decimals and negative scores), fastest time, fewest guesses/mistakes, or completion only. Custom scores retain the Manual label and existing leaderboard behavior.
+- Custom definitions are included in the Firebase adapter's account payload and accepted-friend score loading. Live Firebase sync remains unverified without configured credentials/rules.
+- Verified creation and score persistence for all six styles, duplicate-name prevention, cancel/close, pin persistence, score updates, simulated storage failures/retry, official import regression, and desktop/mobile layouts. The parser/normalization suite has 25 passing tests.

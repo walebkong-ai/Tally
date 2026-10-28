@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=16" />
   </head>
   <body>
     <div class="app" id="app">
@@ -272,21 +272,21 @@ let html = #"""
           </div>
           <label>
             Game name
-            <input id="gameNameInput" type="text" placeholder="Connections" required />
+            <input id="gameNameInput" type="text" placeholder="Game name" maxlength="60" required />
           </label>
           <label>
             Scoring style
             <select id="gameTypeInput">
-              <option value="guesses">Guesses</option>
-              <option value="time">Time</option>
-              <option value="mistakes">Mistakes</option>
-              <option value="points">Points</option>
-              <option value="depth">Depth</option>
-              <option value="rank">Rank</option>
-              <option value="complete">Complete</option>
+              <option value="points">Score: higher is better</option>
+              <option value="strokes">Score: lower is better</option>
+              <option value="time">Time: fastest wins</option>
+              <option value="guesses">Guesses: fewest wins</option>
+              <option value="mistakes">Mistakes: fewest wins</option>
+              <option value="complete">Completion only</option>
             </select>
           </label>
-          <button class="primary-button" value="default" type="submit">Add game</button>
+          <p id="gameFormStatus" class="import-warning" role="status"></p>
+          <button class="primary-button" value="default" type="submit">Add game &amp; enter score</button>
         </form>
       </dialog>
 
@@ -312,7 +312,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=15" type="module"></script>
+    <script src="app.js?v=16" type="module"></script>
   </body>
 </html>
 """#
@@ -922,6 +922,7 @@ h2 {
 .score-tabs button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .manual-grid, .manual-entry .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .manual-score-field { display: grid; align-content: start; gap: 6px; min-width: 0; }
+#gameDialog .section-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; }
 .manual-entry .entry-form { margin: 0; }
 .manual-entry .form-actions { justify-content: stretch; }
 .manual-entry .form-actions button { width: 100%; }
@@ -3246,6 +3247,7 @@ const elements = {
   gameForm: document.querySelector("#gameForm"),
   gameNameInput: document.querySelector("#gameNameInput"),
   gameTypeInput: document.querySelector("#gameTypeInput"),
+  gameFormStatus: document.querySelector("#gameFormStatus"),
   accountControls: document.querySelector("#accountControls"),
   accountDialog: document.querySelector("#accountDialog"),
   accountForm: document.querySelector("#accountForm"),
@@ -3278,6 +3280,7 @@ renderImportExample();
 let scoreMethod = "paste";
 let manualFormKey = "";
 let manualFormDirty = false;
+let lastRenderedGameId = null;
 
 window.addEventListener("hashchange", renderNav);
 
@@ -3301,6 +3304,14 @@ elements.entryForm.addEventListener("input", () => {
 });
 elements.resultInput.addEventListener("change", updateManualScoreField);
 elements.manualGameInput.addEventListener("change", () => {
+  if (elements.manualGameInput.value === "__other__") {
+    elements.manualGameInput.value = state.activeGameId;
+    elements.gameForm.reset();
+    elements.gameFormStatus.textContent = "";
+    elements.gameDialog.showModal();
+    elements.gameNameInput.focus();
+    return;
+  }
   state.activeGameId = elements.manualGameInput.value;
   manualFormDirty = false;
   render();
@@ -3333,15 +3344,30 @@ elements.closeGameDialogButton.addEventListener("click", () => {
 
 elements.gameForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = elements.gameNameInput.value.trim();
-  if (!name) return;
-  const id = uniqueId(slugify(name), state.games.map((game) => game.id));
+  const name = elements.gameNameInput.value.trim().replace(/\s+/g, " ");
+  if (!name) { elements.gameFormStatus.textContent = "Enter a game name."; return; }
+  const existing = state.games.find((game) => game.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    elements.gameFormStatus.textContent = `${existing.name} is already listed. Choose it from the game list.`;
+    return;
+  }
   const type = elements.gameTypeInput.value;
-  state.games.push({ id, name, type, scoring: scoringForType(type), logo: "custom", officialUrl: "" });
+  const id = uniqueId(`custom-${slugify(name) || "game"}-${type}`, state.games.map((game) => game.id));
+  const game = { id, name, source: "custom", type, scoring: customScoringForType(type), logo: "custom", officialUrl: "" };
+  const previousGameId = state.activeGameId;
+  state.games.push(game);
   state.activeGameId = id;
-  saveState();
+  try { saveState(); } catch {
+    state.games = state.games.filter((item) => item !== game);
+    state.activeGameId = previousGameId;
+    elements.gameFormStatus.textContent = "Couldn't save this game on your device. Try again.";
+    return;
+  }
+  manualFormDirty = false;
   elements.gameDialog.close();
   render();
+  setScoreMethod("manual");
+  (type === "complete" ? elements.resultInput : elements.scoreInput).focus();
 });
 
 elements.accountControls.addEventListener("click", (event) => {
@@ -3472,6 +3498,8 @@ elements.solvryGame.addEventListener("click", (event) => {
 
 function render() {
   const activeGame = getActiveGame();
+  if (activeGame.source === "custom" && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
+  lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
   const myEntry = gameEntries.you;
   const friendEntries = state.friends.filter((friend) => friend.status !== "pending" && gameEntries[friend.id]);
@@ -3692,6 +3720,7 @@ async function loadCloudState(uid) {
     state.friends = Array.isArray(remote.friends) ? remote.friends : state.friends;
     state.pinnedGameIds = Array.isArray(remote.pinnedGameIds) ? remote.pinnedGameIds : state.pinnedGameIds;
     state.entries = mergeEntries(state.entries, remote.entries || {});
+    state.games = mergeCustomGames(state.games, remote.customGames);
   } finally {
     cloudBackend.applyingRemote = false;
   }
@@ -3706,6 +3735,7 @@ function serializeCloudState() {
     },
     friends: state.friends,
     entries: state.entries,
+    customGames: state.games.filter((game) => game.source === "custom"),
     pinnedGameIds: state.pinnedGameIds,
     updatedAt: new Date().toISOString()
   };
@@ -3855,6 +3885,7 @@ async function loadFriendEntries(friend) {
   const { doc, getDoc } = cloudBackend.modules.firestore;
   const snap = await getDoc(doc(cloudBackend.db, "users", friend.uid));
   if (!snap.exists()) return;
+  state.games = mergeCustomGames(state.games, snap.data().customGames);
   mergeFriendEntries(friend.id, snap.data().entries || {});
 }
 
@@ -5685,6 +5716,7 @@ function renderGameList() {
   elements.gameList.innerHTML = "";
   [
     { source: "official", title: "Official imports", detail: "Paste share results" },
+    { source: "custom", title: "Your games", detail: "Manual scores" },
     { source: "solvry", title: "Solvry games", detail: "In-app versions" }
   ].forEach((section) => {
     const games = getSortedGames().filter((game) => gameSource(game) === section.source);
@@ -5745,7 +5777,7 @@ function gameSource(game) {
 }
 
 function sourceOrder(source) {
-  return source === "official" ? 0 : 1;
+  return source === "official" ? 0 : source === "custom" ? 1 : 2;
 }
 
 function togglePin(gameId) {
@@ -5836,8 +5868,9 @@ function renderForm() {
     return;
   }
   elements.entryForm.hidden = false;
-  elements.manualGameInput.innerHTML = state.games.filter((game) => gameSource(game) === "official")
-    .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`).join("");
+  elements.manualGameInput.innerHTML = state.games.filter((game) => gameSource(game) !== "solvry")
+    .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`).join("")
+    + '<option value="__other__">Other game…</option>';
   elements.manualGameInput.value = activeGame.id;
   const date = elements.manualDateInput.value;
   const entry = state.entries[date]?.[activeGame.id]?.you;
@@ -5852,7 +5885,7 @@ function renderForm() {
   elements.scoreInput.setCustomValidity("");
   elements.resultInput.value = entry?.result || (activeGame.id === "krillion" || activeGame.id === "spelling-bee" ? "played" : "solved");
   updateManualScoreField();
-  elements.scoreInput.value = activeGame.type === "time" ? entry?.score || "" : String(entry?.score || "").match(/\d+/)?.[0] || (entry?.score === "No hints" ? "0" : "");
+  elements.scoreInput.value = activeGame.type === "time" ? entry?.score || "" : String(entry?.score || "").match(/-?\d+(?:\.\d+)?/)?.[0] || (entry?.score === "No hints" ? "0" : "");
   if (activeGame.type === "rank") {
     const rank = entry?.score?.split(" · ")[0];
     elements.manualRankInput.value = rank === "Moving" ? "Moving Up" : rank || "Beginner";
@@ -5872,21 +5905,31 @@ function updateManualScoreField() {
     "spelling-bee": ["Rank", "", "Best rank reached", 0, 0],
     krillion: ["Depth score", "110", "Final depth score", 0, 9999]
   };
-  const [label, example, help, min, max] = fields[game.id] || ["Score", "0", "Final score", 0, 9999];
+  const customFields = {
+    points: ["Score", "100", "Higher is better", -1000000000, 1000000000],
+    strokes: ["Score", "10", "Lower is better", -1000000000, 1000000000],
+    time: ["Time", "01:30", "Minutes:seconds or hours:minutes:seconds", 0, 0],
+    guesses: ["Guesses", "7", "Total guesses", 1, 1000000],
+    mistakes: ["Mistakes", "0", "Total mistakes", 0, 1000000],
+    complete: ["Completion", "", "", 0, 0]
+  };
+  const [label, example, help, min, max] = fields[game.id] || customFields[game.type];
   elements.manualScoreLabel.textContent = label;
   elements.scoreHelp.textContent = help;
   const isRank = game.type === "rank";
   elements.manualScoreLabel.htmlFor = isRank ? "manualRankInput" : "scoreInput";
   elements.resultInput.closest("label").hidden = isRank;
   const missedWordle = game.id === "wordle" && elements.resultInput.value === "missed";
-  elements.scoreInput.hidden = isRank || missedWordle;
-  elements.scoreInput.disabled = isRank || missedWordle;
-  elements.scoreInput.required = !isRank && !missedWordle;
+  const completionOnly = game.source === "custom" && game.type === "complete";
+  elements.manualScoreLabel.closest(".manual-score-field").hidden = completionOnly;
+  elements.scoreInput.hidden = isRank || missedWordle || completionOnly;
+  elements.scoreInput.disabled = isRank || missedWordle || completionOnly;
+  elements.scoreInput.required = !isRank && !missedWordle && !completionOnly;
   elements.scoreInput.type = game.type === "time" ? "text" : "number";
   elements.scoreInput.inputMode = game.type === "time" ? "text" : "numeric";
   elements.scoreInput.min = String(min);
   elements.scoreInput.max = String(max);
-  elements.scoreInput.step = "1";
+  elements.scoreInput.step = game.source === "custom" && ["points", "strokes"].includes(game.type) ? "any" : "1";
   elements.scoreInput.placeholder = example;
   elements.manualRankInput.hidden = !isRank;
   elements.manualRankInput.disabled = !isRank;
@@ -5916,12 +5959,30 @@ function normalizeManualScore(gameId, result, raw, rank) {
   return { score: String(number), result };
 }
 
+function normalizeCustomScore(type, result, raw) {
+  const value = String(raw).trim();
+  if (type === "complete") return { score: result === "solved" ? "Complete" : result === "missed" ? "Missed" : "Played", result };
+  if (type === "time") {
+    if (!/^\d{1,3}:[0-5]\d(?::[0-5]\d)?$/.test(value)) return { error: "Enter a time like 01:30 or 1:02:30." };
+    return { score: value.padStart(5, "0"), result };
+  }
+  if (["guesses", "mistakes"].includes(type)) {
+    const number = Number(value);
+    if (!/^\d+$/.test(value) || number < (type === "guesses" ? 1 : 0) || number > 1000000) return { error: "Enter a valid whole-number count." };
+    return { score: `${number} ${type === "guesses" ? number === 1 ? "guess" : "guesses" : number === 1 ? "mistake" : "mistakes"}`, result };
+  }
+  if (["points", "strokes"].includes(type) && /^-?\d+(?:\.\d+)?$/.test(value) && Math.abs(Number(value)) <= 1000000000) return { score: String(Number(value)), result };
+  return { error: "Enter a valid score between -1,000,000,000 and 1,000,000,000." };
+}
+
 function saveManualScore() {
   const game = getActiveGame();
-  if (gameSource(game) !== "official") return;
+  if (gameSource(game) === "solvry") return;
   const date = elements.manualDateInput.value;
   if (!date || !elements.manualDateInput.validity.valid) { elements.manualDateInput.reportValidity(); return; }
-  const normalized = normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value);
+  const normalized = game.source === "custom"
+    ? normalizeCustomScore(game.type, elements.resultInput.value, elements.scoreInput.value)
+    : normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value);
   if (normalized.error) {
     elements.saveStatus.className = "save-status error";
     elements.saveStatus.textContent = normalized.error;
@@ -6630,6 +6691,28 @@ function scoringForType(type) {
   return { ...(SCORING_STYLES[type] || SCORING_STYLES.complete) };
 }
 
+function customScoringForType(type) {
+  const styles = {
+    points: { label: "Highest score", helper: "Higher scores win.", example: "100" },
+    strokes: { label: "Lowest score", helper: "Lower scores win.", example: "10" },
+    guesses: { label: "Fewest guesses", helper: "Fewer guesses win.", example: "7 guesses" }
+  };
+  return { ...scoringForType(type), ...styles[type] };
+}
+
+function mergeCustomGames(baseGames, savedGames = []) {
+  const games = [...baseGames];
+  const ids = new Set(games.map((game) => game.id));
+  for (const game of Array.isArray(savedGames) ? savedGames : []) {
+    if (!game || game.source !== "custom" || typeof game.id !== "string" || !/^custom-[a-z0-9-]+$/.test(game.id)
+      || ids.has(game.id) || typeof game.name !== "string" || !game.name.trim() || game.name.length > 60
+      || !["points", "strokes", "time", "guesses", "mistakes", "complete"].includes(game.type)) continue;
+    games.push({ id: game.id, name: game.name.trim(), source: "custom", type: game.type, scoring: customScoringForType(game.type), logo: "custom", officialUrl: "" });
+    ids.add(game.id);
+  }
+  return games;
+}
+
 function defaultScoreLabel(result) {
   return result === "missed" ? "Missed" : "Complete";
 }
@@ -6657,7 +6740,7 @@ function mergeState(base, saved) {
       officialUrl: savedGame.officialUrl || game.officialUrl
     };
   });
-  const mergedGames = [...mergedDefaults];
+  const mergedGames = mergeCustomGames(mergedDefaults, saved.games);
   const mergedGameIds = new Set(mergedGames.map((game) => game.id));
   const entries = Object.fromEntries(
     Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
