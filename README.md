@@ -16,7 +16,7 @@ Only copied result text is imported. Challenge links without a numeric result ar
 | Globle | Guess count after the emoji grid's equals sign; lowest wins, ignores streak/average |
 | Flagcognito | Shared total out of 3,000 across three rounds; highest wins |
 | Size It Up | Magnitudle's original daily Score out of 500; highest wins; other modes/practice rejected |
-| Color (Dialed) | Numeric memory result out of 50 plus Color URL; highest wins; challenge-based, excluded from combined daily points |
+| Color (Dialed) | Numeric memory result out of 50 plus Color URL; highest wins; dated Color Daily results count in combined points, other challenges do not |
 | BuzzFeed Daily Trivia | Correct answers out of five; highest wins |
 | Immaculate Grid | Correct answers out of nine first, then lower rarity score; sport must be identifiable; rarity is not a percentage |
 
@@ -112,3 +112,11 @@ Verification: `swift run solvry-site`, `node --check dist/app.js`, `git diff --c
 ## Universal import verification (2026-11-03)
 
 Swift build, JavaScript syntax, 58 parser/leaderboard tests, and diff whitespace checks pass. Browser QA used an isolated local profile on desktop (1366×900) and mobile (390×844): every one of the 19 sample formats previewed and saved, persisted across reload, and updated the leaderboard. Checked manual correct-count/rarity entry, game search, rejected link-only Color text without storage writes, and no horizontal overflow. Preserved a fixture golf round and its entry while confirming neither its catalog card nor its daily ranking points appeared. Solvry game engines remain in the Swift source. No real user data or third-party gameplay was modified by QA.
+
+## Import navigation correction (2026-11-03)
+
+Switching games now clears already-saved paste text and its confirmation. Unsaved drafts retain their own text and Played on date per selected game for the current session; returning to a game restores its draft. Delayed clipboard reads cannot populate a different game after navigation. A new visit starts on the user's local calendar date, while historical scores remain intact.
+
+The actual Color Daily share format supplied in the bug report is recognized separately from challenge shares. Its printed month/day (and year, when supplied) must match Played on. Valid daily shares contribute to combined points, including previously saved shares on their correct date; challenge or wrong-date entries do not affect daily placements. Existing dated entries are never silently moved. Yearless shares do not invent a year.
+
+Validation: Swift build, JS syntax, diff checks, and 65 automated tests passed. Desktop/mobile browser QA reproduced saved Color → Size It Up navigation, unsaved draft switching via sidebar/quick tiles, stale selected-date reload, date mismatch rejection, correct daily ranking, and a delayed clipboard response after switching. Historical fixture entries stayed unchanged.

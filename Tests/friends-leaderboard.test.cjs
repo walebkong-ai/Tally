@@ -19,7 +19,7 @@ function setup() {
     saveState: () => {}
   });
   const names = ['visibleGames', 'gameSource', 'getActiveGame', 'normalizeHandle', 'addOrUpdateFriend', 'cloudFriendsAvailable', 'isDemoFriend', 'visibleFriends', 'getPeople',
-    'placementScore', 'gameScoreDirection', 'resultWeight', 'leaderboardDates', 'buildOverallLeaderboard', 'buildGameLeaderboard',
+    'eligibleForDailyRanking', 'importDateError', 'placementScore', 'gameScoreDirection', 'resultWeight', 'leaderboardDates', 'buildOverallLeaderboard', 'buildGameLeaderboard',
     'scoreTier', 'compareScoreValues', 'compareScoreRows', 'scoreEntryForGame', 'parseGuessScore', 'parseTimeScore', 'parseNumberScore', 'parseRankScore',
     'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'serializeCloudState'];
   for (const name of names) {
@@ -29,6 +29,7 @@ function setup() {
     const next = /\n(?:async )?function \w+\(/.exec(tail);
     vm.runInContext(tail.slice(0, next ? next.index : undefined), context);
   }
+  vm.runInContext(app.slice(app.indexOf("function parseShareText("), app.indexOf("function renderSharePreview(")), context);
   return context;
 }
 const entry = (score, result = 'solved', source = 'import') => ({ score, result, source });
@@ -205,4 +206,20 @@ test('Immaculate ranks correct answers first, then lower rarity, with sport isol
   assert.deepEqual(plain(c.buildGameLeaderboard(game).map((row) => row.id)), ['b', 'you', 'a']);
   c.state.entries['2026-11-02']['immaculate-baseball'].you.score = '9/9 · rarity 75';
   assert.equal(c.buildGameLeaderboard(game).find((row) => row.id === 'you').rank, 1);
+});
+
+
+test('Color Daily ranks independently of higher challenge scores and rejects wrong dates', () => {
+  const c = setup();
+  c.state.games = [{id:'color', type:'points', dailyRanked:false}];
+  const daily = 'Color Daily — Nov 2\n38.69/50 🟨🟨🟧🟧🟨\nCan you beat it?\nhttps://dialed.gg/color?d=1&s=38.69&v=b';
+  c.state.entries['2026-11-02'] = {color:{
+    you:{...entry('38.69/50','played','official-share'),shareText:daily},
+    a:{...entry('49/50','played','official-share'),shareText:'49/50.\nhttps://dialed.gg/color?c=abc'},
+    b:{...entry('40/50','played','official-share'),shareText:daily.replace('38.69','40').replace('Nov 2','Nov 1')}
+  }};
+  const rows = c.buildOverallLeaderboard();
+  assert.equal(rows.find(r=>r.id==='you').solvryPoints,10);
+  assert.equal(rows.find(r=>r.id==='a').solvryPoints,0);
+  assert.equal(rows.find(r=>r.id==='b').solvryPoints,0);
 });

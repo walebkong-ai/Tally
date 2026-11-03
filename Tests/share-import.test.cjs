@@ -173,3 +173,12 @@ test('Sports Edition circle grids remain separate from regular Connections', () 
   assert.equal(output.parsed?.gameId, 'connections-sports');
   assert.equal(output.parsed?.score, '0 mistakes');
 });
+
+
+test('actual Color Daily share retains its date and does not become a challenge', () => {
+  const output = parse('Color Daily — Nov 3\n38.69/50 🟨🟨🟧🟧🟨\nCan you beat it?\nhttps://dialed.gg/color?d=1&s=38.69&v=b');
+  assert.equal(output.parsed?.score, '38.69/50');
+  assert.equal(output.parsed?.dailyMonthDay,'11-03');
+  assert.equal(output.parsed?.dailyYear,null);
+  for(const text of ['Color Daily — Feb 30\n38.69/50\nhttps://dialed.gg/color?d=1', 'Color Daily — Nov 3\n38.69/50\nhttps://dialed.gg/color?c=abc']) assert.ok(parse(text).error);
+});

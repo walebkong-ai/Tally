@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=18" />
+    <link rel="stylesheet" href="styles.css?v=19" />
   </head>
   <body>
     <div class="app" id="app">
@@ -341,7 +341,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=18" type="module"></script>
+    <script src="app.js?v=19" type="module"></script>
   </body>
 </html>
 """#
@@ -3109,7 +3109,11 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
 let appScript = #"""
 const STORAGE_KEY = "solvry-state-v1";
 const LEGACY_STORAGE_KEY = "tallyo-state-v1";
-const today = new Date().toISOString().slice(0, 10);
+const today = localDateKey();
+
+function localDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
 const SOLVRY_FIREBASE_CONFIG = window.SOLVRY_FIREBASE_CONFIG || null;
 const FIREBASE_MODULES = {
   app: "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js",
@@ -3199,7 +3203,7 @@ const ADDITIONAL_IMPORT_GAMES = [
   { id: "globle", name: "Globle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Today's guess count after the equals sign. Lower wins; your streak and average are not the daily score.", example: "5 guesses" }, logo: "globle", officialUrl: "https://globle-game.com/" },
   { id: "flagcognito", name: "Flagcognito", type: "points", maxScore: 3000, scoring: { label: "Most points", helper: "The shared total across three rounds, up to 3,000 points. Higher wins.", example: "2400/3000" }, logo: "flagcognito", officialUrl: "https://guessdash.com/flagcognito" },
   { id: "size-it-up", name: "Size It Up", type: "points", maxScore: 500, scoring: { label: "Most points", helper: "Magnitudle's original daily game: five rounds, up to 500 points. Higher wins. Other editions and practice runs need a separate game.", example: "425/500" }, logo: "size-it-up", officialUrl: "https://magnitudle.com/size-it-up" },
-  { id: "color", name: "Color (Dialed)", type: "points", maxScore: 50, decimalScore: true, dailyRanked: false, scoring: { label: "Best color memory", helper: "Share a numeric score out of 50 and the Dialed Color link. Compare the same challenge with friends. Challenge scores are excluded from the daily overall ranking.", example: "39.12/50" }, logo: "color", officialUrl: "https://dialed.gg/color" },
+  { id: "color", name: "Color (Dialed)", type: "points", maxScore: 50, decimalScore: true, dailyRanked: false, scoring: { label: "Best color memory", helper: "Share the score out of 50 and the Dialed Color link. Dated Color Daily results count in the combined leaderboard. Other challenge results stay on this game’s board.", example: "39.12/50" }, logo: "color", officialUrl: "https://dialed.gg/color" },
   { id: "buzzfeed-trivia", name: "BuzzFeed Daily Trivia", type: "points", maxScore: 5, scoring: { label: "Most correct", helper: "Correct answers out of five. More correct answers win.", example: "4/5" }, logo: "buzzfeed-trivia", officialUrl: "https://www.buzzfeed.com/daily-trivia" },
   ...[
     ["baseball", "Baseball", ""], ["football", "Football", "football/"],
@@ -3377,6 +3381,8 @@ let scoreMethod = "paste";
 let manualFormKey = "";
 let manualFormDirty = false;
 let lastRenderedGameId = null;
+const importDrafts = new Map();
+let importDraftRevision = 0;
 let leaderboardView = "overall";
 let leaderboardDays = 1;
 let leaderboardGameId = state.activeGameId;
@@ -3600,10 +3606,12 @@ elements.copyButton.addEventListener("click", async () => {
 
 elements.importClipboardButton.addEventListener("click", async () => {
   const previousText = elements.shareTextInput.value;
+  const previousRevision = importDraftRevision;
+  const previousGameId = state.activeGameId;
   elements.importClipboardButton.disabled = true;
   try {
     const text = await navigator.clipboard.readText();
-    if (elements.shareTextInput.value !== previousText) return;
+    if (elements.shareTextInput.value !== previousText || previousRevision !== importDraftRevision || previousGameId !== state.activeGameId) return;
     elements.shareTextInput.value = text;
     previewImport(true);
   } catch {
@@ -3618,6 +3626,8 @@ elements.shareTextInput.addEventListener("input", () => previewImport());
 elements.importDate.addEventListener("change", () => previewImport());
 elements.importExampleGame.addEventListener("change", renderImportExample);
 elements.importClearButton.addEventListener("click", () => {
+  importDraftRevision += 1;
+  importDrafts.delete(state.activeGameId);
   elements.shareTextInput.value = "";
   previewImport();
   elements.shareTextInput.focus();
@@ -3673,6 +3683,7 @@ elements.solvryGame.addEventListener("click", (event) => {
 function render(focusGolf = true) {
   const activeGame = getActiveGame();
   state.activeGameId = activeGame.id;
+  if (lastRenderedGameId && lastRenderedGameId !== activeGame.id) switchImportDraft(lastRenderedGameId, activeGame.id);
   if (activeGame.source === "custom" && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
   lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
@@ -6392,8 +6403,8 @@ function buildOverallLeaderboard(days = 1) {
     ])
   );
 
-  leaderboardDates(days).forEach((date) => visibleGames().filter((game) => game.dailyRanked !== false).forEach((game) => {
-    const rows = buildGameLeaderboard(game, date).filter((row) => row.rank);
+  leaderboardDates(days).forEach((date) => visibleGames().forEach((game) => {
+    const rows = buildGameLeaderboard(game, date, true).filter((row) => row.rank);
     rows.forEach((row) => {
       const total = totals.get(row.id);
       if (!total) return;
@@ -6414,11 +6425,19 @@ function buildOverallLeaderboard(days = 1) {
     }));
 }
 
-function buildGameLeaderboard(game, date = state.selectedDate) {
+function eligibleForDailyRanking(game, entry, date) {
+  if (game.dailyRanked !== false) return true;
+  if (game.id !== "color" || entry?.source !== "official-share") return false;
+  const parsed = parseShareText(entry.shareText).parsed;
+  return Boolean(parsed?.gameId === "color" && parsed.dailyMonthDay && parsed.score === entry.score && !importDateError(parsed, date));
+}
+
+function buildGameLeaderboard(game, date = state.selectedDate, dailyOnly = false) {
   const entries = state.entries[date]?.[game.id] || {};
   const rows = getPeople()
     .map((person) => {
-      const entry = entries[person.id];
+      const candidate = entries[person.id];
+      const entry = dailyOnly && !eligibleForDailyRanking(game, candidate, date) ? null : candidate;
       const score = scoreEntryForGame(entry, game);
       return {
         ...person,
@@ -6602,6 +6621,26 @@ function renderImportExample() {
   elements.importExampleLink.href = state.games.find((game) => game.id === id)?.officialUrl || "#";
 }
 
+// Drafts belong to the selected game; successful saves remain visible until navigation.
+function switchImportDraft(previousGameId, nextGameId) {
+  const text = elements.shareTextInput.value;
+  const date = elements.importDate.value;
+  const parsed = parseShareText(text).parsed;
+  const saved = parsed && sameImportedScore(state.entries[date]?.[parsed.gameId]?.you, parsed);
+  if (text.trim() && !saved) importDrafts.set(previousGameId, { text, date });
+  else importDrafts.delete(previousGameId);
+  const next = importDrafts.get(nextGameId);
+  elements.shareTextInput.value = next?.text || "";
+  elements.importDate.value = next?.date || state.selectedDate;
+  importDraftRevision += 1;
+}
+
+function importDateError(parsed, date) {
+  if (!parsed.dailyMonthDay) return "";
+  if (date.slice(5) === parsed.dailyMonthDay && (!parsed.dailyYear || date.slice(0, 4) === parsed.dailyYear)) return "";
+  return `This Color Daily result is dated ${parsed.dailyYear ? parsed.dailyYear + "-" : ""}${parsed.dailyMonthDay}, but Played on is ${date}. Change Played on to the result's date before saving.`;
+}
+
 function sameImportedScore(entry, parsed) {
   return entry?.source === "official-share" && entry.result === parsed.result && entry.score === parsed.score
     && entry.shareText === elements.shareTextInput.value.trim();
@@ -6630,6 +6669,8 @@ function previewImport(showEmptyError = false) {
     setImportStatus("Choose the day you played, up to today.", "error");
     return null;
   }
+  const dateError = importDateError(parsed, date);
+  if (dateError) { setImportStatus(dateError, "error"); return null; }
   const existing = state.entries[date]?.[game.id]?.you;
   const duplicate = sameImportedScore(existing, parsed);
   renderSharePreview(parsed, game, date, existing, duplicate);
@@ -6679,6 +6720,10 @@ function importShareText(text) {
   elements.playDate.value = date;
   elements.manualDateInput.value = date;
   manualFormDirty = false;
+  importDrafts.delete(previousGame);
+  importDrafts.delete(game.id);
+  lastRenderedGameId = game.id;
+  importDraftRevision += 1;
   render();
   setImportStatus(`${game.name} saved for ${date}. Scoreboards updated.`, "success");
   elements.importClearButton.focus({ preventScroll: true });
@@ -6765,7 +6810,20 @@ function parseAdditionalShare(lines) {
   if (id === "color") {
     if (/dialed\.gg\/color\/(?:live|toon)|\blive game\b/i.test(text)) return fail("Use the Color memory result, not a live room or another Dialed game.");
     const score = total(/(?<![\w.\-])(\d+(?:\.\d+)?)\s*\/\s*(50)(?!\d|\.\d)/g, 50, true);
-    return score === null ? fail("This Color link doesn't include a readable score. Copy the result text with your score out of 50, or enter it manually.") : finish(id, `${score}/50`);
+    if (score === null) return fail("This Color link doesn't include a readable score. Copy the result text with your score out of 50, or enter it manually.");
+    const output = finish(id, `${score}/50`);
+    if (/^Color Daily\b/im.test(text)) {
+      const daily = text.match(/^Color Daily\s*[—–-]\s*([A-Za-z]+)\s+(\d{1,2})(?:,?\s+(\d{4}))?\s*$/im);
+      const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+      const month = daily ? months.indexOf(daily[1].slice(0, 3).toLowerCase()) + 1 : 0;
+      const day = daily ? Number(daily[2]) : 0;
+      const validDay = new Date(Date.UTC(Number(daily?.[3] || 2024), month - 1, day)).getUTCDate() === day;
+      if (!daily || !month || !day || !validDay || !/https?:\/\/(?:www\.)?dialed\.gg\/color\?[^\s]*\bd=1(?:&|$|\s)/im.test(text)) return fail("Copy the complete Color Daily result including its date and daily link.");
+      output.parsed.dailyMonthDay = `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      output.parsed.dailyYear = daily[3] || null;
+      output.parsed.note = "Imported Color Daily result";
+    }
+    return output;
   }
   if (id === "buzzfeed-trivia") {
     const score = total(/\bI got\s+(\d+)\s+out of\s+(\d+)\b/gi, 5);
@@ -7001,7 +7059,8 @@ function renderSharePreview(parsed, game, date, existing, duplicate) {
       <div><strong>${escapeHtml(game.name)} · ${escapeHtml(parsed.score)}</strong>
       <small>${escapeHtml(parsed.result)} · ${escapeHtml(date)}${duplicate ? " · Saved" : " · Not saved yet"}</small></div>
     </div>
-    ${game.dailyRanked === false ? `<p class="import-warning">Challenge result: compare the same challenge with friends. Excluded from the combined daily ranking.</p>` : ""}
+    ${game.dailyRanked === false && !parsed.dailyMonthDay ? `<p class="import-warning">Challenge result: compare the same challenge with friends. Excluded from the combined daily ranking.</p>` : ""}
+    ${parsed.dailyMonthDay ? `<p class="field-help">Daily result · Counts toward the combined leaderboard.</p>` : ""}
     ${existing && !duplicate ? `<p class="import-warning">You already saved ${escapeHtml(existing.score)} for this day. Saving will replace that score and keep your answer, note, and sharing choice.</p>` : ""}
     ${parsed.grid.length ? `<details><summary>View shared result</summary><div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div></details>` : ""}
   `;
@@ -7137,6 +7196,8 @@ function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY));
     const nextState = saved ? mergeState(starterState, saved) : structuredClone(starterState);
+    // Viewing an old date is a session choice, not the default for the next visit.
+    nextState.selectedDate = today;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
     return nextState;
   } catch {
@@ -7151,7 +7212,7 @@ function mergeState(base, saved) {
     return {
       ...game,
       ...savedGame,
-      scoring: { ...scoringForType(game.type), ...game.scoring, ...savedGame.scoring },
+      scoring: { ...scoringForType(game.type), ...savedGame.scoring, ...game.scoring },
       logo: savedGame.logo || game.logo,
       officialUrl: savedGame.officialUrl || game.officialUrl
     };
