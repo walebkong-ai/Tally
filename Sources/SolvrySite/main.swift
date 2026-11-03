@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body>
     <div class="app" id="app">
@@ -212,21 +212,32 @@ let html = #"""
         <section class="panel social-panel" id="friends">
           <div class="section-head compact">
             <div>
-              <p class="eyebrow">Circle</p>
-              <h2>Scoreboards</h2>
+              <p class="eyebrow">Your circle</p>
+              <h2>Friends &amp; scores</h2>
             </div>
-            <button class="ghost-button" id="resetButton" type="button">Reset demo</button>
+            <button class="ghost-button compact-button" id="refreshFriendsButton" type="button">Refresh</button>
           </div>
+          <div class="score-tabs" role="tablist" aria-label="Leaderboard view">
+            <button id="overallTab" role="tab" aria-selected="true" aria-controls="overallBoard" type="button">Overall</button>
+            <button id="gameBoardTab" role="tab" aria-selected="false" aria-controls="gameBoard" tabindex="-1" type="button">Per game</button>
+          </div>
+          <div class="leaderboard-controls">
+            <label>Date<input id="leaderboardDate" type="date" /></label>
+            <label id="leaderboardRangeLabel">Period<select id="leaderboardRange"><option value="1">Selected day</option><option value="7">Last 7 days</option></select></label>
+            <label id="leaderboardGameLabel" hidden>Game<select id="leaderboardGameInput"></select></label>
+            <p class="scoreboard-note" id="leaderboardDates"></p>
+          </div>
+          <p id="leaderboardSummary" class="leaderboard-summary" role="status"></p>
           <div class="scoreboard-stack">
-            <section class="scoreboard-block" aria-labelledby="overallScoreboardTitle">
+            <section class="scoreboard-block" id="overallBoard" role="tabpanel" aria-labelledby="overallTab">
               <div class="scoreboard-head">
                 <h3 id="overallScoreboardTitle">Solvry overall</h3>
                 <span>Combined points</span>
               </div>
-              <p class="scoreboard-note">Overall points come from each game’s daily ranking.</p>
+              <details class="ranking-rules"><summary>Points &amp; ties</summary><p>Daily places earn 10, 7, 5, 3, 2, then 1 point. Tied scores share the same place and points. Missed or invalid results earn no points. Overall totals reward playing more games.</p></details>
               <div class="leaderboard" id="overallLeaderboard"></div>
             </section>
-            <section class="scoreboard-block" aria-labelledby="gameScoreboardTitle">
+            <section class="scoreboard-block" id="gameBoard" role="tabpanel" aria-labelledby="gameBoardTab" hidden>
               <div class="scoreboard-head">
                 <h3 id="gameScoreboardTitle">Wordle scoreboard</h3>
                 <span id="gameScoreboardMeta">Fewest guesses</span>
@@ -235,18 +246,34 @@ let html = #"""
               <div class="leaderboard" id="gameLeaderboard"></div>
             </section>
           </div>
+          <section class="friends-section" aria-labelledby="friendsTitle">
+          <div class="scoreboard-head"><h3 id="friendsTitle">Friends</h3><span id="friendsCount"></span></div>
+          <div class="friend-sync" id="friendSync"></div>
+          <div class="friend-toolbar"><button id="copyHandleButton" class="ghost-button compact-button" type="button" hidden>Copy my handle</button><label class="demo-toggle"><input id="showDemoFriends" type="checkbox" />Show sample friends</label></div>
+          <div class="score-tabs" role="tablist" aria-label="Friends view">
+            <button id="friendsTab" role="tab" aria-selected="true" aria-controls="friendsPanel" type="button">Friends</button>
+            <button id="requestsTab" role="tab" aria-selected="false" aria-controls="requestsPanel" tabindex="-1" type="button">Requests</button>
+          </div>
+          <div id="friendsPanel" role="tabpanel" aria-labelledby="friendsTab">
+            <label class="friend-search">Find a friend<input id="friendSearch" type="search" placeholder="Name or handle" autocomplete="off" /></label>
+            <div id="friendRoster" class="friend-roster"></div>
+          </div>
+          <div id="requestsPanel" role="tabpanel" aria-labelledby="requestsTab" hidden><div id="friendRequests" class="friend-roster"></div></div>
+          <details class="add-friend-details"><summary id="addFriendSummary">Add a local friend</summary>
           <form class="friend-form" id="friendForm">
             <label>
               Friend name
-              <input id="friendNameInput" type="text" placeholder="Avery" autocomplete="off" required />
+              <input id="friendNameInput" type="text" placeholder="Avery" autocomplete="off" maxlength="60" required />
             </label>
             <label>
               Handle
-              <input id="friendHandleInput" type="text" placeholder="@averyplays" autocomplete="off" />
+              <input id="friendHandleInput" type="text" placeholder="@averyplays" autocomplete="off" maxlength="60" />
             </label>
-            <button class="primary-button" type="submit">Add friend</button>
+            <button class="primary-button" id="friendSubmitButton" type="submit">Add local friend</button>
           </form>
-          <div class="friend-sync" id="friendSync"></div>
+          </details>
+          <p id="friendStatus" class="friend-status" role="status"></p>
+          </section>
         </section>
 
         <section class="panel answer-panel" id="answers">
@@ -312,7 +339,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=16" type="module"></script>
+    <script src="app.js?v=17" type="module"></script>
   </body>
 </html>
 """#
@@ -2540,6 +2567,30 @@ label {
   gap: 14px;
 }
 
+.social-panel { scroll-margin-top: 24px; }
+.leaderboard-controls { display: grid; gap: 10px; margin: 14px 0; }
+.leaderboard-summary { padding: 12px; background: #e4f5ed; color: #07694e; border-radius: 6px; font-size: 14px; font-weight: 750; line-height: 1.5; }
+.ranking-rules { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.ranking-rules summary, .add-friend-details summary { cursor: pointer; font-weight: 750; padding: 10px 0; }
+.rank-row.is-you { border: 1px solid #65b89b; background: #effaf5; }
+.rank-row > span { min-width: 0; overflow-wrap: anywhere; }
+.rank-row .points { max-width: 105px; font-size: 15px; }
+.rank-row .points small { font-size: 11px; }
+.friends-section { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; }
+.friend-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0; }
+.demo-toggle { display: flex; flex-direction: row; align-items: center; gap: 8px; font-size: 12px; }
+.demo-toggle input { width: 18px; height: 18px; }
+.friend-search { margin: 14px 0 8px; }
+.friend-roster { display: grid; gap: 0; }
+.friend-person { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.friend-person strong, .friend-person small { display: block; overflow-wrap: anywhere; }
+.friend-person small { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.friend-person .request-actions { grid-column: 1 / -1; flex-wrap: wrap; }
+.friend-status { min-height: 20px; font-size: 13px; line-height: 1.5; color: #07694e; }
+.friend-status.error { color: #9f3427; }
+.social-empty { padding: 16px 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.social-panel button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .scoreboard-block {
   display: grid;
   gap: 10px;
@@ -3154,14 +3205,13 @@ const starterState = {
     { id: "solvry-hoops", name: "Solvry Hoops", source: "solvry", type: "points", scoring: { label: "Most points", helper: "Play nine daily basketball shots. Higher point total wins.", example: "24 points" }, logo: "hoops", officialUrl: "" }
   ],
   friends: [
-    { id: "mira", name: "Mira", handle: "@mirasolves" },
-    { id: "jay", name: "Jay", handle: "@jayplaysdaily" },
-    { id: "nolan", name: "Nolan", handle: "@gridnolan" }
+    { id: "mira", name: "Mira", handle: "@mirasolves", status: "demo" },
+    { id: "jay", name: "Jay", handle: "@jayplaysdaily", status: "demo" },
+    { id: "nolan", name: "Nolan", handle: "@gridnolan", status: "demo" }
   ],
   entries: {
     [today]: {
       wordle: {
-        you: { result: "solved", score: "4/6", answer: "", note: "Clean finish", reveal: false },
         mira: { result: "solved", score: "3/6", answer: "BLOOM", note: "Fast opener", reveal: true },
         jay: { result: "solved", score: "5/6", answer: "BLOOM", note: "Barely saved it", reveal: true },
         nolan: { result: "missed", score: "X/6", answer: "BLOOM", note: "Tomorrow is revenge", reveal: true }
@@ -3240,7 +3290,31 @@ const elements = {
   shareTextInput: document.querySelector("#shareTextInput"),
   importStatus: document.querySelector("#importStatus"),
   sharePreview: document.querySelector("#sharePreview"),
-  resetButton: document.querySelector("#resetButton"),
+  overallTab: document.querySelector("#overallTab"),
+  gameBoardTab: document.querySelector("#gameBoardTab"),
+  overallBoard: document.querySelector("#overallBoard"),
+  gameBoard: document.querySelector("#gameBoard"),
+  leaderboardRange: document.querySelector("#leaderboardRange"),
+  leaderboardDate: document.querySelector("#leaderboardDate"),
+  leaderboardRangeLabel: document.querySelector("#leaderboardRangeLabel"),
+  leaderboardGameInput: document.querySelector("#leaderboardGameInput"),
+  leaderboardGameLabel: document.querySelector("#leaderboardGameLabel"),
+  leaderboardDates: document.querySelector("#leaderboardDates"),
+  leaderboardSummary: document.querySelector("#leaderboardSummary"),
+  friendsCount: document.querySelector("#friendsCount"),
+  friendsTab: document.querySelector("#friendsTab"),
+  requestsTab: document.querySelector("#requestsTab"),
+  friendsPanel: document.querySelector("#friendsPanel"),
+  requestsPanel: document.querySelector("#requestsPanel"),
+  friendSearch: document.querySelector("#friendSearch"),
+  friendRoster: document.querySelector("#friendRoster"),
+  friendRequests: document.querySelector("#friendRequests"),
+  friendStatus: document.querySelector("#friendStatus"),
+  friendSubmitButton: document.querySelector("#friendSubmitButton"),
+  addFriendSummary: document.querySelector("#addFriendSummary"),
+  showDemoFriends: document.querySelector("#showDemoFriends"),
+  copyHandleButton: document.querySelector("#copyHandleButton"),
+  refreshFriendsButton: document.querySelector("#refreshFriendsButton"),
   addGameButton: document.querySelector("#addGameButton"),
   closeGameDialogButton: document.querySelector("#closeGameDialogButton"),
   gameDialog: document.querySelector("#gameDialog"),
@@ -3281,6 +3355,90 @@ let scoreMethod = "paste";
 let manualFormKey = "";
 let manualFormDirty = false;
 let lastRenderedGameId = null;
+let leaderboardView = "overall";
+let leaderboardDays = 1;
+let leaderboardGameId = state.activeGameId;
+let friendBusy = false;
+
+function wireSocialTabs(tabs, select) {
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => select(index));
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
+      tabs[next].click();
+      tabs[next].focus();
+    });
+  });
+}
+wireSocialTabs([elements.overallTab, elements.gameBoardTab], (index) => {
+  leaderboardView = index ? "game" : "overall";
+  renderScoreboards(getActiveGame());
+});
+wireSocialTabs([elements.friendsTab, elements.requestsTab], (index) => {
+  [elements.friendsTab, elements.requestsTab].forEach((tab, i) => {
+    tab.setAttribute("aria-selected", String(i === index));
+    tab.tabIndex = i === index ? 0 : -1;
+  });
+  elements.friendsPanel.hidden = index === 1;
+  elements.requestsPanel.hidden = index === 0;
+});
+elements.leaderboardRange.addEventListener("change", () => {
+  leaderboardDays = Number(elements.leaderboardRange.value) === 7 ? 7 : 1;
+  renderScoreboards(getActiveGame());
+});
+elements.leaderboardDate.addEventListener("change", () => {
+  if (!elements.leaderboardDate.value || !elements.leaderboardDate.validity.valid) return;
+  state.selectedDate = elements.leaderboardDate.value;
+  elements.playDate.value = state.selectedDate;
+  elements.importDate.value = state.selectedDate;
+  elements.manualDateInput.value = state.selectedDate;
+  try { saveState(); } catch { setFriendStatus("This date selection couldn't be saved on this device.", true); }
+  render(false);
+});
+elements.leaderboardGameInput.addEventListener("change", () => {
+  leaderboardGameId = elements.leaderboardGameInput.value;
+  renderScoreboards(getActiveGame());
+});
+elements.friendSearch.addEventListener("input", renderFriendSync);
+elements.showDemoFriends.addEventListener("change", () => {
+  const previous = state.showDemoFriends;
+  state.showDemoFriends = elements.showDemoFriends.checked;
+  try { saveState(); } catch {
+    state.showDemoFriends = previous;
+    setFriendStatus("Couldn't save this preference. Try again.", true);
+  }
+  refreshSocialViews();
+});
+elements.copyHandleButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(state.profile.handle);
+    setFriendStatus("Handle copied. Share it with a friend so they can find you.");
+  } catch { setFriendStatus(`Copy your handle: ${state.profile.handle}`, true); }
+});
+elements.refreshFriendsButton.addEventListener("click", () => runFriendAction(async () => {
+  await refreshAcceptedFriends();
+  saveState();
+  setFriendStatus("Friend scores refreshed.");
+}));
+elements.friendRoster.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-remove-friend]");
+  if (!button) return;
+  const friend = state.friends.find((person) => person.id === button.dataset.removeFriend);
+  if (!friend || !window.confirm(`Remove ${friend.name} from your friends and rankings? Saved score history will remain on this device.`)) return;
+  runFriendAction(async () => {
+    if (friend.uid) {
+      const request = [...state.friendRequests.incoming, ...state.friendRequests.outgoing].find((item) => item.status === "accepted" && [item.fromUid, item.toUid].includes(friend.uid));
+      if (!request) throw new Error("This connection hasn't loaded yet. Try again shortly.");
+      await updateFriendRequest("remove", request.id);
+    }
+    const previous = state.friends;
+    state.friends = state.friends.filter((person) => person.id !== friend.id);
+    try { saveState(); } catch { state.friends = previous; throw new Error("Couldn't save this change. Try again."); }
+    setFriendStatus(`${friend.name} removed from your friends.`);
+  });
+});
 
 window.addEventListener("hashchange", renderNav);
 
@@ -3395,7 +3553,7 @@ elements.accountForm.addEventListener("submit", (event) => {
   event.preventDefault();
 });
 
-elements.friendSync?.addEventListener("click", (event) => {
+elements.friendRequests.addEventListener("click", (event) => {
   const actionButton = event.target.closest("[data-friend-action]");
   if (!actionButton) return;
   handleFriendRequestAction(actionButton.dataset.friendAction, actionButton.dataset.requestId);
@@ -3453,14 +3611,6 @@ elements.importPasteButton.addEventListener("click", () => {
   importShareText(elements.shareTextInput.value);
 });
 
-elements.resetButton.addEventListener("click", () => {
-  state = structuredClone(starterState);
-  state.selectedDate = today;
-  saveState();
-  elements.playDate.value = today;
-  render();
-});
-
 let solvryPointerStart = null;
 let ignoreNextSolvryTap = false;
 
@@ -3496,13 +3646,13 @@ elements.solvryGame.addEventListener("click", (event) => {
   if (play.kind === "holes" && play.shotPhase === "power") handleSolvryPlayAction("lock-power");
 });
 
-function render() {
+function render(focusGolf = true) {
   const activeGame = getActiveGame();
   if (activeGame.source === "custom" && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
   lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
   const myEntry = gameEntries.you;
-  const friendEntries = state.friends.filter((friend) => friend.status !== "pending" && gameEntries[friend.id]);
+  const friendEntries = visibleFriends().filter((friend) => gameEntries[friend.id]);
 
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
@@ -3525,7 +3675,7 @@ function render() {
   renderFriendSync();
   renderAnswers();
   previewImport();
-  focusHolesViewport(activeGame);
+  if (focusGolf) focusHolesViewport(activeGame);
 }
 
 function focusHolesViewport(activeGame) {
@@ -3662,6 +3812,8 @@ async function signOutAccount() {
       await cloudBackend.modules.auth.signOut(cloudBackend.auth);
     } catch (error) {
       cloudBackend.error = error.message || "Could not sign out of Solvry Cloud.";
+      setFriendStatus("Couldn't sign out. Please try again.", true);
+      return;
     }
   }
   clearCloudSubscriptions();
@@ -3727,14 +3879,17 @@ async function loadCloudState(uid) {
 }
 
 function serializeCloudState() {
+  const ownEntries = Object.fromEntries(Object.entries(state.entries).map(([date, games]) => [date,
+    Object.fromEntries(Object.entries(games).filter(([, entries]) => entries.you).map(([game, entries]) => [game, { you: entries.you }]))
+  ]));
   return {
     profile: {
       name: state.profile.name,
       handle: state.profile.handle,
       handleLower: normalizeHandle(state.profile.handle)
     },
-    friends: state.friends,
-    entries: state.entries,
+    friends: state.friends.filter((friend) => !isDemoFriend(friend)),
+    entries: ownEntries,
     customGames: state.games.filter((game) => game.source === "custom"),
     pinnedGameIds: state.pinnedGameIds,
     updatedAt: new Date().toISOString()
@@ -3742,7 +3897,7 @@ function serializeCloudState() {
 }
 
 function queueCloudSave() {
-  if (!cloudBackend.ready || !state.account?.uid || cloudBackend.applyingRemote) return;
+  if (!cloudFriendsAvailable() || cloudBackend.applyingRemote) return;
   window.clearTimeout(cloudBackend.saveTimer);
   cloudBackend.saveTimer = window.setTimeout(() => {
     persistCloudState().catch((error) => {
@@ -3753,13 +3908,14 @@ function queueCloudSave() {
 }
 
 async function persistCloudState() {
-  if (!cloudBackend.ready || !state.account?.uid) return;
+  if (!cloudFriendsAvailable()) return;
   const { doc, setDoc } = cloudBackend.modules.firestore;
-  await setDoc(doc(cloudBackend.db, "users", state.account.uid), serializeCloudState(), { merge: true });
+  await setDoc(doc(cloudBackend.db, "users", state.account.uid), serializeCloudState(), { mergeFields: ["profile", "friends", "entries", "customGames", "pinnedGameIds", "updatedAt"] });
   cloudBackend.error = "";
 }
 
 function clearCloudSubscriptions() {
+  window.clearTimeout(cloudBackend.saveTimer);
   cloudBackend.unsubscribers.forEach((unsubscribe) => unsubscribe?.());
   cloudBackend.unsubscribers = [];
 }
@@ -3768,16 +3924,20 @@ function subscribeFriendRequests(uid) {
   const { collection, onSnapshot, query, where } = cloudBackend.modules.firestore;
   const requests = collection(cloudBackend.db, "friendRequests");
   const incoming = onSnapshot(query(requests, where("toUid", "==", uid)), (snapshot) => {
-    state.friendRequests.incoming = snapshot.docs.map(requestSnapshotToState).filter((request) => request.status !== "rejected");
+    state.friendRequests.incoming = snapshot.docs.map(requestSnapshotToState);
     applyAcceptedRequests();
-    renderFriendSync();
-  });
+    refreshSocialViews();
+  }, friendSubscriptionError);
   const outgoing = onSnapshot(query(requests, where("fromUid", "==", uid)), (snapshot) => {
-    state.friendRequests.outgoing = snapshot.docs.map(requestSnapshotToState).filter((request) => request.status !== "rejected");
+    state.friendRequests.outgoing = snapshot.docs.map(requestSnapshotToState);
     applyAcceptedRequests();
-    renderFriendSync();
-  });
+    refreshSocialViews();
+  }, friendSubscriptionError);
   cloudBackend.unsubscribers.push(incoming, outgoing);
+}
+
+function friendSubscriptionError() {
+  setFriendStatus("Couldn't refresh friend requests. Check your connection and try signing in again.", true);
 }
 
 function requestSnapshotToState(snapshot) {
@@ -3785,6 +3945,11 @@ function requestSnapshotToState(snapshot) {
 }
 
 function applyAcceptedRequests() {
+  const requests = [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])];
+  requests.filter((request) => ["rejected", "cancelled", "removed"].includes(request.status)).forEach((request) => {
+    const uid = request.fromUid === state.account.uid ? request.toUid : request.fromUid;
+    state.friends = state.friends.filter((friend) => friend.uid !== uid);
+  });
   [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])]
     .filter((request) => request.status === "accepted")
     .forEach((request) => {
@@ -3796,6 +3961,7 @@ function applyAcceptedRequests() {
         uid: friend.uid,
         name: friend.name || friend.handle || "Friend",
         handle: friend.handle || "@friend",
+        ownerUid: state.account.uid,
         status: "accepted"
       });
     });
@@ -3805,50 +3971,47 @@ function applyAcceptedRequests() {
 async function handleFriendSubmit() {
   const name = elements.friendNameInput.value.trim();
   const handle = elements.friendHandleInput.value.trim();
-  if (!name && !handle) return;
-
-  if (cloudBackend.ready && state.account?.uid) {
-    try {
+  return runFriendAction(async () => {
+    if (cloudFriendsAvailable()) {
       await sendCloudFriendRequest(name, handle);
-    } catch (error) {
-      cloudBackend.error = error.message || "Could not send that friend request.";
-      renderFriendSync();
+      setFriendStatus("Friend request sent. They'll appear in your rankings once they accept.");
+    } else {
+      if (!name) throw new Error("Enter your friend's name.");
+      const normalized = normalizeHandle(handle || slugify(name) || uniqueId("friend", state.friends.map((friend) => normalizeHandle(friend.handle))));
+      if (normalized === normalizeHandle(state.profile.handle)) throw new Error("That's your own handle. Enter a friend's handle.");
+      if (state.friends.some((friend) => !isDemoFriend(friend) && normalizeHandle(friend.handle) === normalized)) throw new Error("That friend is already in your list.");
+      const previous = structuredClone(state.friends);
+      addOrUpdateFriend({
+        id: uniqueId(`local-${slugify(name)}`, state.friends.map((friend) => friend.id)),
+        name, handle: `@${normalized}`, status: "local"
+      });
+      try { saveState(); } catch { state.friends = previous; throw new Error("Couldn't save your friend on this device. Try again."); }
+      setFriendStatus(`${name} added on this device. No invitation was sent; their scores won't sync yet.`);
     }
-    return;
-  }
-
-  if (!name) return;
-  addOrUpdateFriend({
-    id: uniqueId(slugify(name), state.friends.map((friend) => friend.id)),
-    name,
-    handle: handle || `@${slugify(name)}`,
-    status: "local"
+    elements.friendForm.reset();
   });
-  elements.friendForm.reset();
-  saveState();
-  render();
 }
 
 async function sendCloudFriendRequest(name, handle) {
-  const normalizedHandle = normalizeHandle(handle || name);
-  if (!normalizedHandle) {
-    cloudBackend.error = "Enter a friend's Solvry handle to send a request.";
-    renderFriendSync();
-    return;
-  }
-
-  const { collection, doc, getDocs, query, setDoc, where } = cloudBackend.modules.firestore;
+  const normalizedHandle = normalizeHandle(handle);
+  if (!normalizedHandle) throw new Error("Enter a friend's Solvry handle to send a request.");
+  if (normalizedHandle === normalizeHandle(state.profile.handle)) throw new Error("You can't send yourself a friend request.");
+  const { collection, doc, getDocs, query, runTransaction, where } = cloudBackend.modules.firestore;
   const users = await getDocs(query(collection(cloudBackend.db, "users"), where("profile.handleLower", "==", normalizedHandle)));
-  const target = users.docs.find((item) => item.id !== state.account.uid);
-  if (!target) {
-    cloudBackend.error = `No Solvry account found for @${normalizedHandle}.`;
-    renderFriendSync();
-    return;
-  }
+  const matches = users.docs.filter((item) => item.id !== state.account.uid);
+  if (!matches.length) throw new Error(`No Solvry account found for @${normalizedHandle}. Check the handle with your friend.`);
+  if (matches.length !== 1) throw new Error("More than one account uses that handle. Your friend needs a unique handle first.");
+  const target = matches[0];
 
   const requestId = [state.account.uid, target.id].sort().join("__");
   const targetProfile = target.data().profile || {};
-  await setDoc(doc(cloudBackend.db, "friendRequests", requestId), {
+  const ref = doc(cloudBackend.db, "friendRequests", requestId);
+  await runTransaction(cloudBackend.db, async (transaction) => {
+    const existing = await transaction.get(ref);
+    const status = existing.exists() ? existing.data().status : "";
+    if (status === "accepted") throw new Error("You're already connected with this friend.");
+    if (status === "pending") throw new Error("A request is already pending. Check your Requests tab.");
+    transaction.set(ref, {
     fromUid: state.account.uid,
     toUid: target.id,
     fromProfile: { name: state.profile.name, handle: state.profile.handle },
@@ -3856,40 +4019,64 @@ async function sendCloudFriendRequest(name, handle) {
     status: "pending",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
-  }, { merge: true });
-  elements.friendForm.reset();
+    });
+  });
   cloudBackend.error = "";
-  renderFriendSync();
 }
 
 async function handleFriendRequestAction(action, requestId) {
-  if (!cloudBackend.ready || !requestId) return;
-  const request = [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])].find((item) => item.id === requestId);
-  if (!request) return;
-  const { doc, updateDoc } = cloudBackend.modules.firestore;
-  const status = action === "accept" ? "accepted" : "rejected";
-  await updateDoc(doc(cloudBackend.db, "friendRequests", requestId), {
-    status,
-    updatedAt: new Date().toISOString()
+  return runFriendAction(async () => {
+    await updateFriendRequest(action, requestId);
+    if (action === "accept") await refreshAcceptedFriends();
+    setFriendStatus({ accept: "Friend accepted. Their available scores are now in your rankings.", reject: "Request declined.", cancel: "Request cancelled." }[action] || "Connection updated.");
   });
-  if (status === "accepted") applyAcceptedRequests();
+}
+
+function friendRequestStatus(action, request, uid) {
+  const incoming = request.toUid === uid;
+  const outgoing = request.fromUid === uid;
+  if (request.status === "pending") {
+    if (incoming && action === "accept") return "accepted";
+    if (incoming && action === "reject") return "rejected";
+    if (outgoing && action === "cancel") return "cancelled";
+  }
+  if (request.status === "accepted" && (incoming || outgoing) && action === "remove") return "removed";
+  throw new Error("That request has changed or isn't yours to update. Refresh and try again.");
+}
+
+async function updateFriendRequest(action, requestId) {
+  if (!cloudFriendsAvailable() || !requestId) throw new Error("Sign in to manage friend requests.");
+  const { doc, runTransaction } = cloudBackend.modules.firestore;
+  const ref = doc(cloudBackend.db, "friendRequests", requestId);
+  const updated = await runTransaction(cloudBackend.db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) throw new Error("That request is no longer available.");
+    const request = snapshot.data();
+    const status = friendRequestStatus(action, request, state.account.uid);
+    transaction.update(ref, { status, updatedAt: new Date().toISOString() });
+    return { ...request, id: requestId, status };
+  });
+  const key = updated.toUid === state.account.uid ? "incoming" : "outgoing";
+  state.friendRequests[key] = [...state.friendRequests[key].filter((request) => request.id !== requestId), updated];
+  applyAcceptedRequests();
 }
 
 async function refreshAcceptedFriends() {
   if (!cloudBackend.ready || !state.account?.uid) return;
-  const accepted = state.friends.filter((friend) => friend.uid && friend.status === "accepted");
+  const accepted = visibleFriends().filter((friend) => friend.uid && friend.status === "accepted");
   await Promise.all(accepted.map((friend) => loadFriendEntries(friend)));
 }
 
 async function loadFriendEntries(friend) {
   const { doc, getDoc } = cloudBackend.modules.firestore;
   const snap = await getDoc(doc(cloudBackend.db, "users", friend.uid));
-  if (!snap.exists()) return;
+  if (!snap.exists()) { mergeFriendEntries(friend.id, {}); return; }
   state.games = mergeCustomGames(state.games, snap.data().customGames);
   mergeFriendEntries(friend.id, snap.data().entries || {});
 }
 
 function mergeFriendEntries(friendId, entries) {
+  Object.values(state.entries).forEach((day) => Object.values(day).forEach((game) => { delete game[friendId]; }));
   Object.entries(entries).forEach(([dateKey, dayEntries]) => {
     Object.entries(dayEntries || {}).forEach(([gameId, gameEntries]) => {
       const entry = gameEntries?.you;
@@ -3913,7 +4100,7 @@ function mergeEntries(localEntries, remoteEntries) {
 }
 
 function addOrUpdateFriend(friend) {
-  const existingIndex = state.friends.findIndex((item) => item.id === friend.id || item.uid === friend.uid || normalizeHandle(item.handle) === normalizeHandle(friend.handle));
+  const existingIndex = state.friends.findIndex((item) => (friend.id && item.id === friend.id) || (friend.uid && item.uid === friend.uid) || (!isDemoFriend(item) && !friend.uid && !item.uid && normalizeHandle(friend.handle) && normalizeHandle(item.handle) === normalizeHandle(friend.handle)));
   if (existingIndex >= 0) {
     state.friends[existingIndex] = { ...state.friends[existingIndex], ...friend };
   } else {
@@ -3925,53 +4112,88 @@ function normalizeHandle(value) {
   return String(value || "").trim().toLowerCase().replace(/^@/, "");
 }
 
+function cloudFriendsAvailable() {
+  return !!(cloudBackend.ready && state.account?.uid && cloudBackend.auth?.currentUser?.uid === state.account.uid);
+}
+
+function isDemoFriend(friend) {
+  const samples = { mira: "mirasolves", jay: "jayplaysdaily", nolan: "gridnolan" };
+  return friend.status === "demo" || (!friend.uid && samples[friend.id] && samples[friend.id] === normalizeHandle(friend.handle));
+}
+
+function visibleFriends() {
+  return state.friends.filter((friend) => {
+    if (isDemoFriend(friend)) return !!state.showDemoFriends;
+    if (friend.uid) {
+      const verifiedOwner = friend.ownerUid === state.account.uid || (!friend.ownerUid && [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])].some((request) => request.status === "accepted" && [request.fromUid, request.toUid].includes(state.account.uid) && [request.fromUid, request.toUid].includes(friend.uid)));
+      return cloudFriendsAvailable() && friend.status === "accepted" && verifiedOwner;
+    }
+    return !["pending", "removed", "rejected"].includes(friend.status);
+  });
+}
+
+function setFriendStatus(message, error = false) {
+  elements.friendStatus.textContent = message;
+  elements.friendStatus.className = `friend-status${error ? " error" : ""}`;
+}
+
+async function runFriendAction(action) {
+  if (friendBusy) return;
+  friendBusy = true;
+  setFriendStatus("Working…");
+  renderFriendSync();
+  try { await action(); } catch (error) {
+    setFriendStatus(error.code ? "Couldn't connect to your friends. Check your connection and try again." : error.message || "Couldn't complete that action. Try again.", true);
+  } finally {
+    friendBusy = false;
+    refreshSocialViews();
+  }
+}
+
+function refreshSocialViews() {
+  renderFriendSync();
+  renderScoreboards(getActiveGame());
+  renderAnswers();
+  renderQuickGames();
+  renderGameList();
+  const count = visibleFriends().filter((friend) => state.entries[state.selectedDate]?.[state.activeGameId]?.[friend.id]).length;
+  elements.friendCompletion.textContent = `${count} friend${count === 1 ? "" : "s"} done`;
+}
+
 function renderFriendSync() {
-  if (!elements.friendSync) return;
-  if (!cloudBackend.ready) {
-    elements.friendSync.innerHTML = `
-      <article class="sync-card">
-        <header><strong>Local friends</strong><span class="sync-pill${cloudBackend.error ? " error" : ""}">${cloudBackend.configured ? "Connecting" : "No backend"}</span></header>
-        <small>${escapeHtml(cloudBackend.error || "Add Firebase Auth and Firestore config to enable real friend requests and synced leaderboards.")}</small>
-      </article>
-    `;
-    return;
-  }
-
-  if (!state.account?.uid) {
-    elements.friendSync.innerHTML = `
-      <article class="sync-card">
-        <header><strong>Friend requests</strong><span class="sync-pill">Sign in</span></header>
-        <small>Log in with Google or Apple to send requests by Solvry handle.</small>
-      </article>
-    `;
-    return;
-  }
-
-  const incoming = (state.friendRequests.incoming || []).filter((request) => request.status === "pending");
-  const outgoing = (state.friendRequests.outgoing || []).filter((request) => request.status === "pending");
-  const acceptedCount = state.friends.filter((friend) => friend.status === "accepted" || !friend.status).length;
-  elements.friendSync.innerHTML = `
-    <article class="sync-card">
-      <header><strong>Cloud friends</strong><span class="sync-pill">${acceptedCount} connected</span></header>
-      <small>${cloudBackend.error ? escapeHtml(cloudBackend.error) : "Requests and accepted friends sync across devices."}</small>
-    </article>
-    ${incoming.map((request) => `
-      <article class="sync-card">
-        <header><strong>${escapeHtml(request.fromProfile?.name || "Friend")}</strong><span class="sync-pill">Request</span></header>
-        <small>${escapeHtml(request.fromProfile?.handle || "")}</small>
-        <div class="request-actions">
-          <button class="primary-button" type="button" data-friend-action="accept" data-request-id="${escapeHtml(request.id)}">Accept</button>
-          <button class="ghost-button" type="button" data-friend-action="reject" data-request-id="${escapeHtml(request.id)}">Decline</button>
-        </div>
-      </article>
-    `).join("")}
-    ${outgoing.map((request) => `
-      <article class="sync-card">
-        <header><strong>${escapeHtml(request.toProfile?.name || "Friend")}</strong><span class="sync-pill">Pending</span></header>
-        <small>${escapeHtml(request.toProfile?.handle || "")}</small>
-      </article>
-    `).join("")}
-  `;
+  const connected = cloudFriendsAvailable();
+  const friends = visibleFriends();
+  const incoming = connected ? (state.friendRequests.incoming || []).filter((request) => request.status === "pending") : [];
+  const outgoing = connected ? (state.friendRequests.outgoing || []).filter((request) => request.status === "pending") : [];
+  elements.friendSync.innerHTML = `<article class="sync-card">
+    <header><strong>${connected ? "Connected friends" : "Saved on this device"}</strong><span class="sync-pill">${connected ? "Online" : "Local only"}</span></header>
+    <small>${connected ? "Send requests using a friend's handle. Refresh to load their latest scores." : cloudBackend.ready ? "Sign in to send requests and compare scores across devices. Local friends don't receive invitations." : "Online friendships aren't enabled yet. Local friends stay on this device; their scores won't sync. Try sample friends to preview the rankings."}</small>
+    ${cloudBackend.error ? '<small>Sync is unavailable right now. Your saved scores are still on this device.</small>' : ""}
+  </article>`;
+  elements.friendsCount.textContent = `${friends.filter((friend) => !isDemoFriend(friend)).length} friend${friends.filter((friend) => !isDemoFriend(friend)).length === 1 ? "" : "s"}`;
+  elements.showDemoFriends.checked = !!state.showDemoFriends;
+  elements.copyHandleButton.hidden = !connected;
+  elements.refreshFriendsButton.disabled = !connected || friendBusy;
+  elements.refreshFriendsButton.title = connected ? "Refresh friend scores" : "Available when online friends are connected";
+  elements.friendNameInput.closest("label").hidden = connected;
+  elements.friendNameInput.required = !connected;
+  elements.friendHandleInput.required = connected;
+  elements.friendSubmitButton.disabled = friendBusy;
+  elements.friendSubmitButton.textContent = connected ? "Send request" : "Add local friend";
+  elements.addFriendSummary.textContent = connected ? "Find a friend by handle" : "Add a local friend";
+  elements.requestsTab.textContent = `Requests${incoming.length ? ` (${incoming.length})` : ""}`;
+  const search = elements.friendSearch.value.trim().toLowerCase();
+  const matches = friends.filter((friend) => `${friend.name} ${friend.handle}`.toLowerCase().includes(search));
+  elements.friendRoster.innerHTML = matches.length ? matches.map((friend) => `
+    <article class="friend-person"><span><strong>${escapeHtml(friend.name)}</strong><small>${escapeHtml(friend.handle)} · ${isDemoFriend(friend) ? "Sample" : friend.uid ? "Connected" : "Device only"}</small></span>
+    ${isDemoFriend(friend) ? '<span class="pill">Sample</span>' : `<button type="button" class="ghost-button" data-remove-friend="${escapeHtml(friend.id)}" aria-label="Remove ${escapeHtml(friend.name)}" ${friendBusy ? "disabled" : ""}>Remove</button>`}</article>
+  `).join("") : `<p class="social-empty">${search ? "No matching friends. Try a name or handle." : connected ? "Your circle starts here. Send a request using a friend's handle below." : "Your circle starts here. Add a local friend below, or turn on sample friends for a preview."}</p>`;
+  elements.friendRequests.innerHTML = !connected ? '<p class="social-empty">Real requests need online sign-in. Local friends are saved only on this device.</p>' : [...incoming, ...outgoing].map((request) => {
+    const received = request.toUid === state.account.uid;
+    const profile = received ? request.fromProfile : request.toProfile;
+    const action = (value, label) => `<button type="button" class="ghost-button" data-friend-action="${value}" data-request-id="${escapeHtml(request.id)}" ${friendBusy ? "disabled" : ""}>${label}</button>`;
+    return `<article class="sync-card"><header><strong>${escapeHtml(profile?.name || "Friend")}</strong><span class="sync-pill">${received ? "Received" : "Sent"}</span></header><small>${escapeHtml(profile?.handle || "")}</small><div class="request-actions">${received ? action("accept", "Accept") + action("reject", "Decline") : action("cancel", "Cancel request")}</div></article>`;
+  }).join("") || '<p class="social-empty">No pending requests. Find a friend by handle below.</p>';
 }
 
 function renderCurrentResult(game, entry) {
@@ -5689,7 +5911,7 @@ function renderQuickGames() {
     .map((game) => {
       const entries = getGameEntries(state.selectedDate, game.id);
       const mine = entries.you;
-      const friendCount = Object.keys(entries).filter((id) => id !== "you").length;
+      const friendCount = visibleFriends().filter((friend) => entries[friend.id]).length;
       const status = mine ? mine.score || defaultScoreLabel(mine.result) : `${friendCount} friend${friendCount === 1 ? "" : "s"}`;
       return `
         <button class="quick-game${game.id === state.activeGameId ? " active" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
@@ -5733,7 +5955,7 @@ function renderGameList() {
 
 function renderGameCard(game) {
     const entries = getGameEntries(state.selectedDate, game.id);
-    const playedCount = Object.keys(entries).length;
+    const playedCount = getPeople().filter((person) => entries[person.id]).length;
     const isPinned = state.pinnedGameIds.includes(game.id);
     const card = document.createElement("article");
     card.className = `game-card ${gameSource(game)}${game.id === state.activeGameId ? " active" : ""}${isPinned ? " pinned" : ""}`;
@@ -6051,28 +6273,48 @@ function renderProgressDays() {
 }
 
 function renderScoreboards(activeGame) {
-  elements.gameScoreboardTitle.textContent = `${activeGame.name} scoreboard`;
-  elements.gameScoreboardMeta.textContent = scoreStyleLabel(activeGame);
-  elements.gameScoreboardNote.textContent = scoreStyleHelp(activeGame);
-
-  const overallRows = buildOverallLeaderboard();
-  const gameRows = buildGameLeaderboard(activeGame);
+  elements.leaderboardDate.value = state.selectedDate;
+  elements.leaderboardDate.max = today;
+  const game = state.games.find((item) => item.id === leaderboardGameId) || activeGame;
+  leaderboardGameId = game.id;
+  elements.leaderboardGameInput.innerHTML = state.games.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("");
+  elements.leaderboardGameInput.value = game.id;
+  elements.gameScoreboardTitle.textContent = `${game.name} scoreboard`;
+  elements.gameScoreboardMeta.textContent = scoreStyleLabel(game);
+  elements.gameScoreboardNote.textContent = scoreStyleHelp(game);
+  const overall = leaderboardView === "overall";
+  [elements.overallTab, elements.gameBoardTab].forEach((tab, index) => {
+    const selected = overall === (index === 0);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  elements.overallBoard.hidden = !overall;
+  elements.gameBoard.hidden = overall;
+  elements.leaderboardRangeLabel.hidden = !overall;
+  elements.leaderboardGameLabel.hidden = overall;
+  const dates = leaderboardDates(overall ? leaderboardDays : 1);
+  elements.leaderboardDates.textContent = dates.length > 1 ? `${dates[dates.length - 1]} – ${dates[0]}` : dates[0];
+  const overallRows = buildOverallLeaderboard(leaderboardDays);
+  const gameRows = buildGameLeaderboard(game);
   elements.overallLeaderboard.innerHTML = renderRankRows(overallRows, "No scores yet");
-  elements.gameLeaderboard.innerHTML = renderRankRows(gameRows, `No ${activeGame.name} scores yet`);
+  elements.gameLeaderboard.innerHTML = renderRankRows(gameRows, `No ${game.name} scores yet`);
+  const mine = (overall ? overallRows : gameRows).find((person) => person.id === "you");
+  const sample = state.showDemoFriends ? " · Includes sample friends" : "";
+  elements.leaderboardSummary.textContent = (mine?.rank ? `You're #${mine.rank} · ${mine.value}` : "Save a score to join these rankings.") + sample;
 }
 
 function renderRankRows(rows, emptyText) {
   if (!rows.length) {
-    return `<article class="rank-row"><span class="rank">-</span><span><strong>${escapeHtml(emptyText)}</strong><small>Import or save a result to start ranking.</small></span><span class="points">0 pts</span></article>`;
+    return `<p class="social-empty">${escapeHtml(emptyText)}. Add a score to start ranking.</p>`;
   }
 
   return rows
     .map(
-      (person, index) => `
-      <article class="rank-row">
-        <span class="rank">${index + 1}</span>
+      (person) => `
+      <article class="rank-row${person.id === "you" ? " is-you" : ""}">
+        <span class="rank">${person.rank || "—"}</span>
         <span>
-          <strong>${escapeHtml(person.name)}</strong>
+          <strong>${person.id === "you" ? "You" : escapeHtml(person.name)}${person.demo ? " · Sample" : ""}</strong>
           <small>${escapeHtml(person.detail)}</small>
         </span>
         <span class="points">${escapeHtml(person.value)}${person.subvalue ? `<small>${escapeHtml(person.subvalue)}</small>` : ""}</span>
@@ -6082,40 +6324,48 @@ function renderRankRows(rows, emptyText) {
     .join("");
 }
 
-function buildOverallLeaderboard() {
+function leaderboardDates(days = 1) {
+  const end = new Date(`${state.selectedDate}T12:00:00Z`);
+  return Array.from({ length: days === 7 ? 7 : 1 }, (_, offset) => {
+    const date = new Date(end);
+    date.setUTCDate(date.getUTCDate() - offset);
+    return date.toISOString().slice(0, 10);
+  });
+}
+
+function buildOverallLeaderboard(days = 1) {
   const totals = new Map(
     getPeople().map((person) => [
       person.id,
-      { ...person, solvryPoints: 0, completed: 0, wins: 0 }
+      { ...person, solvryPoints: 0, completed: 0, wins: 0, manual: 0 }
     ])
   );
 
-  state.games.forEach((game) => {
-    const rows = buildGameLeaderboard(game).filter((row) => row.hasEntry && Number.isFinite(row.score.value) && resultWeight(row.entry?.result) > 0);
-    rows.forEach((row, index) => {
+  leaderboardDates(days).forEach((date) => state.games.forEach((game) => {
+    const rows = buildGameLeaderboard(game, date).filter((row) => row.rank);
+    rows.forEach((row) => {
       const total = totals.get(row.id);
       if (!total) return;
-      const placementPoints = placementScore(index);
+      const placementPoints = placementScore(row.rank - 1);
       total.solvryPoints += placementPoints;
       total.completed += 1;
-      if (index === 0 && placementPoints > 0) total.wins += 1;
+      if (row.entry.source === "manual") total.manual += 1;
+      if (row.rank === 1) total.wins += 1;
     });
-  });
-
-  return [...totals.values()]
-    .filter((person) => person.completed > 0)
-    .sort((a, b) => b.solvryPoints - a.solvryPoints || b.wins - a.wins || b.completed - a.completed || a.name.localeCompare(b.name))
-    .map((person) => ({
+  }));
+  const rows = [...totals.values()].sort((a, b) => b.solvryPoints - a.solvryPoints || a.name.localeCompare(b.name));
+  return rows.map((person) => ({
       ...person,
-      detail: `${person.completed} game${person.completed === 1 ? "" : "s"} scored · ${person.wins} win${person.wins === 1 ? "" : "s"}`,
-      value: `${person.solvryPoints} pts`,
-      subvalue: "Solvry"
+      rank: person.completed ? rows.findIndex((row) => row.solvryPoints === person.solvryPoints) + 1 : null,
+      detail: person.completed ? `${person.completed} game${person.completed === 1 ? "" : "s"} scored · ${person.wins} first${person.wins === 1 ? "" : "s"}${person.manual ? ` · ${person.manual} Manual` : ""}` : "No ranked scores yet",
+      value: person.completed ? `${person.solvryPoints} pts` : "—",
+      subvalue: person.completed ? "Solvry" : ""
     }));
 }
 
-function buildGameLeaderboard(game) {
-  const entries = state.entries[state.selectedDate]?.[game.id] || {};
-  return getPeople()
+function buildGameLeaderboard(game, date = state.selectedDate) {
+  const entries = state.entries[date]?.[game.id] || {};
+  const rows = getPeople()
     .map((person) => {
       const entry = entries[person.id];
       const score = scoreEntryForGame(entry, game);
@@ -6129,18 +6379,28 @@ function buildGameLeaderboard(game) {
         subvalue: entry ? scoreStyleLabel(game) : ""
       };
     })
-    .filter((person) => person.hasEntry)
     .sort((a, b) => compareScoreRows(a, b, game));
+  return rows.map((row) => ({ ...row, rank: scoreTier(row, game) ? rows.findIndex((other) => compareScoreValues(row, other, game) === 0) + 1 : null }));
+}
+
+function scoreTier(row, game) {
+  if (!row.hasEntry || !Number.isFinite(row.score.value) || !["solved", "played"].includes(row.entry?.result)) return 0;
+  if (["guesses", "mistakes", "time", "complete"].includes(game.type)) return row.entry.result === "solved" ? 2 : 1;
+  return 1;
+}
+
+function compareScoreValues(a, b, game) {
+  const tier = scoreTier(b, game) - scoreTier(a, game);
+  if (tier) return tier;
+  if (!scoreTier(a, game)) return 0;
+  if (a.score.value !== b.score.value) {
+    return gameScoreDirection(game) === "high" ? b.score.value - a.score.value : a.score.value - b.score.value;
+  }
+  return 0;
 }
 
 function compareScoreRows(a, b, game) {
-  const aValid = Number.isFinite(a.score.value);
-  const bValid = Number.isFinite(b.score.value);
-  if (aValid && bValid && a.score.value !== b.score.value) {
-    return gameScoreDirection(game) === "high" ? b.score.value - a.score.value : a.score.value - b.score.value;
-  }
-  if (aValid !== bValid) return aValid ? -1 : 1;
-  return resultWeight(b.entry?.result) - resultWeight(a.entry?.result) || a.name.localeCompare(b.name);
+  return compareScoreValues(a, b, game) || Number(b.hasEntry) - Number(a.hasEntry) || a.name.localeCompare(b.name);
 }
 
 function scoreEntryForGame(entry, game) {
@@ -6178,7 +6438,7 @@ function parseGuessScore(score, result) {
 
 function parseTimeScore(score) {
   const parts = score.split(":").map((part) => Number(part));
-  const valid = parts.length >= 2 && parts.length <= 3 && parts.every((part) => Number.isFinite(part));
+  const valid = /^\d+:\d{2}(?::\d{2})?$/.test(score) && parts.every((part, index) => Number.isFinite(part) && part >= 0 && (index === 0 || part < 60));
   const seconds = valid ? parts.reduce((total, part) => total * 60 + part, 0) : Number.POSITIVE_INFINITY;
   return {
     value: seconds,
@@ -6222,7 +6482,7 @@ function parseRankScore(score) {
 function renderAnswers() {
   const activeGame = getActiveGame();
   const entries = getGameEntries(state.selectedDate, state.activeGameId);
-  const people = [state.profile, ...state.friends.filter((friend) => friend.status !== "pending")].map((person) => ({
+  const people = getPeople().map((person) => ({
     id: person.id || "you",
     name: person.name,
     handle: person.handle,
@@ -6612,10 +6872,11 @@ function getGameEntries(date, gameId) {
 }
 
 function getPeople() {
-  return [state.profile, ...state.friends.filter((friend) => friend.status !== "pending")].map((person) => ({
+  return [state.profile, ...visibleFriends()].map((person) => ({
     id: person.id || "you",
     name: person.name,
-    handle: person.handle
+    handle: person.handle,
+    demo: isDemoFriend(person)
   }));
 }
 
