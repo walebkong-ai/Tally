@@ -7,7 +7,7 @@ const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 
 function setup() {
   const context = vm.createContext({
-    structuredClone,
+    structuredClone, SHOW_SOLVRY_GAMES: false,
     state: {
       profile: { id: 'you', name: 'You', handle: '@you' },
       friends: [{ id: 'a', name: 'Alice', handle: '@alice', status: 'local' }, { id: 'b', name: 'Bob', handle: '@bob', status: 'local' }],
@@ -18,7 +18,7 @@ function setup() {
     scoreStyleLabel: () => 'Score', defaultScoreLabel: (result) => result,
     saveState: () => {}
   });
-  const names = ['normalizeHandle', 'addOrUpdateFriend', 'cloudFriendsAvailable', 'isDemoFriend', 'visibleFriends', 'getPeople',
+  const names = ['visibleGames', 'gameSource', 'getActiveGame', 'normalizeHandle', 'addOrUpdateFriend', 'cloudFriendsAvailable', 'isDemoFriend', 'visibleFriends', 'getPeople',
     'placementScore', 'gameScoreDirection', 'resultWeight', 'leaderboardDates', 'buildOverallLeaderboard', 'buildGameLeaderboard',
     'scoreTier', 'compareScoreValues', 'compareScoreRows', 'scoreEntryForGame', 'parseGuessScore', 'parseTimeScore', 'parseNumberScore', 'parseRankScore',
     'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'serializeCloudState'];
@@ -183,4 +183,26 @@ test('cloud payload excludes cached friend scores and sample people', () => {
   const payload = c.serializeCloudState();
   assert.deepEqual(Object.keys(payload.entries['2026-11-02'].wordle), ['you']);
   assert.ok(!payload.friends.some((friend) => friend.id === 'mira'));
+});
+
+test('hidden Solvry games preserve saved state but do not appear or award daily points', () => {
+  const c = setup();
+  c.state.games.push({ id: 'solvry-holes', source: 'solvry', type: 'strokes' }, { id: 'color', source: 'official', type: 'points', dailyRanked: false });
+  c.state.activeGameId = 'solvry-holes';
+  c.state.solvryPlays = { savedRound: { strokes: 35 } };
+  c.state.entries['2026-11-02'] = { 'solvry-holes': { you: entry('35') }, color: { you: entry('49/50') } };
+  assert.equal(c.getActiveGame().id, 'wordle');
+  assert.equal(c.visibleGames().length, 2);
+  assert.equal(c.buildOverallLeaderboard().find((row) => row.id === 'you').solvryPoints, 0);
+  assert.equal(c.state.entries['2026-11-02']['solvry-holes'].you.score, '35');
+  assert.equal(c.state.solvryPlays.savedRound.strokes, 35);
+});
+
+test('Immaculate ranks correct answers first, then lower rarity, with sport isolation', () => {
+  const c = setup();
+  const game = { id: 'immaculate-baseball', type: 'grid' };
+  c.state.entries['2026-11-02'] = { 'immaculate-baseball': { you: entry('9/9 · rarity 150'), a: entry('8/9 · rarity 100'), b: entry('9/9 · rarity 75') }, 'immaculate-football': { a: entry('9/9 · rarity 0') } };
+  assert.deepEqual(plain(c.buildGameLeaderboard(game).map((row) => row.id)), ['b', 'you', 'a']);
+  c.state.entries['2026-11-02']['immaculate-baseball'].you.score = '9/9 · rarity 75';
+  assert.equal(c.buildGameLeaderboard(game).find((row) => row.id === 'you').rank, 1);
 });

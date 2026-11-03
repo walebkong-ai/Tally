@@ -32,14 +32,14 @@ let html = #"""
     <title>Solvry</title>
     <meta
       name="description"
-      content="Solvry is a social hub for tracking daily word and puzzle games with friends."
+      content="One leaderboard for your daily games. Paste results, track your progress, and compare scores with friends."
     />
     <link
       rel="icon"
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=18" />
   </head>
   <body>
     <div class="app" id="app">
@@ -48,7 +48,7 @@ let html = #"""
           <span class="brand-mark" aria-hidden="true">SV</span>
           <span>
             <strong>Solvry</strong>
-            <small>Daily games with friends</small>
+            <small>Your daily games leaderboard</small>
           </span>
         </a>
         <nav class="topnav" aria-label="Primary">
@@ -74,6 +74,7 @@ let html = #"""
           <div class="rail-title">
             <span>Games</span>
           </div>
+          <label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Name of a game" /></label>
           <div class="game-list" id="gameList"></div>
         </aside>
 
@@ -96,7 +97,7 @@ let html = #"""
           <div class="play-surface" aria-live="polite">
             <div class="current-result" id="currentResult"></div>
             <div class="solvry-game" id="solvryGame" hidden></div>
-            <div class="letter-board" id="letterBoard" aria-hidden="true"></div>
+            <div class="letter-board" id="letterBoard" aria-hidden="true" hidden></div>
             <div class="manual-entry" id="manualEntry" role="tabpanel" aria-labelledby="manualTab" hidden>
             <form class="entry-form" id="entryForm">
               <div class="manual-grid">
@@ -122,6 +123,7 @@ let html = #"""
                   <small class="field-help" id="scoreHelp">Example: 4/6</small>
                 </div>
               </div>
+              <label id="rarityField" hidden>Rarity score<input id="rarityInput" type="number" min="0" max="900" step="any" disabled /><small>Lower is better. Use the score, not a percentage.</small></label>
               <details class="manual-extras">
                 <summary>Answer &amp; note (optional)</summary>
                 <label>
@@ -339,7 +341,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=17" type="module"></script>
+    <script src="app.js?v=18" type="module"></script>
   </body>
 </html>
 """#
@@ -2568,6 +2570,8 @@ label {
 }
 
 .social-panel { scroll-margin-top: 24px; }
+.catalog-search { margin: 0 0 14px; font-size: 12px; }
+.catalog-search input { min-width: 0; width: 100%; }
 .leaderboard-controls { display: grid; gap: 10px; margin: 14px 0; }
 .leaderboard-summary { padding: 12px; background: #e4f5ed; color: #07694e; border-radius: 6px; font-size: 14px; font-weight: 750; line-height: 1.5; }
 .ranking-rules { color: var(--muted); font-size: 13px; line-height: 1.5; }
@@ -3186,6 +3190,23 @@ const GOLF_SURFACES = {
   water: { label: "Water", rollout: 0, power: 0, accuracy: 2 }
 };
 
+// Keep the game engines and saved rounds available for a future return.
+const SHOW_SOLVRY_GAMES = false;
+const ADDITIONAL_IMPORT_GAMES = [
+  { id: "connections-sports", name: "Connections: Sports Edition", type: "mistakes", maxScore: 4, scoring: { label: "Fewest mistakes", helper: "The Athletic's Sports Edition has its own scoreboard. Lower mistakes win; four is a miss.", example: "1 mistake" }, logo: "connections", officialUrl: "https://www.nytimes.com/athletic/connections-sports-edition" },
+  { id: "daily-tens", name: "Daily Tens", type: "points", maxScore: 10, scoring: { label: "Most correct", helper: "One point per trophy in the shared top-10 grid. More correct answers win; percentile is not used.", example: "8/10" }, logo: "daily-tens", officialUrl: "https://dailytens.com/" },
+  { id: "centumth", name: "Centumth", type: "points", maxScore: 490, scoring: { label: "Most points", helper: "Sum of the ranks from your five official guesses. Higher is better, up to 490. Arcade guesses do not count.", example: "350/490" }, logo: "centumth", officialUrl: "https://www.centumth.com/" },
+  { id: "globle", name: "Globle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Today's guess count after the equals sign. Lower wins; your streak and average are not the daily score.", example: "5 guesses" }, logo: "globle", officialUrl: "https://globle-game.com/" },
+  { id: "flagcognito", name: "Flagcognito", type: "points", maxScore: 3000, scoring: { label: "Most points", helper: "The shared total across three rounds, up to 3,000 points. Higher wins.", example: "2400/3000" }, logo: "flagcognito", officialUrl: "https://guessdash.com/flagcognito" },
+  { id: "size-it-up", name: "Size It Up", type: "points", maxScore: 500, scoring: { label: "Most points", helper: "Magnitudle's original daily game: five rounds, up to 500 points. Higher wins. Other editions and practice runs need a separate game.", example: "425/500" }, logo: "size-it-up", officialUrl: "https://magnitudle.com/size-it-up" },
+  { id: "color", name: "Color (Dialed)", type: "points", maxScore: 50, decimalScore: true, dailyRanked: false, scoring: { label: "Best color memory", helper: "Share a numeric score out of 50 and the Dialed Color link. Compare the same challenge with friends. Challenge scores are excluded from the daily overall ranking.", example: "39.12/50" }, logo: "color", officialUrl: "https://dialed.gg/color" },
+  { id: "buzzfeed-trivia", name: "BuzzFeed Daily Trivia", type: "points", maxScore: 5, scoring: { label: "Most correct", helper: "Correct answers out of five. More correct answers win.", example: "4/5" }, logo: "buzzfeed-trivia", officialUrl: "https://www.buzzfeed.com/daily-trivia" },
+  ...[
+    ["baseball", "Baseball", ""], ["football", "Football", "football/"],
+    ["basketball-men", "Men’s Basketball", "basketball/mens/"], ["basketball-women", "Women’s Basketball", "basketball/womens/"], ["hockey", "Hockey", "hockey/"]
+  ].map(([sport, name, path]) => ({ id: `immaculate-${sport}`, name: `Immaculate Grid: ${name}`, type: "grid", scoring: { label: "Correct + rarity", helper: "More correct answers out of nine rank first. Lower rarity score breaks ties. Rarity is a score, not a percentage; sports stay separate.", example: "9/9 · rarity 75" }, logo: "immaculate", officialUrl: `https://www.sports-reference.com/immaculate-grid/${path}` }))
+].map((game) => ({ ...game, source: "official" }));
+
 const starterState = {
   activeGameId: "wordle",
   selectedDate: today,
@@ -3201,6 +3222,7 @@ const starterState = {
     { id: "mini-crossword", name: "Mini Crossword", source: "official", type: "time", scoring: { label: "Fastest time", helper: "Imported Mini shares rank by completion time.", example: "00:54" }, logo: "mini-crossword", officialUrl: "https://www.nytimes.com/crosswords/game/mini" },
     { id: "spelling-bee", name: "Spelling Bee", source: "official", type: "rank", scoring: { label: "Best rank", helper: "Imported Spelling Bee shares rank by official level.", example: "Genius" }, logo: "spelling-bee", officialUrl: "https://www.nytimes.com/puzzles/spelling-bee" },
     { id: "krillion", name: "Krillion", source: "official", type: "depth", scoring: { label: "Highest depth", helper: "Rarer valid answers score more. Higher total depth points win.", example: "110" }, logo: "krillion", officialUrl: "https://krillion.io/" },
+    ...ADDITIONAL_IMPORT_GAMES,
     { id: "solvry-holes", name: "Solvry Holes", source: "solvry", type: "strokes", scoring: { label: "Lowest strokes", helper: "Play nine tiny daily holes. Fewer total strokes win.", example: "38 strokes" }, logo: "holes", officialUrl: "" },
     { id: "solvry-hoops", name: "Solvry Hoops", source: "solvry", type: "points", scoring: { label: "Most points", helper: "Play nine daily basketball shots. Higher point total wins.", example: "24 points" }, logo: "hoops", officialUrl: "" }
   ],
@@ -3359,6 +3381,8 @@ let leaderboardView = "overall";
 let leaderboardDays = 1;
 let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
+document.querySelector("#gameSearch").addEventListener("input", renderGameList);
+elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
 
 function wireSocialTabs(tabs, select) {
   tabs.forEach((tab, index) => {
@@ -3648,6 +3672,7 @@ elements.solvryGame.addEventListener("click", (event) => {
 
 function render(focusGolf = true) {
   const activeGame = getActiveGame();
+  state.activeGameId = activeGame.id;
   if (activeGame.source === "custom" && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
   lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
@@ -3668,7 +3693,8 @@ function render(focusGolf = true) {
   renderOfficialLink(activeGame);
   renderCurrentResult(activeGame, myEntry);
   renderSolvryGame(activeGame);
-  renderBoard(activeGame.name);
+  if (SHOW_SOLVRY_GAMES) renderBoard(activeGame.name);
+  elements.letterBoard.hidden = !SHOW_SOLVRY_GAMES;
   renderForm(myEntry);
   renderMetrics();
   renderScoreboards(activeGame);
@@ -5897,7 +5923,7 @@ function saveSolvryResult(game, score, note) {
 }
 
 function isPlayableSolvryGame(game) {
-  return gameSource(game) === "solvry" && ["solvry-holes", "solvry-hoops"].includes(game.id);
+  return SHOW_SOLVRY_GAMES && gameSource(game) === "solvry" && ["solvry-holes", "solvry-hoops"].includes(game.id);
 }
 
 function clamp(value, minimum, maximum) {
@@ -5905,8 +5931,8 @@ function clamp(value, minimum, maximum) {
 }
 
 function renderQuickGames() {
-  const pinned = state.games.filter((game) => state.pinnedGameIds.includes(game.id));
-  const games = [...pinned, ...state.games.filter((game) => !state.pinnedGameIds.includes(game.id))].slice(0, 4);
+  const pinned = visibleGames().filter((game) => state.pinnedGameIds.includes(game.id));
+  const games = [...pinned, ...visibleGames().filter((game) => !state.pinnedGameIds.includes(game.id))].slice(0, 4);
   elements.quickGames.innerHTML = games
     .map((game) => {
       const entries = getGameEntries(state.selectedDate, game.id);
@@ -5936,12 +5962,13 @@ function renderQuickGames() {
 
 function renderGameList() {
   elements.gameList.innerHTML = "";
+  const search = document.querySelector("#gameSearch").value.trim().toLowerCase();
   [
     { source: "official", title: "Official imports", detail: "Paste share results" },
     { source: "custom", title: "Your games", detail: "Manual scores" },
     { source: "solvry", title: "Solvry games", detail: "In-app versions" }
   ].forEach((section) => {
-    const games = getSortedGames().filter((game) => gameSource(game) === section.source);
+    const games = getSortedGames().filter((game) => gameSource(game) === section.source && game.name.toLowerCase().includes(search));
     if (!games.length) return;
     const heading = document.createElement("div");
     heading.className = "game-section-label";
@@ -5951,6 +5978,7 @@ function renderGameList() {
       elements.gameList.append(renderGameCard(game));
     });
   });
+  if (!elements.gameList.children.length) elements.gameList.innerHTML = '<p class="social-empty">No matching games. Use Other game under Enter manually to track a new one.</p>';
 }
 
 function renderGameCard(game) {
@@ -5985,7 +6013,7 @@ function renderGameCard(game) {
 
 function getSortedGames() {
   const pinned = new Set(state.pinnedGameIds);
-  return [...state.games].sort((a, b) => {
+  return visibleGames().sort((a, b) => {
     const sourceDelta = sourceOrder(gameSource(a)) - sourceOrder(gameSource(b));
     if (sourceDelta) return sourceDelta;
     const pinDelta = Number(pinned.has(b.id)) - Number(pinned.has(a.id));
@@ -6034,7 +6062,9 @@ function gameLogo(game) {
     krillion: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5c5 5 9 12 9 19a9 9 0 0 1-18 0c0-7 4-14 9-19z" fill="#10a77a" stroke="#141719" stroke-width="2"/><path d="M13 23h14M15 29h10" stroke="#fffefa" stroke-width="3" stroke-linecap="round"/><text x="20" y="20" text-anchor="middle" font-size="12" font-weight="900" fill="#141719">K</text></svg>`
   };
 
-  return `<span class="game-logo ${className}">${icons[logo] || `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="7" width="26" height="26" rx="7" fill="#fffefa" stroke="#141719" stroke-width="3"/><text x="20" y="25" text-anchor="middle" font-size="16" font-weight="900" fill="#141719">${initial}</text></svg>`}</span>`;
+  const symbols = { "daily-tens": "🏆", centumth: "💯", globle: "🌍", flagcognito: "🚩", "size-it-up": "📏", color: "🎨", "buzzfeed-trivia": "⚡", immaculate: "▦" };
+  const symbol = symbols[logo];
+  return `<span class="game-logo ${className}">${icons[logo] || (symbol ? `<svg viewBox="0 0 40 40" aria-hidden="true"><text x="20" y="29" text-anchor="middle" font-size="28">${symbol}</text></svg>` : `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="7" width="26" height="26" rx="7" fill="#fffefa" stroke="#141719" stroke-width="3"/><text x="20" y="25" text-anchor="middle" font-size="16" font-weight="900" fill="#141719">${initial}</text></svg>`)}</span>`;
 }
 
 function pinIcon(isPinned) {
@@ -6112,6 +6142,7 @@ function renderForm() {
     const rank = entry?.score?.split(" · ")[0];
     elements.manualRankInput.value = rank === "Moving" ? "Moving Up" : rank || "Beginner";
   }
+  document.querySelector("#rarityInput").value = entry?.score?.match(/rarity (\d+(?:\.\d+)?)/i)?.[1] || "";
   elements.answerInput.value = entry?.answer || "";
   elements.noteInput.value = entry?.note || "";
   elements.revealInput.checked = Boolean(entry?.reveal);
@@ -6128,6 +6159,7 @@ function updateManualScoreField() {
     krillion: ["Depth score", "110", "Final depth score", 0, 9999]
   };
   const customFields = {
+    grid: ["Correct answers", "9", "Correct answers out of 9", 0, 9],
     points: ["Score", "100", "Higher is better", -1000000000, 1000000000],
     strokes: ["Score", "10", "Lower is better", -1000000000, 1000000000],
     time: ["Time", "01:30", "Minutes:seconds or hours:minutes:seconds", 0, 0],
@@ -6135,12 +6167,16 @@ function updateManualScoreField() {
     mistakes: ["Mistakes", "0", "Total mistakes", 0, 1000000],
     complete: ["Completion", "", "", 0, 0]
   };
-  const [label, example, help, min, max] = fields[game.id] || customFields[game.type];
+  const [label, example, help, min, max] = fields[game.id] || (game.maxScore ? ["Score", String(game.maxScore), `Score out of ${game.maxScore}`, 0, game.maxScore] : customFields[game.type]);
+  const rarityInput = document.querySelector("#rarityInput");
+  document.querySelector("#rarityField").hidden = game.type !== "grid";
+  rarityInput.disabled = game.type !== "grid";
+  rarityInput.required = game.type === "grid";
   elements.manualScoreLabel.textContent = label;
   elements.scoreHelp.textContent = help;
   const isRank = game.type === "rank";
   elements.manualScoreLabel.htmlFor = isRank ? "manualRankInput" : "scoreInput";
-  elements.resultInput.closest("label").hidden = isRank;
+  elements.resultInput.closest("label").hidden = isRank || (ADDITIONAL_IMPORT_GAMES.some((item) => item.id === game.id) && game.id !== "connections-sports");
   const missedWordle = game.id === "wordle" && elements.resultInput.value === "missed";
   const completionOnly = game.source === "custom" && game.type === "complete";
   elements.manualScoreLabel.closest(".manual-score-field").hidden = completionOnly;
@@ -6151,14 +6187,14 @@ function updateManualScoreField() {
   elements.scoreInput.inputMode = game.type === "time" ? "text" : "numeric";
   elements.scoreInput.min = String(min);
   elements.scoreInput.max = String(max);
-  elements.scoreInput.step = game.source === "custom" && ["points", "strokes"].includes(game.type) ? "any" : "1";
+  elements.scoreInput.step = game.decimalScore ? "any" : game.source === "custom" && ["points", "strokes"].includes(game.type) ? "any" : "1";
   elements.scoreInput.placeholder = example;
   elements.manualRankInput.hidden = !isRank;
   elements.manualRankInput.disabled = !isRank;
   if (missedWordle) elements.scoreHelp.textContent = "X/6";
 }
 
-function normalizeManualScore(gameId, result, raw, rank) {
+function normalizeManualScore(gameId, result, raw, rank, rarity = "") {
   const value = String(raw).trim();
   if (gameId === "wordle" && result === "missed") return { score: "X/6", result };
   if (gameId === "mini-crossword") {
@@ -6169,6 +6205,20 @@ function normalizeManualScore(gameId, result, raw, rank) {
     if (!["Beginner", "Good Start", "Moving Up", "Good", "Solid", "Nice", "Great", "Amazing", "Genius", "Queen Bee"].includes(rank)) return { error: "Choose your Spelling Bee rank." };
     return { score: rank, result: rank === "Queen Bee" ? "solved" : "played" };
   }
+  const added = ADDITIONAL_IMPORT_GAMES.find((game) => game.id === gameId);
+  if (added && gameId !== "connections-sports") {
+    const number = Number(value);
+    if (added.type === "grid") {
+      if (!/^\d+$/.test(value) || number > 9 || !/^\d+(?:\.\d+)?$/.test(String(rarity)) || Number(rarity) > 900) return { error: "Enter 0–9 correct and a rarity score from 0–900 (not a percentage)." };
+      return { score: `${number}/9 · rarity ${Number(rarity)}`, result: number === 9 ? "solved" : "played" };
+    }
+    const valid = added.decimalScore ? /^\d+(?:\.\d{1,2})?$/.test(value) : /^\d+$/.test(value);
+    const max = added.maxScore || 1000000;
+    const min = added.type === "guesses" ? 1 : 0;
+    if (!valid || number < min || number > max) return { error: `Enter ${min} to ${max}${added.decimalScore ? " (up to two decimals)" : " as a whole number"}.` };
+    return { score: added.type === "guesses" ? `${number} guess${number === 1 ? "" : "es"}` : `${number}/${max}`, result: added.type === "guesses" || (["daily-tens", "buzzfeed-trivia"].includes(gameId) && number === max) ? "solved" : "played" };
+  }
+  if (gameId === "connections-sports") gameId = "connections";
   const max = { wordle: 6, connections: 4, strands: 999, krillion: 9999 }[gameId];
   const min = gameId === "wordle" ? 1 : 0;
   const number = Number(value);
@@ -6204,7 +6254,7 @@ function saveManualScore() {
   if (!date || !elements.manualDateInput.validity.valid) { elements.manualDateInput.reportValidity(); return; }
   const normalized = game.source === "custom"
     ? normalizeCustomScore(game.type, elements.resultInput.value, elements.scoreInput.value)
-    : normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value);
+    : normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value, document.querySelector("#rarityInput").value);
   if (normalized.error) {
     elements.saveStatus.className = "save-status error";
     elements.saveStatus.textContent = normalized.error;
@@ -6237,7 +6287,8 @@ function renderMetrics() {
   let played = 0;
   let completed = 0;
 
-  Object.values(dayEntries).forEach((gameEntries) => {
+  visibleGames().forEach((game) => {
+    const gameEntries = dayEntries[game.id] || {};
     const mine = gameEntries.you;
     if (!mine) return;
     played += 1;
@@ -6275,9 +6326,9 @@ function renderProgressDays() {
 function renderScoreboards(activeGame) {
   elements.leaderboardDate.value = state.selectedDate;
   elements.leaderboardDate.max = today;
-  const game = state.games.find((item) => item.id === leaderboardGameId) || activeGame;
+  const game = visibleGames().find((item) => item.id === leaderboardGameId) || activeGame;
   leaderboardGameId = game.id;
-  elements.leaderboardGameInput.innerHTML = state.games.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("");
+  elements.leaderboardGameInput.innerHTML = visibleGames().map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("");
   elements.leaderboardGameInput.value = game.id;
   elements.gameScoreboardTitle.textContent = `${game.name} scoreboard`;
   elements.gameScoreboardMeta.textContent = scoreStyleLabel(game);
@@ -6341,7 +6392,7 @@ function buildOverallLeaderboard(days = 1) {
     ])
   );
 
-  leaderboardDates(days).forEach((date) => state.games.forEach((game) => {
+  leaderboardDates(days).forEach((date) => visibleGames().filter((game) => game.dailyRanked !== false).forEach((game) => {
     const rows = buildGameLeaderboard(game, date).filter((row) => row.rank);
     rows.forEach((row) => {
       const total = totals.get(row.id);
@@ -6396,6 +6447,7 @@ function compareScoreValues(a, b, game) {
   if (a.score.value !== b.score.value) {
     return gameScoreDirection(game) === "high" ? b.score.value - a.score.value : a.score.value - b.score.value;
   }
+  if (game.type === "grid") return a.score.rarity - b.score.rarity;
   return 0;
 }
 
@@ -6410,6 +6462,11 @@ function scoreEntryForGame(entry, game) {
 
   const score = String(entry.score || "").trim();
   const type = game.type;
+  if (type === "grid") {
+    const match = score.match(/^(\d)\/9 · rarity (\d+(?:\.\d+)?)$/);
+    const valid = match && Number(match[2]) <= 900;
+    return { value: valid ? Number(match[1]) : Infinity, rarity: valid ? Number(match[2]) : Infinity, label: score, detail: "Most correct, then lowest rarity" };
+  }
   if (type === "time") return parseTimeScore(score);
   if (type === "guesses") return parseGuessScore(score, entry.result);
   if (type === "mistakes") return parseNumberScore(score, "mistakes");
@@ -6528,10 +6585,20 @@ function renderImportExample() {
     strands: "Strands #123\n🔵🔵🟡🔵🔵🔵🔵",
     "mini-crossword": "I solved the Mini Crossword in 0:54!",
     "spelling-bee": "Spelling Bee\nGenius · 150 points",
-    krillion: "Krillion #77\n110"
+    krillion: "Krillion #77\n110",
+    "connections-sports": "Connections: Sports Edition\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪",
+    "daily-tens": "DailyTens #123\n🏆 🏆\n🏆 ❌\n🏆 🏆\n❌ 🏆\n🏆 🏆\nhttps://dailytens.com/",
+    centumth: "Centumth Nov 3, 2026 - Example topic\nTotal: 350/490\nhttps://www.centumth.com/",
+    globle: "🌎 Nov 3, 2026 🌍\n🔥 4 | Avg. Guesses: 6.2\n🟨🟥🟩 = 3\nhttps://globle-game.com\n#globle",
+    flagcognito: "Flagcognito · Nov 3, 2026\n2,400 / 3,000\nhttps://guessdash.com/flagcognito",
+    "size-it-up": "Magnitudle — Size It Up\nNov 3, 2026\nScore: 425/500\nhttps://magnitudle.com/size-it-up",
+    color: "My color memory is a 39.12/50.\nhttps://dialed.gg/color?c=example",
+    "buzzfeed-trivia": "I got 4 out of 5 on today’s Daily Trivia. Can you beat my score? https://www.buzzfeed.com/daily-trivia"
+
   };
   const id = elements.importExampleGame.value;
-  elements.importExampleText.textContent = examples[id];
+  const gridSports = { "immaculate-baseball": "⚾", "immaculate-football": "🏈", "immaculate-basketball-men": "🏀 (Men’s)", "immaculate-basketball-women": "🏀 (Women’s)", "immaculate-hockey": "🏒" };
+  elements.importExampleText.textContent = examples[id] || `${gridSports[id]} Immaculate Grid 123 9/9:\nRarity: 75\n🟩🟩🟩\n🟩🟩🟩\n🟩🟩🟩`;
   elements.importExampleLink.href = state.games.find((game) => game.id === id)?.officialUrl || "#";
 }
 
@@ -6629,7 +6696,8 @@ function parseShareText(text) {
     parseStrandsShare(lines),
     parseMiniCrosswordShare(lines),
     parseSpellingBeeShare(lines),
-    parseKrillionShare(lines)
+    parseKrillionShare(lines),
+    parseAdditionalShare(lines)
   ];
   if (attempts.filter((attempt) => attempt.parsed || attempt.error).length > 1) {
     return { parsed: null, error: "There is more than one game here. Paste one result at a time so each score goes to the right scoreboard." };
@@ -6640,8 +6708,85 @@ function parseShareText(text) {
   const knownError = attempts.find((attempt) => attempt.error);
   return knownError || {
     parsed: null,
-    error: "I could not tell which game this came from. Try pasting the full share text from Wordle, Connections, Strands, Mini Crossword, Spelling Bee, or Krillion."
+    error: "I could not identify this result. Copy the full result including its game name or link. Check Supported games & sample results, or use Enter manually for another game."
   };
+}
+
+function parseAdditionalShare(lines) {
+  const text = lines.join("\n");
+  const games = [
+    ["daily-tens", /\bDaily\s*Tens\b/i], ["centumth", /\bCentumth\b/i],
+    ["globle", /(?:#globle\b|globle-game\.com|^Globle\b)/im],
+    ["flagcognito", /\bFlagcognito\b/i], ["size-it-up", /\bSize It Up\b|magnitudle\.com\/size-it-up/i],
+    ["color", /dialed\.gg\/color(?:[?\s/#]|$)/i],
+    ["buzzfeed-trivia", /buzzfeed\.com\/daily-trivia|BuzzFeed.*Daily Trivia/i],
+    ["immaculate", /\bImmaculate Grid\b/i]
+  ].filter(([, pattern]) => pattern.test(text));
+  const fail = (error) => ({ parsed: null, error });
+  if (!games.length) return { parsed: null };
+  if (games.length > 1) return fail("Paste one result at a time so each game reaches the right scoreboard.");
+  const id = games[0][0];
+  const finish = (gameId, score, result = "played", grid = []) => ({ parsed: { gameId, score, result, grid, note: "Imported shared result" } });
+  const total = (pattern, max, decimal = false) => {
+    const matches = [...text.matchAll(pattern)];
+    if (matches.length !== 1) return null;
+    const raw = matches[0][1].replace(/,/g, "");
+    const denominator = matches[0][2].replace(/,/g, "");
+    const number = Number(raw);
+    return (decimal ? /^\d+(?:\.\d{1,2})?$/.test(raw) : /^\d+$/.test(raw)) && Number(denominator) === max && number >= 0 && number <= max ? number : null;
+  };
+  if (id === "daily-tens") {
+    const grid = lines.map(compactEmojiLine).filter((line) => /[🏆❌]/u.test(line));
+    if (grid.length !== 5 || grid.some((line) => !/^[🏆❌]{2}$/u.test(line))) return fail("Daily Tens needs all five rows of two trophies/crosses. Copy the full result from Share.");
+    const correct = (grid.join("").match(/🏆/gu) || []).length;
+    return finish(id, `${correct}/10`, correct === 10 ? "solved" : "played", grid);
+  }
+  if (id === "centumth") {
+    const score = total(/^Total:\s*([\d,]+)\s*\/\s*(\d+)(?![\d.])/gim, 490);
+    return score === null ? fail("Copy Centumth’s final Total: …/490 line. Individual guesses and Arcade scores aren't the daily total.") : finish(id, `${score}/490`);
+  }
+  if (id === "globle") {
+    if (/capitals/i.test(text)) return fail("This is Globle Capitals. Use a separate Other game entry; Globle tracks the country game.");
+    const results = lines.filter((line) => /=/.test(line));
+    const match = results.length === 1 && results[0].match(/^[\s🟥🟧🟨🟩🟦🟪⬜⬛]+\s*=\s*([1-9]\d*)$/u);
+    if (!match || Number(match[1]) > 1000000) return fail("Copy Globle’s completed emoji result with = followed by today's guess count. A streak or average isn't a daily score.");
+    return finish(id, `${Number(match[1])} guess${Number(match[1]) === 1 ? "" : "es"}`, "solved", results);
+  }
+  if (id === "flagcognito") {
+    const score = total(/^\s*([\d,]+)\s*\/\s*([\d,]+)\s*$/gm, 3000);
+    return score === null ? fail("Copy Flagcognito’s final total out of 3,000, including the game name. Tap counts and distances aren't the score.") : finish(id, `${score}/3000`);
+  }
+  if (id === "size-it-up") {
+    if (/\b(practice|unlimited|pop culture|weekly|geography)\b/i.test(text)) return fail("This scoreboard is for original daily Size It Up. Track other editions or practice with a separate Other game entry.");
+    if (!/magnitudle/i.test(text)) return fail("Include the Magnitudle name or official Size It Up link so we can identify the edition.");
+    const score = total(/^Score:\s*([\d,]+)\s*\/\s*(\d+)\s*$/gim, 500);
+    return score === null ? fail("Copy Size It Up’s final Score: …/500 line, not an individual round.") : finish(id, `${score}/500`);
+  }
+  if (id === "color") {
+    if (/dialed\.gg\/color\/(?:live|toon)|\blive game\b/i.test(text)) return fail("Use the Color memory result, not a live room or another Dialed game.");
+    const score = total(/(?<![\w.\-])(\d+(?:\.\d+)?)\s*\/\s*(50)(?!\d|\.\d)/g, 50, true);
+    return score === null ? fail("This Color link doesn't include a readable score. Copy the result text with your score out of 50, or enter it manually.") : finish(id, `${score}/50`);
+  }
+  if (id === "buzzfeed-trivia") {
+    const score = total(/\bI got\s+(\d+)\s+out of\s+(\d+)\b/gi, 5);
+    return score === null ? fail("Copy BuzzFeed Daily Trivia’s full result: I got … out of 5, plus the Daily Trivia link.") : finish(id, `${score}/5`, score === 5 ? "solved" : "played");
+  }
+  const headers = lines.filter((line) => /Immaculate Grid/i.test(line));
+  if (headers.length !== 1) return fail("Paste one Immaculate Grid result, with its sport and rarity score.");
+  const sportMatches = [
+    ["baseball", /⚾|\bbaseball\b/i], ["football", /🏈|\bfootball\b/i],
+    ["basketball-women", /\bwomen[’']?s\b|\/basketball\/womens\//i],
+    ["hockey", /🏒|\bhockey\b/i]
+  ].filter(([, pattern]) => pattern.test(text));
+  if (/🏀|\bbasketball\b|\bmen[’']?s\b/i.test(text) && !sportMatches.some(([sport]) => sport === "basketball-women")) sportMatches.push(["basketball-men"]);
+  if (sportMatches.length !== 1) return fail("Include the sport emoji or name in your Immaculate Grid result so it goes to the correct sport's scoreboard.");
+  const count = headers[0].match(/\b([0-9])\s*\/\s*9\b/);
+  const rarities = lines.filter((line) => /^Rarity(?: score)?:/i.test(line));
+  const rarity = rarities.length === 1 && rarities[0].match(/^Rarity(?: score)?:\s*(\d+(?:\.\d+)?)\s*$/i);
+  if (!count || !rarity || Number(rarity[1]) > 900) return fail("Include correct answers out of 9 and Rarity: followed by its score (0–900). Rarity is not a percentage.");
+  const grid = lines.map(compactEmojiLine).filter((line) => /[🟩⬜⬛]/u.test(line));
+  if (grid.length && (grid.length !== 3 || grid.some((line) => !/^[🟩⬜⬛]{3}$/u.test(line)) || (grid.join("").match(/🟩/gu) || []).length !== Number(count[1]))) return fail("The Immaculate Grid squares don't match the score. Copy the complete 3×3 result again.");
+  return finish(`immaculate-${sportMatches[0][0]}`, `${Number(count[1])}/9 · rarity ${Number(rarity[1])}`, count[1] === "9" ? "solved" : "played", grid);
 }
 
 function parseWordleShare(lines) {
@@ -6680,8 +6825,12 @@ function parseConnectionsShare(lines) {
   const header = lines.find((line) => /^Connections\b/i.test(line)) || (/\bConnections\b/i.test(text) ? text : "");
   if (!header) return { parsed: null };
 
+  const sports = /Connections\s*:?\s*Sports Edition/i.test(header);
+  const headers = lines.filter((line) => /^Connections\b/i.test(line));
+  if (headers.length > 1) return { parsed: null, error: "Paste one Connections result at a time, including its edition." };
   const gridPattern = /^[\u{1F7E8}\u{1F7E9}\u{1F7E6}\u{1F7EA}]{4}$/u;
   const grid = lines
+    .map((line) => sports ? line.replace(/🟡/gu, "🟨").replace(/🟢/gu, "🟩").replace(/🔵/gu, "🟦").replace(/🟣/gu, "🟪") : line)
     .map(compactEmojiLine)
     .filter((line) => gridPattern.test(line));
   if (!grid.length) {
@@ -6695,10 +6844,11 @@ function parseConnectionsShare(lines) {
   const correctRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line));
   const solvedRows = new Set(correctRows).size;
   const mistakes = grid.length - correctRows.length;
+  if (grid.length > 7 || mistakes > 4 || solvedRows !== correctRows.length) return { parsed: null, error: "This Connections grid has repeated groups or too many rows. Paste one complete result." };
 
   return {
     parsed: {
-      gameId: "connections",
+      gameId: sports ? "connections-sports" : "connections",
       score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
       result: solvedRows >= 4 ? "solved" : mistakes >= 4 ? "missed" : "played",
       note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
@@ -6851,6 +7001,7 @@ function renderSharePreview(parsed, game, date, existing, duplicate) {
       <div><strong>${escapeHtml(game.name)} · ${escapeHtml(parsed.score)}</strong>
       <small>${escapeHtml(parsed.result)} · ${escapeHtml(date)}${duplicate ? " · Saved" : " · Not saved yet"}</small></div>
     </div>
+    ${game.dailyRanked === false ? `<p class="import-warning">Challenge result: compare the same challenge with friends. Excluded from the combined daily ranking.</p>` : ""}
     ${existing && !duplicate ? `<p class="import-warning">You already saved ${escapeHtml(existing.score)} for this day. Saving will replace that score and keep your answer, note, and sharing choice.</p>` : ""}
     ${parsed.grid.length ? `<details><summary>View shared result</summary><div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div></details>` : ""}
   `;
@@ -6861,8 +7012,12 @@ function setImportStatus(message, tone = "") {
   elements.importStatus.className = `import-status${tone ? ` ${tone}` : ""}`;
 }
 
+function visibleGames() {
+  return state.games.filter((game) => SHOW_SOLVRY_GAMES || gameSource(game) !== "solvry");
+}
+
 function getActiveGame() {
-  return state.games.find((game) => game.id === state.activeGameId) || state.games[0];
+  return visibleGames().find((game) => game.id === state.activeGameId) || visibleGames()[0];
 }
 
 function getGameEntries(date, gameId) {
@@ -6885,7 +7040,7 @@ function placementScore(index) {
 }
 
 function gameScoreDirection(game) {
-  if (["points", "depth", "rank", "complete"].includes(game.type)) return "high";
+  if (["points", "depth", "rank", "complete", "grid"].includes(game.type)) return "high";
   return "low";
 }
 
@@ -6895,7 +7050,7 @@ function resultWeight(result) {
 
 function calculateCompleted(personId) {
   const dayEntries = state.entries[state.selectedDate] || {};
-  return Object.values(dayEntries).filter((gameEntries) => gameEntries[personId]).length;
+  return visibleGames().filter((game) => dayEntries[game.id]?.[personId]).length;
 }
 
 function isCompletedResult(result) {
@@ -6904,13 +7059,13 @@ function isCompletedResult(result) {
 
 function hasUserPlayedDate(dateKey) {
   const dayEntries = state.entries[dateKey] || {};
-  return Object.values(dayEntries).some((gameEntries) => gameEntries.you);
+  return visibleGames().some((game) => dayEntries[game.id]?.you);
 }
 
 function calculateTotalSolves() {
   return Object.values(state.entries).reduce((total, dayEntries) => {
-    return total + Object.values(dayEntries).filter((gameEntries) => {
-      return isCompletedResult(gameEntries.you?.result);
+    return total + visibleGames().filter((game) => {
+      return isCompletedResult(dayEntries[game.id]?.you?.result);
     }).length;
   }, 0);
 }

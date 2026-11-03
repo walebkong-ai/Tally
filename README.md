@@ -1,6 +1,26 @@
 # Solvry
 
-Solvry is a Swift-generated website for tracking daily word and puzzle games with friends.
+Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
+
+## Universal leaderboard catalog (2026-11-03)
+
+Official imports now include the original six games plus Connections: Sports Edition, Daily Tens, Centumth, Globle, Flagcognito, Size It Up, Color (Dialed), BuzzFeed Daily Trivia, and separate Immaculate Grid boards for baseball, football, men's basketball, women's basketball, and hockey. Sporcle is excluded per the product decision. Search filters the catalog; pins still work.
+
+Only copied result text is imported. Challenge links without a numeric result are rejected with a manual-entry fallback. No scraper, account access, or automatic third-party score retrieval is implied. Unknown games can still be tracked with the existing Other game manual flow.
+
+| Game | Parsed result and ordering |
+| --- | --- |
+| Connections: Sports Edition | Its own emoji grid; lowest mistakes, completed before partial |
+| Daily Tens | Five rows of two trophies/crosses; most correct out of 10 |
+| Centumth | Labeled Total out of 490; highest score from the five official guesses |
+| Globle | Guess count after the emoji grid's equals sign; lowest wins, ignores streak/average |
+| Flagcognito | Shared total out of 3,000 across three rounds; highest wins |
+| Size It Up | Magnitudle's original daily Score out of 500; highest wins; other modes/practice rejected |
+| Color (Dialed) | Numeric memory result out of 50 plus Color URL; highest wins; challenge-based, excluded from combined daily points |
+| BuzzFeed Daily Trivia | Correct answers out of five; highest wins |
+| Immaculate Grid | Correct answers out of nine first, then lower rarity score; sport must be identifiable; rarity is not a percentage |
+
+Format references inspected: [Daily Tens](https://dailytens.com/), [Centumth](https://www.centumth.com/how-to-play), [Globle](https://globle-game.com/), [Flagcognito](https://guessdash.com/flagcognito), [Size It Up](https://magnitudle.com/size-it-up), [Color](https://dialed.gg/color), [BuzzFeed](https://www.buzzfeed.com/daily-trivia), and [Immaculate Grid](https://www.sports-reference.com/immaculate-grid/). Read-only public share implementations and representative shared results informed the fixtures. These are format checks, not completed gameplay on each third-party site or a guarantee against future format changes.
 
 ## Build
 
@@ -12,8 +32,8 @@ The build writes the deployable site to `dist/`.
 
 ## What is in this version
 
-- Daily game tracker for paste-supported official games: Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion
-- Separate Solvry games section with a ranked Daily Holes MVP and playable Solvry Hoops
+- Daily leaderboard for 19 paste-supported entries, including Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion (full catalog above)
+- Solvry Holes and Hoops are hidden from the website. Their engines, definitions, and saved rounds are retained; hidden games do not contribute to visible rankings or stats. `SHOW_SOLVRY_GAMES` controls the catalog gate.
 - Deterministic Daily Holes course generation with nine holes, wind, hazards, club choice, two-tap shot execution, lie effects, water penalties, abstract putting, scorecard results, and locked local progress
 - Simplified Daily Holes two-tap swing flow: lock the moving aim line, then lock the contextual colour power bar
 - Polished Daily Holes game feel with smoother ball flight, landing/rollout callouts, hole-complete celebration, and cleaner round recap
@@ -28,8 +48,8 @@ The build writes the deployable site to `dist/`.
 - Spoiler-safe answer sharing
 - Official game links
 - Clipboard and paste import for supported official share results, with game-specific parsing errors when a pasted result is incomplete
-- Paste-first Add score flow with automatic game detection, score/date preview, explicit save or replacement, duplicate protection, and sample results for all six supported games
-- Visible Paste result / Enter manually tabs for the six existing official games, with game-specific score fields and Manual labels on saved results and individual leaderboards
+- Paste-first Add score flow with automatic game detection, score/date preview, explicit save or replacement, duplicate protection, and sample results for every supported import
+- Visible Paste result / Enter manually tabs for the supported official games, with game-specific score fields and Manual labels on saved results and individual leaderboards
 - Add-friend and add-game flows
 - Browser-local fallback when cloud config is not connected
 
@@ -88,3 +108,7 @@ Imports use the explicitly selected Played on date; puzzle numbers are not conve
 - Firebase is still **not configured**. Request and cloud UI checks used a simulated backend; no real Google/Apple login, deployed Firestore rules, or multi-device synchronization was verified. Before enabling production sync, finish the backend setup and test consent-based access rules, safe account lookup/unique handles, and account switching/data isolation. Client-side request checks are not a replacement for server-side authorization.
 
 Verification: `swift run solvry-site`, `node --check dist/app.js`, `git diff --check`, and `node --test Tests/share-import.test.cjs Tests/friends-leaderboard.test.cjs` pass (38 tests). Browser QA at 1366×900 and 390×844 covered adding two distinct local friends, duplicate prevention, search, sample toggling, reload persistence, tied score import, date/game/period filters, keyboard tabs, removal confirmation/cancellation, and simulated storage failure/retry. Simulated cloud UI checks covered sending/accepting/declining/cancelling requests, duplicate/self-request prevention, refresh, unfriend, network failure/retry, and copying a handle. These checks do not re-certify golf gameplay.
+
+## Universal import verification (2026-11-03)
+
+Swift build, JavaScript syntax, 58 parser/leaderboard tests, and diff whitespace checks pass. Browser QA used an isolated local profile on desktop (1366×900) and mobile (390×844): every one of the 19 sample formats previewed and saved, persisted across reload, and updated the leaderboard. Checked manual correct-count/rarity entry, game search, rejected link-only Color text without storage writes, and no horizontal overflow. Preserved a fixture golf round and its entry while confirming neither its catalog card nor its daily ranking points appeared. Solvry game engines remain in the Swift source. No real user data or third-party gameplay was modified by QA.

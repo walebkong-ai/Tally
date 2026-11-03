@@ -8,6 +8,7 @@ const path = require('node:path');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 const parserSource = app.slice(app.indexOf('function parseShareText('), app.indexOf('function renderSharePreview('));
 const context = vm.createContext({});
+vm.runInContext(app.slice(app.indexOf("const ADDITIONAL_IMPORT_GAMES"), app.indexOf("const starterState")), context);
 vm.runInContext(parserSource, context);
 const parse = (text) => context.parseShareText(text);
 vm.runInContext(app.slice(app.indexOf('function normalizeManualScore('), app.indexOf('function saveManualScore(')), context);
@@ -106,4 +107,69 @@ test('does not silently import one game from a mixed paste', () => {
 
 test('tolerates Windows line endings and emoji variation selectors', () => {
   assert.equal(parse('Connections\r\n🟨️ 🟨️ 🟨️ 🟨️\r\n🟩🟩🟩🟩\r\n🟦🟦🟦🟦\r\n🟪🟪🟪🟪').parsed.score, '0 mistakes');
+});
+
+const newFixtures = [
+  ['Connections: Sports Edition\nPuzzle #999\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪', 'connections-sports', '0 mistakes'],
+  ['DailyTens #999\n🏆 🏆\n🏆 ❌\n🏆 🏆\n❌ 🏆\n🏆 🏆', 'daily-tens', '8/10'],
+  ['Centumth Nov 3, 2026 - Cities\nTotal: 490/490 🏆', 'centumth', '490/490'],
+  ['🌎 Nov 3, 2026 🌍\n🔥 14 | Avg. Guesses: 3.2\n🟨🟥🟩 = 12\nhttps://globle-game.com\n#globle', 'globle', '12 guesses'],
+  ['Flagcognito · Nov 3, 2026\n🇲🇲 Myanmar: 2 taps\n2,400 / 3,000\nhttps://guessdash.com/flagcognito', 'flagcognito', '2400/3000'],
+  ['Magnitudle — Size It Up\nNov 3, 2026\nScore: 425/500\n🟥🟥🟥🟥⬜ 80\nhttps://magnitudle.com/size-it-up', 'size-it-up', '425/500'],
+  ['39.12/50. I remember colors better than names.\nhttps://dialed.gg/color?c=abc', 'color', '39.12/50'],
+  ['I got 4 out of 5 on today’s Daily Trivia. Can you beat my score? https://www.buzzfeed.com/daily-trivia', 'buzzfeed-trivia', '4/5'],
+  ...[['⚾', 'baseball'], ['🏈', 'football'], ['🏀 (Men’s)', 'basketball-men'], ['🏀 (Women’s)', 'basketball-women'], ['🏒', 'hockey']].map(([sport,id]) => [`${sport} Immaculate Grid 123 9/9:\nRarity: 75\n🟩🟩🟩\n🟩🟩🟩\n🟩🟩🟩`, `immaculate-${id}`, '9/9 · rarity 75'])
+];
+for (const [text, id, score] of newFixtures) test(`new shared format ${id}`, () => {
+  const output = parse(text);
+  assert.ok(output.parsed, output.error);
+  assert.equal(output.parsed.gameId, id);
+  assert.equal(output.parsed.score, score);
+});
+
+test('zero is a real score in bounded points games', () => {
+  for (const text of ['Centumth\nTotal: 0/490', 'Flagcognito\n0 / 3,000', 'Magnitudle — Size It Up\nScore: 0/500', '0/50\nhttps://dialed.gg/color', 'I got 0 out of 5 on BuzzFeed Daily Trivia']) {
+    assert.ok(parse(text).parsed, text);
+    assert.match(parse(text).parsed.score, /^0\//);
+    assert.equal(parse(text).parsed.result, 'played');
+  }
+});
+
+test('new imports reject incomplete, unsupported, ambiguous and out-of-range results', () => {
+  for (const text of [
+    'DailyTens #999\n🏆🏆', 'Centumth Nov 3, 2026', 'Centumth\nTotal: 491/490',
+    'Globle\n🔥 14 | Avg. Guesses: 3.2\n-- = --', 'Globle Capitals\n🟩 = 2',
+    'Flagcognito\n1,000 / 1,000', 'Flagcognito\n4,000 / 3,000',
+    'Magnitudle — Size It Up\nPractice\nScore: 425/500', 'Magnitudle — Size It Up\nScore: 501/500',
+    'https://dialed.gg/color?c=abc', '51/50\nhttps://dialed.gg/color',
+    'I got 6 out of 5 on BuzzFeed Daily Trivia',
+    'Immaculate Grid 123 9/9\nRarity: 75', '⚾ Immaculate Grid 123 9/9\nRarity: 75%',
+    '⚾ Immaculate Grid 123 8/9\nRarity: 75\n🟩🟩🟩\n🟩🟩🟩\n🟩🟩🟩',
+    '⚾ Immaculate Grid 123 9/9\nRarity: 901',
+    'Connections\nConnections: Sports Edition\n🟨🟨🟨🟨',
+    'Centumth\nTotal: 300/490\nFlagcognito\n2400/3000',
+    'Wordle 123 4/6\nCentumth\nTotal: 300/490'
+  ]) { const output = parse(text); assert.equal(output.parsed, null, text); assert.ok(output.error, text); }
+});
+
+test('manual new scores use the same storage and bounds as imports', () => {
+  for (const [id, raw, rarity, score] of [
+    ['connections-sports','2','','2 mistakes'], ['daily-tens','8','','8/10'],
+    ['centumth','350','','350/490'], ['globle','12','','12 guesses'],
+    ['flagcognito','2400','','2400/3000'], ['size-it-up','425','','425/500'],
+    ['color','39.12','','39.12/50'], ['buzzfeed-trivia','4','','4/5'],
+    ['immaculate-baseball','9','75','9/9 · rarity 75']
+  ]) assert.equal(context.normalizeManualScore(id, 'solved', raw, '', rarity).score, score);
+  for (const [id,raw,rarity] of [['color','50.01',''], ['daily-tens','11',''], ['globle','0',''], ['immaculate-baseball','9',''], ['immaculate-baseball','10','75'], ['immaculate-baseball','9','-1']]) assert.ok(context.normalizeManualScore(id, 'solved', raw, '', rarity).error);
+});
+
+
+test('decimal or signed malformed totals cannot be truncated into a valid score', () => {
+  for (const text of ['-1/50\nhttps://dialed.gg/color', '1.234/50\nhttps://dialed.gg/color', '40/50.5\nhttps://dialed.gg/color', 'Centumth\nTotal: 350/490.5']) assert.ok(parse(text).error, text);
+});
+
+test('Sports Edition circle grids remain separate from regular Connections', () => {
+  const output = parse('Connections: Sports Edition\n🟡🟡🟡🟡\n🟢🟢🟢🟢\n🔵🔵🔵🔵\n🟣🟣🟣🟣');
+  assert.equal(output.parsed?.gameId, 'connections-sports');
+  assert.equal(output.parsed?.score, '0 mistakes');
 });
