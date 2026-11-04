@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=21" />
   </head>
   <body>
     <div class="app" id="app">
@@ -69,7 +69,7 @@ let html = #"""
         <p id="appNotice" class="app-notice" role="status" hidden></p>
         <section class="app-view home-view" id="today" data-view="today" aria-label="Today">
           <div class="view-head">
-            <div><p class="eyebrow">A little play, every day</p><h1>Your daily lineup.</h1><p class="view-copy">Your games, your scores, your circle.</p></div>
+            <div><h1>Your daily lineup.</h1></div>
             <label class="date-control">Viewing date<input id="playDate" type="date" /></label>
           </div>
           <div class="metrics home-metrics" aria-label="Your progress">
@@ -81,11 +81,11 @@ let html = #"""
           <div class="home-columns">
             <div class="home-main">
               <section class="panel home-games"><div class="section-head compact"><div><h2>Your games</h2><p class="field-help" id="quickGamesHint">Pin your favorites to keep them here.</p></div><a class="text-link" href="#games">Browse all →</a></div><div class="dashboard-strip" id="quickGames" aria-label="Your games"></div></section>
-              <section class="panel"><div class="section-head compact"><h2>Your scores</h2><a class="text-link" href="#import">Add score →</a></div><div id="homeScores" class="home-score-list"></div></section>
+              <section class="panel home-scores"><div class="section-head compact"><h2>Your scores</h2><a class="text-link" href="#import">Add score →</a></div><div id="homeScores" class="home-score-list"></div></section>
             </div>
             <div class="home-side">
               <section class="panel home-ranking"><div class="section-head compact"><h2>Overall leaderboard</h2></div><p class="field-help" id="homeRankingDate"></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
-              <section class="panel activity-card"><h2>Keep it going</h2><p class="field-help">Your recent play history</p><div class="progress-days" id="progressDays" aria-label="Recent play history"></div></section>
+              <section class="panel activity-card"><h2>Your week</h2><div class="progress-days" id="progressDays" aria-label="Recent play history"></div></section>
             </div>
           </div>
         </section>
@@ -329,7 +329,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=20" type="module"></script>
+    <script src="app.js?v=21" type="module"></script>
   </body>
 </html>
 """#
@@ -3309,6 +3309,66 @@ h1:focus { outline: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
 
+
+/* Keep the daily overview within a laptop viewport without hiding content. */
+.topbar { padding-block: 10px; }
+.workspace { padding-top: 18px; padding-bottom: 24px; }
+.home-view .view-head { margin-bottom: 14px; gap: 12px; }
+.home-view h1 { font-size: 32px; }
+.home-view h2 { font-size: 20px; }
+.home-view .date-control { display: flex; align-items: center; gap: 10px; }
+.home-metrics { gap: 12px; margin-bottom: 16px; }
+.home-metrics > div { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.home-metrics strong { font-size: 30px; }
+.home-metrics span { margin-top: 0; }
+.home-columns, .home-main, .home-side { gap: 14px; }
+.home-view .panel { padding: 14px; }
+.home-view .section-head.compact { margin-bottom: 12px; }
+.home-view .field-help { margin-top: 3px; font-size: 12px; }
+.home-view .dashboard-strip { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.home-view .quick-game { min-height: 60px; grid-template-columns: 32px minmax(0,1fr); gap: 8px; padding: 10px; }
+.home-view .quick-game .game-logo { width: 32px; height: 32px; }
+.home-view .quick-game strong { font-size: 13px; }
+.home-view .quick-game span span { font-size: 11px; margin-top: 2px; }
+.home-score-row { grid-template-columns: 30px minmax(0,1fr) auto; gap: 10px; padding: 8px 0; min-height: 48px; }
+.home-score-row .game-logo { width: 30px; height: 30px; }
+.home-score-row small { margin-top: 2px; }
+.home-empty { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0; text-align: left; }
+.home-empty h3 { font-family: inherit; font-size: 15px; }
+.home-empty p { margin: 4px 0 0; font-size: 13px; }
+.home-empty .primary-button { flex-shrink: 0; margin: 0; }
+.ranking-empty { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 4px 0; text-align: left; }
+.ranking-empty p { margin: 6px 0; font-size: 13px; }
+.home-ranking .leaderboard { margin-top: 10px; }
+.home-ranking .block-link { margin-top: 12px; }
+.home-view .progress-days { margin-top: 10px; }
+.home-view .progress-day { padding: 8px 3px; }
+.more-home-scores { margin-top: 8px; }
+.more-home-scores summary { color: #07664d; padding: 8px 0; font-size: 13px; font-weight: 650; cursor: pointer; }
+.more-home-scores[open] summary { margin-bottom: 4px; }
+@media (min-width: 761px) and (max-width: 1000px) {
+  .home-view .dashboard-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .home-empty { flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 760px) {
+  .workspace { padding-top: 16px; padding-bottom: 24px; }
+  .home-view h1 { font-size: 28px; }
+  .home-view .view-head { gap: 10px; }
+  .home-view .date-control { font-size: 11px; }
+  .home-view .date-control input { min-height: 38px; padding-block: 6px; }
+  .home-metrics { gap: 8px; margin-bottom: 12px; }
+  .home-metrics > div { display: block; padding: 10px; }
+  .home-metrics strong { font-size: 26px; }
+  .home-metrics span { display: block; margin-top: 4px; }
+  .home-view .dashboard-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .home-view .quick-game { min-height: 62px; padding: 8px; }
+  .home-view .quick-game strong { font-size: 12px; }
+  .home-view .panel { padding: 14px; }
+  .home-columns, .home-main, .home-side { gap: 12px; }
+  .home-empty { flex-wrap: wrap; gap: 10px; }
+  .home-empty .primary-button { width: 100%; }
+}
+
 """#
 
 let appScript = #"""
@@ -4015,10 +4075,13 @@ function showAppNotice(message) {
 
 function renderHome() {
   const games = visibleGames().filter((game) => state.entries[state.selectedDate]?.[game.id]?.you);
-  document.querySelector("#homeScores").innerHTML = games.length ? games.map((game) => {
+  const scoreRows = games.map((game) => {
     const entry = state.entries[state.selectedDate][game.id].you;
     return `<button type="button" class="home-score-row" data-home-game="${escapeHtml(game.id)}">${gameLogo(game)}<span><strong>${escapeHtml(game.name)}</strong><small>${entry.source === "manual" ? "Manual" : "Imported"} · ${escapeHtml(entry.result)}</small></span><span class="home-score-value">${escapeHtml(entry.score)} <span aria-hidden="true">→</span></span></button>`;
-  }).join("") : '<div class="home-empty"><span class="empty-symbol" aria-hidden="true">＋</span><h3>Your first score starts here.</h3><p>Play a daily game, copy the result, and bring it to Solvry.</p><a class="primary-button" href="#import">Add your first score</a></div>';
+  });
+  document.querySelector("#homeScores").innerHTML = scoreRows.length
+    ? scoreRows.slice(0, 3).join("") + (scoreRows.length > 3 ? `<details class="more-home-scores"><summary>Show ${scoreRows.length - 3} more ${scoreRows.length === 4 ? "score" : "scores"}</summary>${scoreRows.slice(3).join("")}</details>` : "")
+    : '<div class="home-empty"><div><h3>No scores yet.</h3><p>Copy a game’s result and paste it here.</p></div><a class="primary-button" href="#import">Add your first score</a></div>';
   const rows = buildOverallLeaderboard();
   const ranked = rows.filter((row) => row.rank);
   document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><span aria-hidden="true">🏆</span><p>A little friendly competition.<br>Add a score to join the board.</p></div>';
@@ -6210,7 +6273,7 @@ function clamp(value, minimum, maximum) {
 function renderQuickGames() {
   const pinned = visibleGames().filter((game) => state.pinnedGameIds.includes(game.id));
   const games = (pinned.length ? pinned : visibleGames()).slice(0, 6);
-  document.querySelector("#quickGamesHint").textContent = pinned.length ? "Your pinned games, ready when you are." : "A few to get you started. Pin favorites in Games.";
+  document.querySelector("#quickGamesHint").textContent = pinned.length ? "Your pinned favorites." : "Pin favorites in Games.";
   elements.quickGames.innerHTML = games
     .map((game) => {
       const entries = getGameEntries(state.selectedDate, game.id);
