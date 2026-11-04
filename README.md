@@ -2,6 +2,10 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Screen-filling overview (2026-11-04)
+
+The desktop overview uses the browser width with 3% side margins and grows to the available viewport height. Cards and text scale within bounds, and screens at least 1400×850 show nine games, growing to twelve at 1700px wide. Pinned favorites remain the home lineup when present. Laptop and mobile layouts retain their compact sizing; forms remain at readable widths.
+
 ## Compact overview (2026-11-04)
 
 The overview uses a compact header, inline progress stats, and a three-column desktop game lineup. Saved scores preview the first three entries; an expandable list retains access to every additional score. Empty states and recent activity take less space. The default overview fits tested 1280×720, 1366×768, and 1024×768 desktop viewports; narrow/mobile screens retain natural scrolling for readability. Expanding more scores or using browser zoom can require scrolling.
@@ -9,7 +13,7 @@ The overview uses a compact header, inline progress stats, and a three-column de
 ## Simplified navigation (2026-11-03)
 
 - **Today** opens with a compact game lineup, saved scores for the selected date, current streak, total saved results, and a daily overall leaderboard preview.
-- **Games** is a searchable catalog with readable names, saved-result checkmarks, pins, and a pinned-only filter. Pinning games personalizes the home lineup (up to six).
+- **Games** is a searchable catalog with readable names, saved-result checkmarks, pins, and a pinned-only filter. Pinning games personalizes the home lineup (six on laptops, up to twelve on roomy desktops).
 - **Leaderboard** contains overall daily/weekly and per-game rankings. **Friends** contains friend management and requests.
 - **Add score** is always available in the header; paste and manual entry share a dedicated screen with links back to the overview after saving.
 - Individual game details contain the official play link, saved result, scoring explanation, and collapsed answers/notes. Existing `#import`, `#friends`, and `#answers` links remain supported.

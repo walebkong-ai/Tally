@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=21" />
+    <link rel="stylesheet" href="styles.css?v=22" />
   </head>
   <body>
     <div class="app" id="app">
@@ -329,7 +329,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=21" type="module"></script>
+    <script src="app.js?v=22" type="module"></script>
   </body>
 </html>
 """#
@@ -3369,6 +3369,60 @@ h1:focus { outline: none; }
   .home-empty .primary-button { width: 100%; }
 }
 
+/* Use the available desktop canvas; keep small screens naturally scrollable. */
+@media (min-width: 1001px) {
+  .topbar { padding-inline: clamp(24px, 3vw, 64px); }
+  .workspace:has(.home-view:not([hidden])) { max-width: none; width: 100%; padding: 18px clamp(24px, 3vw, 64px) 22px; }
+  .home-view { min-height: calc(100svh - 106px); display: grid; grid-template-rows: auto auto 1fr; gap: 12px; }
+  .home-view .view-head, .home-metrics { margin-bottom: 0; }
+  .home-view h1 { font-size: clamp(32px, 2.6vw, 44px); }
+  .home-view h2 { font-size: clamp(20px, 1.5vw, 28px); }
+  .home-metrics > div { padding: clamp(12px, 1.5vh, 20px) 20px; }
+  .home-metrics strong { font-size: clamp(30px, 2.3vw, 40px); }
+  .home-metrics span { font-size: clamp(12px, .9vw, 15px); }
+  .home-columns { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); grid-template-rows: minmax(min-content,1fr) auto; gap: 12px; align-items: stretch; }
+  .home-main, .home-side { display: contents; }
+  .home-games { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+  .home-scores { grid-column: 1; grid-row: 2; }
+  .home-ranking { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; }
+  .activity-card { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; }
+  .home-view .panel { padding: clamp(14px, 1.4vw, 24px); }
+  .home-view .dashboard-strip { flex: 1; grid-auto-rows: 1fr; gap: 12px; }
+  .home-view .quick-game { grid-template-columns: clamp(32px, 3vw, 50px) minmax(0,1fr); gap: 12px; padding: 10px; }
+  .home-view .quick-game .game-logo { width: clamp(32px, 3vw, 50px); height: clamp(32px, 3vw, 50px); }
+  .home-view .quick-game strong { font-size: clamp(13px, 1.1vw, 18px); }
+  .home-view .quick-game span span, .home-view .field-help { font-size: clamp(12px, .9vw, 15px); }
+  .home-ranking .leaderboard { flex: 1; align-content: start; }
+  .home-ranking .leaderboard:has(.ranking-empty) { display: flex; align-items: center; justify-content: center; }
+  .home-ranking .ranking-empty p { font-size: clamp(14px, 1vw, 18px); }
+  .home-ranking .ranking-empty > span { font-size: clamp(32px, 3vw, 54px); }
+  .home-ranking .rank-row { padding: clamp(12px, 1.4vh, 20px); }
+  .home-ranking .rank-row strong, .home-ranking .points { font-size: clamp(13px, 1.1vw, 18px); }
+  .home-ranking .rank-row small { font-size: clamp(11px, .85vw, 14px); }
+  .home-score-row { min-height: 48px; padding-block: clamp(8px, 1vh, 13px); }
+  .home-score-row strong, .home-score-value { font-size: clamp(14px, 1vw, 17px); }
+  .home-view .progress-days { flex: 1; align-items: stretch; }
+  .home-view .progress-day { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .home-view .progress-day strong, .home-view .progress-day span { font-size: clamp(11px, .9vw, 15px); }
+}
+
+
+@media (min-width: 1700px) and (min-height: 850px) {
+  .home-view .dashboard-strip { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (min-width: 1001px) and (max-height: 800px) {
+  .home-view .panel { padding: 14px; }
+  .home-view .quick-game { grid-template-columns: 32px minmax(0,1fr); gap: 8px; }
+  .home-view .quick-game .game-logo { width: 32px; height: 32px; }
+  .home-view .quick-game strong { font-size: 13px; }
+  .home-view .quick-game span span { font-size: 11px; }
+  .home-view h1 { font-size: 32px; }
+  .home-view h2 { font-size: 20px; }
+  .home-metrics > div { padding: 12px 16px; }
+  .home-metrics strong { font-size: 30px; }
+  .home-score-row { padding-block: 8px; }
+}
+
 """#
 
 let appScript = #"""
@@ -3653,6 +3707,10 @@ let leaderboardDays = 1;
 let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
 let pinnedOnly = false;
+const roomyOverview = window.matchMedia("(min-width: 1400px) and (min-height: 850px)");
+roomyOverview.addEventListener("change", () => renderQuickGames());
+const wideOverview = window.matchMedia("(min-width: 1700px) and (min-height: 850px)");
+wideOverview.addEventListener("change", () => renderQuickGames());
 document.querySelector("#gameSearch").addEventListener("input", renderGameList);
 document.querySelector("#pinnedFilter").addEventListener("click", (event) => {
   pinnedOnly = !pinnedOnly;
@@ -6272,7 +6330,7 @@ function clamp(value, minimum, maximum) {
 
 function renderQuickGames() {
   const pinned = visibleGames().filter((game) => state.pinnedGameIds.includes(game.id));
-  const games = (pinned.length ? pinned : visibleGames()).slice(0, 6);
+  const games = (pinned.length ? pinned : visibleGames()).slice(0, wideOverview.matches ? 12 : roomyOverview.matches ? 9 : 6);
   document.querySelector("#quickGamesHint").textContent = pinned.length ? "Your pinned favorites." : "Pin favorites in Games.";
   elements.quickGames.innerHTML = games
     .map((game) => {
