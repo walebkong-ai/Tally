@@ -2,6 +2,12 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Restrained visual system (2026-11-04)
+
+Warm neutral paper, dark text, and one evergreen accent replace the pastel cards, decorative gradients, and translucent navigation. Games use ruled rows with a locally rendered, consistent SVG line-icon family; stats and rankings use type and alignment instead of badges. Forms stay left-aligned at readable widths. Empty states describe the next action and preserve the distinction between device-only and online features. No fabricated scores or friends are introduced.
+
+This supersedes the earlier stretched-card presentation while retaining wide desktop gutters, compact laptop sizing, responsive game counts (6 / 10 / 12), and readable mobile flows. Import parsing, ranking, persistence, pins, and account integration are unchanged. Verified Swift build, JavaScript syntax, 69 regression tests, and all six visible views at 320, 390, 768, and 1280px. Browser checks covered paste/manual saves, reloaded scores, search/pins, game-specific rankings, local friend creation, and account dismissal.
+
 ## Screen-filling overview (2026-11-04)
 
 The desktop overview uses the browser width with 3% side margins and grows to the available viewport height. Cards and text scale within bounds, and screens at least 1400×850 show nine games, growing to twelve at 1700px wide. Pinned favorites remain the home lineup when present. Laptop and mobile layouts retain their compact sizing; forms remain at readable widths.
