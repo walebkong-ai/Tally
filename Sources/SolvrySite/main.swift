@@ -39,7 +39,7 @@ let html = #"""
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141719'/%3E%3Cpath d='M14 18h36v28H14z' fill='%23f7f4ea'/%3E%3Cpath d='M18 22h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%2310a77a'/%3E%3Cpath d='M18 32h8v8h-8zm10 0h8v8h-8zm10 0h8v8h-8z' fill='%23efbd3a'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="styles.css?v=19" />
+    <link rel="stylesheet" href="styles.css?v=20" />
   </head>
   <body>
     <div class="app" id="app">
@@ -48,56 +48,119 @@ let html = #"""
           <span class="brand-mark" aria-hidden="true">SV</span>
           <span>
             <strong>Solvry</strong>
-            <small>Your daily games leaderboard</small>
+            <small>Your daily game circle</small>
           </span>
         </a>
         <nav class="topnav" aria-label="Primary">
           <a href="#today">Today</a>
+          <a href="#games">Games</a>
+          <a href="#leaderboard">Leaderboard</a>
           <a href="#friends">Friends</a>
-          <a href="#import">Add score</a>
-          <a href="#answers">Answers</a>
         </nav>
         <div class="top-actions">
-          <label class="date-control">
-            Date
-            <input id="playDate" type="date" />
-          </label>
+          <a class="primary-button nav-add-score" href="#import">＋ Add score</a>
           <div class="account-controls" id="accountControls">
-            <button class="ghost-button compact-button" type="button" data-account-action="login">Log in</button>
-            <button class="primary-button compact-button" type="button" data-account-action="signup">Sign up</button>
+            <button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>
           </div>
         </div>
       </header>
 
-      <main class="workspace">
-        <aside class="game-rail" aria-label="Tracked games">
-          <div class="rail-title">
-            <span>Games</span>
+      <main class="workspace" id="mainContent">
+        <p id="appNotice" class="app-notice" role="status" hidden></p>
+        <section class="app-view home-view" id="today" data-view="today" aria-label="Today">
+          <div class="view-head">
+            <div><p class="eyebrow">A little play, every day</p><h1>Your daily lineup.</h1><p class="view-copy">Your games, your scores, your circle.</p></div>
+            <label class="date-control">Viewing date<input id="playDate" type="date" /></label>
           </div>
-          <label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Name of a game" /></label>
+          <div class="metrics home-metrics" aria-label="Your progress">
+            <div><strong id="playedMetric">0</strong><span>scores this day</span></div>
+            <div><strong id="streakMetric">0</strong><span>day streak</span></div>
+            <div><strong id="totalSolvesMetric">0</strong><span>total results</span></div>
+            <span id="solvedMetric" hidden>0</span>
+          </div>
+          <div class="home-columns">
+            <div class="home-main">
+              <section class="panel home-games"><div class="section-head compact"><div><h2>Your games</h2><p class="field-help" id="quickGamesHint">Pin your favorites to keep them here.</p></div><a class="text-link" href="#games">Browse all →</a></div><div class="dashboard-strip" id="quickGames" aria-label="Your games"></div></section>
+              <section class="panel"><div class="section-head compact"><h2>Your scores</h2><a class="text-link" href="#import">Add score →</a></div><div id="homeScores" class="home-score-list"></div></section>
+            </div>
+            <div class="home-side">
+              <section class="panel home-ranking"><div class="section-head compact"><h2>Overall leaderboard</h2></div><p class="field-help" id="homeRankingDate"></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
+              <section class="panel activity-card"><h2>Keep it going</h2><p class="field-help">Your recent play history</p><div class="progress-days" id="progressDays" aria-label="Recent play history"></div></section>
+            </div>
+          </div>
+        </section>
+
+        <section class="app-view catalog-view" id="games" data-view="games" aria-label="Games" hidden>
+          <div class="view-head"><div><p class="eyebrow">Find your next daily</p><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><a class="ghost-button" href="#import">Add a score</a></div>
+          <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
           <div class="game-list" id="gameList"></div>
-        </aside>
+        </section>
 
-        <section class="panel tracker-panel" id="today">
-          <div class="section-head">
+        <section class="app-view game-view" id="game" data-view="game" aria-label="Game details" hidden>
+          <a class="text-link back-link" href="#games">← All games</a>
+          <div class="view-head"><div><p class="eyebrow" id="gameDateLabel">Your daily game</p><h1 id="activeGameTitle">Wordle</h1></div><div class="view-actions"><a class="ghost-button" id="officialLink" href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener">Play official ↗</a><a class="primary-button" href="#import">Add score</a></div></div>
+          <div class="panel game-detail-card">
+            <div class="current-result" id="currentResult"></div>
+            <div class="game-meta-row"><span class="pill" id="friendCompletion">0 friends done</span><span class="pill" id="privacyState">Answers hidden</span><button type="button" class="text-link" id="viewGameLeaderboard">View leaderboard →</button></div>
+            <details class="scoring-details"><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p></details>
+            <div class="solvry-game" id="solvryGame" hidden></div><div class="letter-board" id="letterBoard" hidden></div>
+          </div>
+          <details class="game-answers" id="gameAnswers"><summary>Answers &amp; notes</summary>
+        <section class="panel answer-panel" id="answers">
+          <div class="section-head compact">
             <div>
-              <p class="eyebrow">Today’s tally</p>
-              <h1 id="activeGameTitle">Wordle</h1>
-              <p class="score-hint" id="scoreHint">Fewest guesses wins.</p>
+              <p class="eyebrow">Spoiler-safe</p>
+              <h2>Answers and reactions</h2>
             </div>
-            <div class="status-stack">
-              <span class="pill" id="friendCompletion">0 friends done</span>
-              <span class="pill accent" id="privacyState">Answers hidden</span>
-              <a class="official-link" id="officialLink" href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener">Play official</a>
+            <button class="ghost-button" id="copyButton" type="button">Copy recap</button>
+          </div>
+          <div class="answer-feed" id="answerFeed"></div>
+        </section>
+          </details>
+        </section>
+
+        <section class="app-view score-view panel" id="scoreView" data-view="import" aria-label="Add score" hidden>
+          <div class="import-surface" id="import">
+            <div>
+              <p class="eyebrow">From your daily games</p>
+              <h1>Add a score</h1><p class="view-copy">Paste your result. We’ll find the game and read the score.</p>
+            </div>
+            <div class="score-tabs" role="tablist" aria-label="Add score method">
+              <button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button>
+              <button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button>
+            </div>
+            <div id="pastePanel" class="paste-panel" role="tabpanel" aria-labelledby="pasteTab">
+            <div class="import-input-head">
+              <label for="shareTextInput">Your copied result</label>
+              <button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button>
+            </div>
+            <textarea id="shareTextInput" class="share-input" rows="4" aria-describedby="importStatus" placeholder="Paste your game's shared result here" spellcheck="false"></textarea>
+            <label class="import-date">
+              Played on
+              <input id="importDate" type="date" required />
+            </label>
+            <div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
+            <div class="share-preview" id="sharePreview" hidden></div>
+            <div class="import-actions">
+              <button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button>
+              <button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button>
+            </div>
+            <details class="import-help">
+              <summary>Supported games &amp; sample results</summary>
+              <label>Game<select id="importExampleGame">
+                <option value="wordle">Wordle</option>
+                <option value="connections">Connections</option>
+                <option value="strands">Strands</option>
+                <option value="mini-crossword">Mini Crossword</option>
+                <option value="spelling-bee">Spelling Bee</option>
+                <option value="krillion">Krillion</option>
+              </select></label>
+              <pre id="importExampleText" class="share-grid"></pre>
+              <a id="importExampleLink" target="_blank" rel="noopener">Open game</a>
+            </details>
             </div>
           </div>
 
-          <div class="dashboard-strip" id="quickGames" aria-label="Pinned games"></div>
-
-          <div class="play-surface" aria-live="polite">
-            <div class="current-result" id="currentResult"></div>
-            <div class="solvry-game" id="solvryGame" hidden></div>
-            <div class="letter-board" id="letterBoard" aria-hidden="true" hidden></div>
             <div class="manual-entry" id="manualEntry" role="tabpanel" aria-labelledby="manualTab" hidden>
             <form class="entry-form" id="entryForm">
               <div class="manual-grid">
@@ -147,78 +210,11 @@ let html = #"""
               <div class="save-status" id="saveStatus" role="status"></div>
             </form>
             </div>
-          </div>
-
-          <div class="import-surface" id="import">
-            <div>
-              <p class="eyebrow">From your daily games</p>
-              <h2>Add a score</h2>
-            </div>
-            <div class="score-tabs" role="tablist" aria-label="Add score method">
-              <button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button>
-              <button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button>
-            </div>
-            <div id="pastePanel" class="paste-panel" role="tabpanel" aria-labelledby="pasteTab">
-            <div class="import-input-head">
-              <label for="shareTextInput">Your copied result</label>
-              <button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button>
-            </div>
-            <textarea id="shareTextInput" class="share-input" rows="4" aria-describedby="importStatus" placeholder="Paste your game's shared result here" spellcheck="false"></textarea>
-            <label class="import-date">
-              Played on
-              <input id="importDate" type="date" required />
-            </label>
-            <div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
-            <div class="share-preview" id="sharePreview" hidden></div>
-            <div class="import-actions">
-              <button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button>
-              <button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button>
-            </div>
-            <details class="import-help">
-              <summary>Supported games &amp; sample results</summary>
-              <label>Game<select id="importExampleGame">
-                <option value="wordle">Wordle</option>
-                <option value="connections">Connections</option>
-                <option value="strands">Strands</option>
-                <option value="mini-crossword">Mini Crossword</option>
-                <option value="spelling-bee">Spelling Bee</option>
-                <option value="krillion">Krillion</option>
-              </select></label>
-              <pre id="importExampleText" class="share-grid"></pre>
-              <a id="importExampleLink" target="_blank" rel="noopener">Open game</a>
-            </details>
-            </div>
-          </div>
-
-          <div class="metrics" aria-label="Summary">
-            <div>
-              <strong id="playedMetric">0</strong>
-              <span>played today</span>
-            </div>
-            <div>
-              <strong id="solvedMetric">0</strong>
-              <span>completed today</span>
-            </div>
-            <div>
-              <strong id="streakMetric">0</strong>
-              <span>day streak</span>
-            </div>
-            <div>
-              <strong id="totalSolvesMetric">0</strong>
-              <span>total solves</span>
-            </div>
-          </div>
-          <div class="progress-days" id="progressDays" aria-label="Recent play history"></div>
+          <div id="scoreNextSteps" class="score-next-steps" hidden><a href="#today" class="text-link">Back to overview →</a><a href="#leaderboard" class="text-link">View leaderboard →</a></div>
         </section>
 
-        <section class="panel social-panel" id="friends">
-          <div class="section-head compact">
-            <div>
-              <p class="eyebrow">Your circle</p>
-              <h2>Friends &amp; scores</h2>
-            </div>
-            <button class="ghost-button compact-button" id="refreshFriendsButton" type="button">Refresh</button>
-          </div>
+        <section class="app-view leaderboard-view panel" id="leaderboard" data-view="leaderboard" aria-label="Leaderboard" hidden>
+          <div class="view-head"><div><p class="eyebrow">A little friendly competition</p><h1>Leaderboard</h1><p class="view-copy">Compare your daily results with friends.</p></div><a class="text-link" href="#friends">Manage friends →</a></div>
           <div class="score-tabs" role="tablist" aria-label="Leaderboard view">
             <button id="overallTab" role="tab" aria-selected="true" aria-controls="overallBoard" type="button">Overall</button>
             <button id="gameBoardTab" role="tab" aria-selected="false" aria-controls="gameBoard" tabindex="-1" type="button">Per game</button>
@@ -248,6 +244,10 @@ let html = #"""
               <div class="leaderboard" id="gameLeaderboard"></div>
             </section>
           </div>
+        </section>
+
+        <section class="app-view friends-view panel" id="friends" data-view="friends" aria-label="Friends" hidden>
+          <div class="view-head"><div><p class="eyebrow">Better together</p><h1>Friends</h1><p class="view-copy">Build your daily game circle.</p></div><button class="ghost-button compact-button" id="refreshFriendsButton" type="button">Refresh scores</button></div>
           <section class="friends-section" aria-labelledby="friendsTitle">
           <div class="scoreboard-head"><h3 id="friendsTitle">Friends</h3><span id="friendsCount"></span></div>
           <div class="friend-sync" id="friendSync"></div>
@@ -275,19 +275,7 @@ let html = #"""
           </form>
           </details>
           <p id="friendStatus" class="friend-status" role="status"></p>
-          </section>
-        </section>
-
-        <section class="panel answer-panel" id="answers">
-          <div class="section-head compact">
-            <div>
-              <p class="eyebrow">Spoiler-safe</p>
-              <h2>Answers and reactions</h2>
-            </div>
-            <button class="ghost-button" id="copyButton" type="button">Copy recap</button>
-          </div>
-          <div class="answer-feed" id="answerFeed"></div>
-        </section>
+          </section>        </section>
       </main>
 
       <dialog class="modal" id="gameDialog">
@@ -337,11 +325,11 @@ let html = #"""
             <span class="provider-mark google">G</span>
             <span>Continue with Google</span>
           </button>
-          <p class="account-note" id="accountStatus">Connect Firebase web config to enable real Google and Apple sign-in.</p>
+          <p class="account-note" id="accountStatus">Online sign-in isn’t available yet. You can keep tracking scores on this device.</p>
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=19" type="module"></script>
+    <script src="app.js?v=20" type="module"></script>
   </body>
 </html>
 """#
@@ -3104,6 +3092,223 @@ body.solvry-holes-focus .daily-golf[data-shot-phase="scouting"] .meter-label {
     padding-inline: 2px;
   }
 }
+/* Focused views: overview, catalog, rankings, friends, and score entry. */
+body { background: radial-gradient(ellipse at 15% 0%, #e7f3ea 0, transparent 42%), #f7f6ef; }
+html { scroll-behavior: auto; }
+.topbar { grid-template-columns: minmax(150px, 1fr) auto minmax(180px, 1fr); gap: 16px; padding: 14px max(24px, calc((100vw - 1120px) / 2)); background: rgba(255,254,250,.96); backdrop-filter: blur(12px); }
+.brand strong { font-size: 24px; }
+.brand small { font-size: 11px; }
+.brand-mark { width: 40px; height: 40px; border-radius: 11px; }
+.topnav { padding: 4px; gap: 2px; background: #f3f3ec; border: 0; border-radius: 12px; }
+.topnav a { padding: 10px 13px; border-radius: 9px; font-size: 14px; white-space: nowrap; }
+.topnav a.active { background: #fff; color: #086448; box-shadow: 0 1px 5px #163e2517; }
+.top-actions { align-items: center; flex-direction: row; gap: 8px; }
+.account-controls { display: flex; align-items: center; }
+.account-name { max-width: 110px; overflow-wrap: anywhere; }
+.account-name small { display: none; }
+.primary-button, .ghost-button, .official-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 11px 17px; border-radius: 10px; font-size: 14px; line-height: 1.3; text-align: center; }
+.primary-button { background: #096c50; color: #fff; border-color: #096c50; }
+.primary-button:hover { background: #064e3b; }
+.ghost-button { background: #fffefa; border-color: #d9dfd7; }
+.nav-add-score { white-space: nowrap; }
+.nav-add-score[aria-current="page"] { box-shadow: 0 0 0 3px #b9e4ce; }
+.workspace { display: block; max-width: 1120px; padding: 32px 24px 64px; }
+.app-view { min-width: 0; margin: 0 auto; }
+.app-view h1 { font-size: clamp(30px, 4vw, 44px); line-height: 1.08; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.app-view h2 { font-size: 22px; line-height: 1.2; }
+.app-view h3 { font-size: 18px; }
+.view-head { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 26px; }
+.view-head > div { min-width: 0; }
+.view-copy { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.55; font-weight: 400; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .08em; margin-bottom: 8px; }
+.panel { padding: 24px; border-radius: 16px; background: #fffefa; box-shadow: 0 3px 12px #1d443005; }
+.section-head.compact { flex-direction: row; align-items: center; margin-bottom: 18px; }
+.field-help { color: var(--muted); font-size: 13px; line-height: 1.5; font-weight: 400; margin: 6px 0 0; }
+.text-link { padding: 4px 0; background: none; border: 0; color: #07664d; font: inherit; font-size: 14px; font-weight: 650; text-decoration: none; white-space: nowrap; }
+.text-link:hover { text-decoration: underline; }
+.block-link { display: block; margin-top: 20px; }
+.back-link { display: inline-block; margin-bottom: 24px; }
+.date-control { text-transform: none; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.date-control input { width: 164px; min-height: 42px; padding: 9px 10px; font-size: 14px; }
+.home-metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin: 0 0 24px; }
+.home-metrics > div { padding: 18px 22px; border-radius: 14px; border: 1px solid #d9e4d9; background: #e1f1e8; }
+.home-metrics > div:nth-child(2) { background: #fff0bc; border-color: #eddeaa; }
+.home-metrics > div:nth-child(3) { background: #eeebfc; border-color: #e1dcf1; }
+.home-metrics > div::before { display: none; }
+.home-metrics strong { font-family: var(--display); font-size: 34px; line-height: 1; }
+.home-metrics span { margin-top: 8px; font-size: 12px; text-transform: none; font-weight: 600; }
+.home-columns { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.home-main, .home-side { display: grid; gap: 22px; min-width: 0; }
+.dashboard-strip { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 0; }
+.quick-game { display: grid; grid-template-columns: 40px minmax(0,1fr); align-items: center; gap: 12px; padding: 14px 12px; min-height: 86px; border-radius: 12px; background: #f5f8f2; border: 1px solid #e0e5dc; }
+.quick-game:nth-child(2n) { background: #fff7de; }
+.quick-game:nth-child(3n) { background: #f2effc; }
+.quick-game > span { min-width: 0; }
+.quick-game strong { font-size: 14px; white-space: normal; line-height: 1.3; }
+.quick-game span span { color: var(--muted); font-size: 12px; line-height: 1.4; font-weight: 400; margin-top: 4px; }
+.quick-game .game-logo { width: 40px; height: 40px; border-radius: 9px; }
+.home-score-list { display: grid; gap: 0; }
+.home-score-row { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 14px 0; border: 0; border-bottom: 1px solid #eceee5; background: transparent; text-align: left; }
+.home-score-row:last-child { border-bottom: 0; }
+.home-score-row .game-logo { width: 36px; height: 36px; }
+.home-score-row strong, .home-score-row small { display: block; }
+.home-score-row strong { font-size: 14px; }
+.home-score-row small { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.home-score-value { color: #096c50; font-size: 13px; font-weight: 700; max-width: 145px; text-align: right; overflow-wrap: anywhere; }
+.home-score-value span { margin-left: 8px; }
+.home-empty { text-align: center; padding: 14px 16px 8px; }
+.empty-symbol { display: grid; place-items: center; margin: 0 auto 12px; width: 42px; height: 42px; background: #e5f1e7; color: #096c50; border-radius: 50%; font-size: 24px; }
+.home-empty p, .ranking-empty p { color: var(--muted); font-size: 14px; line-height: 1.6; font-weight: 400; }
+.home-empty .primary-button { margin-top: 6px; }
+.ranking-empty { padding: 22px 4px 4px; text-align: center; }
+.ranking-empty > span { font-size: 32px; }
+.home-ranking .leaderboard { margin-top: 16px; }
+.home-ranking .rank-row { grid-template-columns: 28px minmax(0,1fr) auto; gap: 9px; padding: 12px 9px; }
+.home-ranking .rank { width: 28px; height: 28px; font-size: 13px; border-radius: 7px; }
+.home-ranking .rank-row strong, .home-ranking .points { font-size: 13px; }
+.home-ranking .rank-row small { font-size: 10px; }
+.activity-card h2 { font-size: 20px; }
+.progress-days { margin-top: 16px; gap: 5px; }
+.progress-day { padding: 10px 3px; border-radius: 8px; }
+.progress-day strong, .progress-day span { font-size: 10px; }
+.catalog-controls { display: flex; align-items: end; gap: 12px; margin-bottom: 24px; }
+.catalog-search { max-width: 420px; flex: 1; margin: 0; text-transform: none; font-size: 13px; }
+.catalog-search input { min-height: 46px; font-size: 15px; }
+#pinnedFilter[aria-pressed="true"] { background: #e2f2e7; color: #075e43; border-color: #6ea48b; }
+.catalog-view .game-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.game-section-label { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; margin-top: 10px; padding: 4px 0; }
+.game-section-label strong { font-size: 12px; }
+.game-section-label span { font-size: 11px; font-weight: 400; text-transform: none; }
+.game-card { min-height: 94px; padding: 12px; border: 1px solid #dce3d9; border-radius: 13px; box-shadow: none; gap: 6px; grid-template-columns: minmax(0,1fr) 30px; }
+.game-select { grid-template-columns: 42px minmax(0,1fr) 12px; gap: 10px; min-width: 0; padding: 0; }
+.game-card .game-logo { width: 42px; height: 42px; border-radius: 10px; }
+.game-meta strong { white-space: normal; overflow: visible; text-overflow: clip; font-size: 14px; line-height: 1.3; }
+.game-meta > span { font-size: 12px; margin-top: 4px; font-weight: 400; }
+.game-score { font-size: 12px; }
+.pin-button { width: 30px; height: 44px; padding: 6px; }
+.game-view { max-width: 820px; }
+.view-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.game-detail-card .current-result { padding: 0; border: 0; border-radius: 0; background: transparent; grid-template-columns: 48px minmax(0,1fr) auto; }
+.current-result strong { font-size: 17px; }
+.current-result span span { font-size: 13px; font-weight: 400; line-height: 1.5; }
+.game-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.pill { font-size: 11px; padding: 6px 9px; }
+.scoring-details { border-top: 1px solid #e2e6dc; margin-top: 20px; padding-top: 16px; }
+.scoring-details summary, .game-answers > summary { font-size: 14px; font-weight: 600; cursor: pointer; }
+.score-hint { margin-top: 10px; font-size: 14px; font-weight: 400; line-height: 1.6; }
+.game-answers { margin-top: 22px; }
+.game-answers > summary { padding: 14px 0; }
+.answer-panel { margin-top: 4px; }
+.answer-panel h2 { font-size: 20px; }
+.score-view { max-width: 720px; }
+.import-surface { margin: 0; padding: 0; border: 0; background: none; }
+.score-tabs { margin: 22px 0; padding: 4px; border-radius: 11px; }
+.score-tabs button { min-height: 44px; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+.import-input-head { margin-top: 0; }
+.share-input { min-height: 150px; font-size: 15px; font-weight: 400; }
+label { font-size: 13px; font-weight: 600; line-height: 1.5; }
+input, select, textarea { border-radius: 9px; padding: 11px 12px; font-size: 15px; }
+.import-date { margin-top: 16px; }
+.import-status { font-size: 14px; line-height: 1.5; }
+.import-help { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2e6dc; font-size: 13px; }
+.import-actions { margin-top: 16px; }
+.share-preview { margin-top: 14px; padding: 16px; }
+.import-warning { font-size: 13px; line-height: 1.5; font-weight: 400; }
+.score-next-steps { display: flex; justify-content: space-between; gap: 16px; padding-top: 22px; }
+.leaderboard-view { max-width: 880px; }
+.leaderboard-controls { grid-template-columns: 1fr 1fr; }
+.leaderboard-controls #leaderboardDates { display: none; }
+.leaderboard-summary { padding: 14px 16px; font-size: 14px; }
+.scoreboard-head h3 { font-size: 20px; }
+.rank-row { border-radius: 12px; padding: 16px; }
+.rank-row strong { font-size: 15px; }
+.rank-row small { font-size: 12px; line-height: 1.5; }
+.rank-row .points { font-size: 16px; }
+.friends-view { max-width: 760px; }
+.friends-section { border: 0; padding-top: 0; margin-top: 0; }
+.friends-section > .scoreboard-head h3 { display: none; }
+.friends-section > .scoreboard-head { justify-content: flex-end; }
+.friend-sync .sync-card { padding: 16px; background: #f3f7f0; border: 0; border-radius: 10px; }
+.friend-sync small { font-weight: 400; font-size: 13px; line-height: 1.6; }
+.friend-toolbar { margin: 16px 0; }
+.social-empty { padding: 20px 0; color: var(--muted); font-size: 14px; line-height: 1.6; font-weight: 400; grid-column: 1/-1; }
+.friend-person { padding: 14px 0; }
+.friend-person strong { font-size: 15px; }
+.add-friend-details { margin-top: 14px; }
+.app-notice { margin: 0 0 20px; border: 1px solid #e4c581; background: #fff2ce; border-radius: 10px; padding: 12px 16px; font-size: 14px; }
+.modal { max-width: min(520px, calc(100vw - 28px)); border-radius: 16px; }
+.modal-content { padding: 24px; }
+.modal-content h2 { font-size: 27px; }
+.icon-button { width: 40px; height: 40px; min-width: 40px; padding: 0; border-radius: 10px; }
+.account-copy { font-size: 15px; line-height: 1.6; font-weight: 400; }
+.provider-button { min-height: 56px; font-size: 16px; }
+.account-note { font-size: 13px; line-height: 1.5; font-weight: 400; }
+:focus-visible { outline: 3px solid #087958; outline-offset: 3px; }
+h1:focus { outline: none; }
+@media (max-width: 1000px) {
+  .topbar { grid-template-columns: auto 1fr auto; padding: 12px 20px; gap: 12px; }
+  .brand small { display: none; }
+  .topnav { justify-self: center; }
+  .topnav a { padding: 10px; font-size: 13px; }
+  .catalog-view .game-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .home-columns { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 16px; }
+  .home-main, .home-side { gap: 16px; }
+  .panel { padding: 20px; }
+}
+@media (max-width: 760px) {
+  .topbar { position: sticky; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 16px; }
+  .brand strong { font-size: 21px; }
+  .brand { gap: 8px; }
+  .brand-mark { width: 32px; height: 32px; font-size: 10px; }
+  .topnav { grid-column: 1/-1; grid-row: 2; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); justify-self: stretch; overflow: visible; }
+  .topnav a { text-align: center; padding: 10px 3px; font-size: 12px; }
+  .top-actions { flex-direction: row; justify-self: end; align-items: center; gap: 6px; }
+  .top-actions .primary-button, .top-actions .ghost-button { min-height: 38px; padding: 8px 10px; font-size: 12px; }
+  .workspace { padding: 24px 16px 40px; }
+  .view-head { flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+  .view-head .date-control { display: flex; align-items: center; gap: 10px; }
+  .view-copy { font-size: 14px; }
+  .home-columns { grid-template-columns: 1fr; }
+  .home-side { grid-template-columns: 1fr; }
+  .home-metrics { gap: 8px; }
+  .home-metrics > div { padding: 16px 10px; }
+  .home-metrics strong { font-size: 29px; }
+  .home-metrics span { font-size: 10px; }
+  .section-head.compact { gap: 10px; }
+  .section-head.compact h2 { font-size: 20px; }
+  .text-link { font-size: 12px; }
+  .panel { padding: 18px; }
+  .quick-game { gap: 8px; grid-template-columns: 32px minmax(0,1fr); padding: 12px 9px; }
+  .quick-game .game-logo { width: 32px; height: 32px; }
+  .quick-game strong { font-size: 12px; }
+  .quick-game span span { font-size: 11px; }
+  .catalog-view .game-list { grid-template-columns: 1fr; }
+  .game-card { min-height: 80px; }
+  .catalog-controls { gap: 8px; }
+  #pinnedFilter { padding: 11px 10px; font-size: 12px; }
+  .game-section-label { display: block; }
+  .game-section-label span { display: none; }
+  .game-view .view-actions { width: 100%; }
+  .view-actions > a { flex: 1; }
+  .game-detail-card .current-result { grid-template-columns: 40px minmax(0,1fr); }
+  .game-detail-card .current-result > .pill { grid-column: 2; justify-self: start; }
+  .game-detail-card .current-result .game-logo { width: 40px; height: 40px; }
+  .field-grid { grid-template-columns: 1fr; }
+  .score-tabs { margin: 18px 0; }
+  .score-tabs button { font-size: 13px; }
+  .share-input, input, select, textarea { font-size: 16px; }
+  .import-actions { grid-template-columns: 1fr; }
+  .leaderboard-controls { grid-template-columns: 1fr; }
+  .rank-row { grid-template-columns: 30px minmax(0,1fr) auto; padding: 12px 8px; gap: 10px; }
+  .rank-row .rank { width: 30px; height: 30px; }
+  .rank-row .points { max-width: 120px; overflow-wrap: anywhere; font-size: 13px; }
+  .modal-content { padding: 20px; }
+  .modal-content .section-head { flex-direction: row; align-items: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
+
 """#
 
 let appScript = #"""
@@ -3375,7 +3580,7 @@ elements.importDate.max = today;
 elements.manualDateInput.value = state.selectedDate;
 elements.manualDateInput.max = today;
 elements.importSurface.append(elements.manualEntry);
-elements.currentResult.closest(".play-surface").before(elements.importSurface);
+elements.playDate.max = today;
 renderImportExample();
 let scoreMethod = "paste";
 let manualFormKey = "";
@@ -3387,7 +3592,23 @@ let leaderboardView = "overall";
 let leaderboardDays = 1;
 let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
+let pinnedOnly = false;
 document.querySelector("#gameSearch").addEventListener("input", renderGameList);
+document.querySelector("#pinnedFilter").addEventListener("click", (event) => {
+  pinnedOnly = !pinnedOnly;
+  event.currentTarget.setAttribute("aria-pressed", String(pinnedOnly));
+  renderGameList();
+});
+document.querySelector("#viewGameLeaderboard").addEventListener("click", () => {
+  leaderboardGameId = state.activeGameId;
+  leaderboardView = "game";
+  renderScoreboards(getActiveGame());
+  navigateTo("leaderboard");
+});
+document.querySelector("#homeScores").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-home-game]");
+  if (button) openGame(button.dataset.homeGame);
+});
 elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
 
 function wireSocialTabs(tabs, select) {
@@ -3470,13 +3691,20 @@ elements.friendRoster.addEventListener("click", (event) => {
   });
 });
 
-window.addEventListener("hashchange", renderNav);
+window.addEventListener("hashchange", () => {
+  renderNav();
+  window.scrollTo({ top: 0, behavior: "instant" });
+  const heading = document.querySelector(".app-view:not([hidden]) h1");
+  heading?.setAttribute("tabindex", "-1");
+  heading?.focus({ preventScroll: true });
+});
 
 elements.playDate.addEventListener("change", (event) => {
-  state.selectedDate = event.target.value || today;
+  if (!event.target.value || !event.target.validity.valid) { event.target.value = state.selectedDate; return; }
+  state.selectedDate = event.target.value;
   elements.importDate.value = state.selectedDate;
   elements.manualDateInput.value = state.selectedDate;
-  saveState();
+  try { saveState(); } catch { showAppNotice("This date couldn't be saved on your device."); }
   render();
 });
 
@@ -3555,6 +3783,7 @@ elements.gameForm.addEventListener("submit", (event) => {
   elements.gameDialog.close();
   render();
   setScoreMethod("manual");
+  navigateTo("import");
   (type === "complete" ? elements.resultInput : elements.scoreInput).focus();
 });
 
@@ -3632,15 +3861,6 @@ elements.importClearButton.addEventListener("click", () => {
   previewImport();
   elements.shareTextInput.focus();
 });
-elements.navLinks.find((link) => link.hash === "#import").addEventListener("click", () => {
-  if (gameSource(getActiveGame()) === "solvry") {
-    state.activeGameId = "wordle";
-    render();
-  }
-  elements.importSurface.scrollIntoView({ block: "start", behavior: "smooth" });
-  (scoreMethod === "manual" ? elements.manualGameInput : elements.shareTextInput).focus({ preventScroll: true });
-});
-
 elements.importPasteButton.addEventListener("click", () => {
   importShareText(elements.shareTextInput.value);
 });
@@ -3692,6 +3912,7 @@ function render(focusGolf = true) {
 
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
+  document.querySelector("#gameDateLabel").textContent = state.selectedDate;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
@@ -3711,6 +3932,7 @@ function render(focusGolf = true) {
   renderScoreboards(activeGame);
   renderFriendSync();
   renderAnswers();
+  renderHome();
   previewImport();
   if (focusGolf) focusHolesViewport(activeGame);
 }
@@ -3748,16 +3970,59 @@ function renderAccount() {
   }
 
   elements.accountControls.innerHTML = `
-    <button class="ghost-button compact-button" type="button" data-account-action="login">Log in</button>
-    <button class="primary-button compact-button" type="button" data-account-action="signup">Sign up</button>
+    <button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>
   `;
 }
 
+function currentView() {
+  const route = location.hash.slice(1) || "today";
+  if (route === "answers") return "game";
+  return ["today", "games", "game", "leaderboard", "friends", "import"].includes(route) ? route : "today";
+}
+
 function renderNav() {
-  const activeHash = window.location.hash || "#today";
+  const view = currentView();
+  document.querySelectorAll(".app-view").forEach((panel) => { panel.hidden = panel.dataset.view !== view; });
   elements.navLinks.forEach((link) => {
-    link.classList.toggle("active", link.getAttribute("href") === activeHash);
+    const selected = link.hash === `#${view === "game" ? "games" : view}`;
+    link.classList.toggle("active", selected);
+    if (selected) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
   });
+  const addScore = document.querySelector(".nav-add-score");
+  if (view === "import") addScore.setAttribute("aria-current", "page");
+  else addScore.removeAttribute("aria-current");
+  if (location.hash === "#answers") document.querySelector("#gameAnswers").open = true;
+}
+
+function navigateTo(view) {
+  if (location.hash === `#${view}`) renderNav();
+  else location.hash = view;
+}
+
+function openGame(gameId) {
+  state.activeGameId = gameId;
+  try { saveState(); } catch { showAppNotice("Your game selection couldn't be saved. Your scores are still here."); }
+  render();
+  navigateTo("game");
+}
+
+function showAppNotice(message) {
+  const notice = document.querySelector("#appNotice");
+  notice.textContent = message;
+  notice.hidden = !message;
+}
+
+function renderHome() {
+  const games = visibleGames().filter((game) => state.entries[state.selectedDate]?.[game.id]?.you);
+  document.querySelector("#homeScores").innerHTML = games.length ? games.map((game) => {
+    const entry = state.entries[state.selectedDate][game.id].you;
+    return `<button type="button" class="home-score-row" data-home-game="${escapeHtml(game.id)}">${gameLogo(game)}<span><strong>${escapeHtml(game.name)}</strong><small>${entry.source === "manual" ? "Manual" : "Imported"} · ${escapeHtml(entry.result)}</small></span><span class="home-score-value">${escapeHtml(entry.score)} <span aria-hidden="true">→</span></span></button>`;
+  }).join("") : '<div class="home-empty"><span class="empty-symbol" aria-hidden="true">＋</span><h3>Your first score starts here.</h3><p>Play a daily game, copy the result, and bring it to Solvry.</p><a class="primary-button" href="#import">Add your first score</a></div>';
+  const rows = buildOverallLeaderboard();
+  const ranked = rows.filter((row) => row.rank);
+  document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><span aria-hidden="true">🏆</span><p>A little friendly competition.<br>Add a score to join the board.</p></div>';
+  document.querySelector("#homeRankingDate").textContent = `${state.selectedDate} · Daily combined points`;
 }
 
 function openAccountDialog(mode) {
@@ -3821,14 +4086,14 @@ function updateAccountStatus(message = "") {
       ? "Google and Apple sign-in are connected. Scores, friends, and requests sync to Solvry Cloud."
       : cloudBackend.configured
         ? cloudBackend.error || "Connecting Solvry Cloud."
-        : "Real sign-in needs Firebase web config. Add window.SOLVRY_FIREBASE_CONFIG with Auth and Firestore enabled.");
+        : "Online sign-in isn’t available yet. Your scores are saved on this device.");
   elements.accountStatus.textContent = text;
   elements.accountStatus.classList.toggle("error", !!cloudBackend.error || (!cloudBackend.ready && !cloudBackend.configured));
 }
 
 async function signInWithProvider(providerName) {
   if (!cloudBackend.ready) {
-    updateAccountStatus("Real sign-in is not configured yet. Add Firebase web config to enable Google and Apple accounts.");
+    updateAccountStatus("Online sign-in isn’t available yet. You can keep tracking scores on this device.");
     return;
   }
 
@@ -4193,6 +4458,7 @@ function refreshSocialViews() {
   renderAnswers();
   renderQuickGames();
   renderGameList();
+  renderHome();
   const count = visibleFriends().filter((friend) => state.entries[state.selectedDate]?.[state.activeGameId]?.[friend.id]).length;
   elements.friendCompletion.textContent = `${count} friend${count === 1 ? "" : "s"} done`;
 }
@@ -5943,13 +6209,13 @@ function clamp(value, minimum, maximum) {
 
 function renderQuickGames() {
   const pinned = visibleGames().filter((game) => state.pinnedGameIds.includes(game.id));
-  const games = [...pinned, ...visibleGames().filter((game) => !state.pinnedGameIds.includes(game.id))].slice(0, 4);
+  const games = (pinned.length ? pinned : visibleGames()).slice(0, 6);
+  document.querySelector("#quickGamesHint").textContent = pinned.length ? "Your pinned games, ready when you are." : "A few to get you started. Pin favorites in Games.";
   elements.quickGames.innerHTML = games
     .map((game) => {
       const entries = getGameEntries(state.selectedDate, game.id);
       const mine = entries.you;
-      const friendCount = visibleFriends().filter((friend) => entries[friend.id]).length;
-      const status = mine ? mine.score || defaultScoreLabel(mine.result) : `${friendCount} friend${friendCount === 1 ? "" : "s"}`;
+      const status = mine ? mine.score || defaultScoreLabel(mine.result) : "Add your result";
       return `
         <button class="quick-game${game.id === state.activeGameId ? " active" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
           ${gameLogo(game)}
@@ -5964,9 +6230,7 @@ function renderQuickGames() {
 
   elements.quickGames.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
-      state.activeGameId = button.dataset.gameId;
-      saveState();
-      render();
+      openGame(button.dataset.gameId);
     });
   });
 }
@@ -5979,7 +6243,7 @@ function renderGameList() {
     { source: "custom", title: "Your games", detail: "Manual scores" },
     { source: "solvry", title: "Solvry games", detail: "In-app versions" }
   ].forEach((section) => {
-    const games = getSortedGames().filter((game) => gameSource(game) === section.source && game.name.toLowerCase().includes(search));
+    const games = getSortedGames().filter((game) => gameSource(game) === section.source && game.name.toLowerCase().includes(search) && (!pinnedOnly || state.pinnedGameIds.includes(game.id)));
     if (!games.length) return;
     const heading = document.createElement("div");
     heading.className = "game-section-label";
@@ -5989,7 +6253,7 @@ function renderGameList() {
       elements.gameList.append(renderGameCard(game));
     });
   });
-  if (!elements.gameList.children.length) elements.gameList.innerHTML = '<p class="social-empty">No matching games. Use Other game under Enter manually to track a new one.</p>';
+  if (!elements.gameList.children.length) elements.gameList.innerHTML = `<p class="social-empty">${pinnedOnly ? "No pinned games match. Turn off Pinned only to browse the catalog." : "No matching games. Try another name, or add a custom game under Enter manually."}</p>`;
 }
 
 function renderGameCard(game) {
@@ -6005,16 +6269,14 @@ function renderGameCard(game) {
           <strong>${escapeHtml(game.name)}</strong>
           <span>${scoreStyleLabel(game)}</span>
         </span>
-        <span class="game-score">${playedCount}</span>
+        <span class="game-score" aria-label="${entries.you ? "Result saved" : "No result yet"}">${entries.you ? "✓" : ""}</span>
       </button>
       <button class="pin-button${isPinned ? " active" : ""}" type="button" aria-pressed="${isPinned}" title="${isPinned ? "Unpin" : "Pin"} ${escapeHtml(game.name)}" aria-label="${isPinned ? "Unpin" : "Pin"} ${escapeHtml(game.name)}">
         ${pinIcon(isPinned)}
       </button>
     `;
     card.querySelector(".game-select").addEventListener("click", () => {
-      state.activeGameId = game.id;
-      saveState();
-      render();
+      openGame(game.id);
     });
     card.querySelector(".pin-button").addEventListener("click", () => {
       togglePin(game.id);
@@ -6042,12 +6304,16 @@ function sourceOrder(source) {
 }
 
 function togglePin(gameId) {
+  const previousPins = [...state.pinnedGameIds];
   if (state.pinnedGameIds.includes(gameId)) {
     state.pinnedGameIds = state.pinnedGameIds.filter((id) => id !== gameId);
   } else {
     state.pinnedGameIds = [...state.pinnedGameIds, gameId];
   }
-  saveState();
+  try { saveState(); } catch {
+    state.pinnedGameIds = previousPins;
+    showAppNotice("Couldn't save your pins. Try again when device storage is available.");
+  }
   render();
 }
 
@@ -6291,6 +6557,7 @@ function saveManualScore() {
   render();
   elements.saveStatus.className = "save-status success";
   elements.saveStatus.textContent = `${game.name} saved for ${date}. Manual score added to the leaderboard.`;
+  document.querySelector("#scoreNextSteps").hidden = false;
 }
 
 function renderMetrics() {
@@ -6309,7 +6576,7 @@ function renderMetrics() {
   elements.playedMetric.textContent = played;
   elements.solvedMetric.textContent = completed;
   elements.streakMetric.textContent = calculateStreak();
-  elements.totalSolvesMetric.textContent = calculateTotalSolves();
+  elements.totalSolvesMetric.textContent = Object.values(state.entries).reduce((count, day) => count + visibleGames().filter((game) => day[game.id]?.you).length, 0);
   renderProgressDays();
 }
 
@@ -6320,7 +6587,7 @@ function renderProgressDays() {
   for (let offset = -4; offset <= 0; offset += 1) {
     const date = new Date(baseDate);
     date.setDate(baseDate.getDate() + offset);
-    const key = date.toISOString().slice(0, 10);
+    const key = localDateKey(date);
     const played = hasUserPlayedDate(key);
     const isToday = key === today;
     days.push(`
@@ -6653,6 +6920,7 @@ function previewImport(showEmptyError = false) {
   elements.importPasteButton.textContent = "Save score";
   elements.sharePreview.hidden = true;
   elements.sharePreview.innerHTML = "";
+  document.querySelector("#scoreNextSteps").hidden = true;
   elements.importClearButton.hidden = !text;
   elements.importClearButton.textContent = "Clear";
   elements.shareTextInput.removeAttribute("aria-invalid");
@@ -6675,6 +6943,7 @@ function previewImport(showEmptyError = false) {
   const duplicate = sameImportedScore(existing, parsed);
   renderSharePreview(parsed, game, date, existing, duplicate);
   if (duplicate) {
+    document.querySelector("#scoreNextSteps").hidden = false;
     setImportStatus(`Already saved for ${date}. No duplicate added.`, "success");
     elements.importPasteButton.textContent = "Already saved";
     elements.importClearButton.textContent = "Add another score";
@@ -7135,7 +7404,7 @@ function calculateStreak() {
   let cursor = new Date(`${today}T00:00:00`);
 
   for (const date of dates) {
-    const expected = cursor.toISOString().slice(0, 10);
+    const expected = localDateKey(cursor);
     if (date === expected && hasUserPlayedDate(date)) {
       streak += 1;
       cursor.setDate(cursor.getDate() - 1);
@@ -7198,7 +7467,7 @@ function loadState() {
     const nextState = saved ? mergeState(starterState, saved) : structuredClone(starterState);
     // Viewing an old date is a session choice, not the default for the next visit.
     nextState.selectedDate = today;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState)); } catch { /* Keep the loaded history in memory. */ }
     return nextState;
   } catch {
     return structuredClone(starterState);

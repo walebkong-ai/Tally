@@ -64,3 +64,40 @@ test('today uses local calendar parts, including after UTC midnight',()=>{
   const c=setup();
   assert.equal(c.localDateKey({getFullYear:()=>2026,getMonth:()=>10,getDate:()=>3}),'2026-11-03');
 });
+
+test('loaded history survives a storage write failure during startup',()=>{
+  const c=setup(); const history={'2026-11-02':{wordle:{you:{score:'3/6'}}}};
+  Object.assign(c,{today:'2026-11-03',STORAGE_KEY:'state',LEGACY_STORAGE_KEY:'legacy',starterState:{entries:{}},structuredClone,mergeState:(_,saved)=>saved,localStorage:{getItem:()=>JSON.stringify({entries:history}),setItem:()=>{throw Error('quota');}}});
+  assert.equal(c.loadState().entries['2026-11-02'].wordle.you.score,'3/6');
+});
+function addFunction(c,name) {
+  const tail=app.slice(app.indexOf(`function ${name}(`));
+  const next=/\n(?:async )?function \w+\(/.exec(tail);
+  vm.runInContext(tail.slice(0,next.index),c);
+}
+test('pin failure rolls back changes and reports a recoverable error',()=>{
+  const c=setup();c.state.pinnedGameIds=['wordle'];let message='';
+  Object.assign(c,{saveState:()=>{throw Error('quota');},render:()=>{},showAppNotice:s=>message=s});
+  addFunction(c,'togglePin');c.togglePin('globle');
+  assert.deepEqual(Array.from(c.state.pinnedGameIds),['wordle']);
+  assert.match(message,/Couldn't save your pins/);
+});
+test('routes cover each task, retain old answer links, and recover unknown links',()=>{
+  const c=setup();c.location={hash:''};addFunction(c,'currentView');
+  for(const view of ['today','games','game','import','leaderboard','friends']) {
+    c.location.hash='#'+view;assert.equal(c.currentView(),view);
+  }
+  c.location.hash='#answers';assert.equal(c.currentView(),'game');
+  c.location.hash='#unknown';assert.equal(c.currentView(),'today');
+});
+test('streak and history preserve local dates east of UTC',()=>{
+  const original=process.env.TZ;process.env.TZ='Asia/Tokyo';
+  try {
+    const c=setup();Object.assign(c,{Date,today:'2026-11-03',hasUserPlayedDate:d=>['2026-11-02','2026-11-03'].includes(d),escapeHtml:s=>s,shortWeekday:d=>String(d.getDate())});
+    c.state.entries={'2026-11-02':{},'2026-11-03':{}};c.elements.progressDays={};
+    addFunction(c,'calculateStreak');addFunction(c,'renderProgressDays');
+    assert.equal(c.calculateStreak(),2);c.renderProgressDays();
+    assert.equal((c.elements.progressDays.innerHTML.match(/ done/g)||[]).length,2);
+    assert.match(c.elements.progressDays.innerHTML,/done today/);
+  } finally {if(original===undefined)delete process.env.TZ;else process.env.TZ=original;}
+});

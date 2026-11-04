@@ -2,6 +2,18 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Simplified navigation (2026-11-03)
+
+- **Today** opens with a compact game lineup, saved scores for the selected date, current streak, total saved results, and a daily overall leaderboard preview.
+- **Games** is a searchable catalog with readable names, saved-result checkmarks, pins, and a pinned-only filter. Pinning games personalizes the home lineup (up to six).
+- **Leaderboard** contains overall daily/weekly and per-game rankings. **Friends** contains friend management and requests.
+- **Add score** is always available in the header; paste and manual entry share a dedicated screen with links back to the overview after saving.
+- Individual game details contain the official play link, saved result, scoring explanation, and collapsed answers/notes. Existing `#import`, `#friends`, and `#answers` links remain supported.
+- Scores and pinned games retain the existing storage format. Loaded history survives storage write failures, failed pin saves roll back, and streak/history dates use local calendar days.
+- Online Google/Apple sign-in and friend sync still require Firebase setup. The account dialog describes device-only use without showing implementation instructions.
+
+Validation: Swift build, JavaScript syntax, parser/import/friends regression tests, and browser checks at 320, 390, 768, and 1366px. Checked all six views for overflow; exercised paste/manual save, overview updates, catalog search/pins, game-specific ranking navigation, local friend creation, and account dismissal. This pass does not resolve every parser/cloud issue in the earlier QA report.
+
 ## Universal leaderboard catalog (2026-11-03)
 
 Official imports now include the original six games plus Connections: Sports Edition, Daily Tens, Centumth, Globle, Flagcognito, Size It Up, Color (Dialed), BuzzFeed Daily Trivia, and separate Immaculate Grid boards for baseball, football, men's basketball, women's basketball, and hockey. Sporcle is excluded per the product decision. Search filters the catalog; pins still work.
@@ -40,9 +52,9 @@ The build writes the deployable site to `dist/`.
 - Logo-style game cards with pinned favorites
 - Per-game scoring rules and score hints
 - Individual game scoreboards plus a combined Solvry leaderboard
-- Streak, completed-today, and total-solves stats with a recent progress row
+- Selected-day score count, current streak, and total saved results with a recent progress row
 - Friendlier UI states for saved results, score examples, imports, and navigation
-- Colorful Concept C-style dashboard strip with Concept A-style editorial headings
+- Compact colorful overview and editorial headings with dedicated task-focused views
 - Firebase-ready login/sign-up flow with Google and Apple account options
 - Friend requests, friend leaderboards, and cloud-ready saved profiles/scores
 - Spoiler-safe answer sharing
