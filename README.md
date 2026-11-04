@@ -2,6 +2,18 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Solvry ribbon identity (2026-11-04)
+
+The supplied brand board guides the three-ribbon S, lowercase serif wordmark, and tagline: **Your games. Your scores. One place.** The SVGs are a vector interpretation of the raster reference; the wordmark is outlined from local Georgia Bold so it renders consistently without a font download.
+
+- Warm cream `#F5EEDB`: page background
+- Petrol blue `#276776`: logo, links, primary actions, and focus rings
+- Terracotta `#D46A50`: logo dot/ribbon and active navigation underline
+- Muted gold `#EACB82`: upper logo ribbon
+- Charcoal `#373B35`: text
+
+`Assets/Brand/` contains the full logo, reversed logo, monochrome logo, standalone mark, monochrome mark, and app/favicon icon. The Swift build copies them to `dist/assets/Brand/`. Reversed logos use cream lettering and belong on petrol backgrounds; the standalone icon has its own petrol background. Gold and terracotta are decorative accents, not small-text colors. Existing line icons and score workflows remain unchanged.
+
 ## Restrained visual system (2026-11-04)
 
 Warm neutral paper, dark text, and one evergreen accent replace the pastel cards, decorative gradients, and translucent navigation. Games use ruled rows with a locally rendered, consistent SVG line-icon family; stats and rankings use type and alignment instead of badges. Forms stay left-aligned at readable widths. Empty states describe the next action and preserve the distinction between device-only and online features. No fabricated scores or friends are introduced.
