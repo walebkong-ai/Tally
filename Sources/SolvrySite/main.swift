@@ -35,9 +35,9 @@ let html = #"""
       name="description"
       content="One leaderboard for your daily games. Paste results, track your progress, and compare scores with friends."
     />
-    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=24" />
+    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=25" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=24" />
+    <link rel="stylesheet" href="styles.css?v=25" />
   </head>
   <body>
     <div class="app" id="app">
@@ -91,6 +91,7 @@ let html = #"""
           <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><a class="ghost-button" href="#import">Add a score</a></div>
           <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
           <div class="game-list" id="gameList"></div>
+          <p class="catalog-attribution">Game names belong to their respective owners. Icons are Solvry illustrations; no affiliation or endorsement is implied.</p>
         </section>
 
         <section class="app-view game-view" id="game" data-view="game" aria-label="Game details" hidden>
@@ -326,7 +327,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=24" type="module"></script>
+    <script src="app.js?v=25" type="module"></script>
   </body>
 </html>
 """#
@@ -3153,7 +3154,7 @@ body { background: var(--paper); color: var(--ink); }
 .home-view .quick-game > span { min-width: 0; }
 .home-view .quick-game strong { font-size: 14px; line-height: 1.3; color: var(--ink); white-space: normal; font-weight: 600; }
 .home-view .quick-game span span { display: block; margin-top: 3px; font-size: 12px; font-weight: 400; color: var(--muted); }
-.game-logo, .game-logo[class], .quick-game .game-logo, .current-result .game-logo { display: inline-flex; width: 30px; height: 30px; padding: 3px; align-items: center; justify-content: center; border: 0; border-radius: 0; background: transparent; color: var(--petrol); box-shadow: none; }
+.game-logo, .game-logo[class], .quick-game .game-logo, .current-result .game-logo { display: inline-flex; width: 30px; height: 30px; padding: 3px; align-items: center; justify-content: center; border: 0; border-radius: 0; background: transparent; color: var(--game-ink, var(--petrol)); box-shadow: none; }
 .game-logo svg, .current-result .game-logo svg { width: 24px; height: 24px; }
 .home-score-list { display: grid; gap: 0; }
 .home-score-row { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 12px; min-height: 48px; padding: 8px 0; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
@@ -3190,6 +3191,11 @@ body { background: var(--paper); color: var(--ink); }
 .catalog-search { max-width: 420px; flex: 1; margin: 0; font-size: 13px; text-transform: none; }
 #pinnedFilter[aria-pressed="true"] { color: var(--green); border-color: var(--green); background: #e7ece4; }
 .catalog-view .game-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0 28px; }
+.catalog-view .game-logo { width: 46px; height: 46px; padding: 7px; border-radius: 10px; background: var(--game-tint, #e8ebed); }
+.catalog-view .game-logo svg { width: 32px; height: 32px; }
+.catalog-view .game-select { grid-template-columns: 46px minmax(0,1fr) 14px; gap: 12px; }
+.catalog-attribution { margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--line); max-width: 760px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+
 .game-section-label { grid-column: 1/-1; display: flex; align-items: baseline; gap: 12px; margin: 18px 0 4px; padding: 0 0 12px; border-bottom: 1px solid var(--line); }
 .game-section-label strong { font-size: 12px; }
 .game-section-label span { font-size: 12px; font-weight: 400; text-transform: none; }
@@ -6263,7 +6269,7 @@ function renderGameList() {
   elements.gameList.innerHTML = "";
   const search = document.querySelector("#gameSearch").value.trim().toLowerCase();
   [
-    { source: "official", title: "Official imports", detail: "Paste share results" },
+    { source: "official", title: "Supported games", detail: "Paste share results" },
     { source: "custom", title: "Your games", detail: "Manual scores" },
     { source: "solvry", title: "Solvry games", detail: "In-app versions" }
   ].forEach((section) => {
@@ -6341,26 +6347,38 @@ function togglePin(gameId) {
   render();
 }
 
-// One stroke-based icon family, rendered locally without an external dependency.
+// Original Solvry pictograms describe each game's subject; these are not publisher logos.
+// Keep names visible and use our own muted colors rather than recreating brand lockups.
 function gameLogo(game) {
-  const paths = {
-    wordle: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
-    connections: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-    strands: '<circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a4 4 0 0 1 0 8H9a4 4 0 0 0 0 8h8M17 18h-5"/>',
-    'mini-crossword': '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/><path d="M9 9h6v6H9z" fill="currentColor"/>',
-    'spelling-bee': '<path d="m12 2 8 5v10l-8 5-8-5V7zM4 7l8 5 8-5M12 12v10"/>',
-    krillion: '<path d="M12 3C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-12zM8 16h8"/>',
-    'daily-tens': '<path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/>',
-    centumth: '<path d="M5 21V13h4v8M10 21V8h4v13M15 21V3h4v18"/>',
-    globle: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
-    flagcognito: '<path d="M5 22V3c5-4 9 4 14 0v11c-5 4-9-4-14 0"/>',
-    'size-it-up': '<path d="m3 17 14-14 4 4L7 21zM7 13l2 2M11 9l2 2M15 5l2 2"/>',
-    color: '<path d="M12 3C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-12zM12 10v10"/>',
-    'buzzfeed-trivia': '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-1 1-2 1-2 3M12 17h.01"/>',
-    immaculate: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>'
+  const icons = {
+    wordle: ['leaf', '<rect x="4" y="4" width="18" height="20" rx="3"/><path d="m9 18 4-9 4 9m-6-3h4"/><path d="m20 25 3 3 6-7"/>'],
+    connections: ['plum', '<rect x="3" y="7" width="16" height="11" rx="5.5" transform="rotate(-30 11 12.5)"/><rect x="13" y="14" width="16" height="11" rx="5.5" transform="rotate(-30 21 19.5)"/><path d="m12 18 8-5"/>'],
+    'connections-sports': ['clay', '<path d="M4 13h12v10H9a5 5 0 0 1-5-5zm12 0 12-4v8l-12 6M9 13V9m-4 0L3 7m12 2 2-2"/><circle cx="10" cy="18" r="2"/>'],
+    strands: ['blue', '<path d="M7 7h14a5 5 0 0 1 0 10H11a5 5 0 0 0 0 10h10"/><circle cx="6" cy="7" r="3"/><circle cx="24" cy="27" r="3"/><path d="m10 13 3 4-3 4"/>'],
+    'mini-crossword': ['slate', '<rect x="3" y="4" width="20" height="23" rx="2"/><path d="M3 12h20M3 20h12M10 4v23M17 4v12"/><path d="m18 25 8-11 3 2-8 11-4 1z" fill="var(--game-tint)"/>'],
+    'spelling-bee': ['honey', '<ellipse cx="16" cy="19" rx="6" ry="9"/><path d="M11 16h10M10 21h12M16 28v2M13 11l-3-5m9 5 3-5"/><path d="M10 17C0 17 1 5 6 7c4 1 4 7 4 10m12 0c10 0 9-12 4-10-4 1-4 7-4 10"/>'],
+    krillion: ['clay', '<path d="M24 11c-1-5-10-6-15-2-6 5-5 14 2 17 5 2 11 0 12-5-4 3-9 1-9-3 0-3 4-4 7-3l3-4 5 1-3 5M23 8l4-5M21 7l-1-4M6 14l7 2M6 20l8-1M10 25l6-3"/><circle cx="19" cy="10" r="1" fill="currentColor" stroke="none"/>'],
+    'daily-tens': ['honey', '<rect x="5" y="4" width="22" height="25" rx="3"/><path d="M11 3v4m10-4v4M10 23h12"/><text x="16" y="19" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="currentColor" stroke="none">10</text>'],
+    centumth: ['plum', '<path d="M4 7h24M5 22h22M16 22v7m-4-3 4 4 4-4"/><text x="16" y="18" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor" stroke="none">100</text>'],
+    globle: ['blue', '<circle cx="14" cy="17" r="12"/><path d="m5 10 5 1 1 5-5 2 1 5m9 5-2-6 5-4 6 1"/><path d="M22 2a6 6 0 0 0-6 6c0 4 6 9 6 9s6-5 6-9a6 6 0 0 0-6-6z" fill="var(--game-tint)"/><circle cx="22" cy="8" r="2"/>'],
+    flagcognito: ['clay', '<path d="M7 29V4m0 1c6-5 11 5 18 0v13c-7 5-12-5-18 0"/><path d="M12 10h8m-8 4h4M3 29h8"/>'],
+    'size-it-up': ['blue', '<rect x="3" y="12" width="26" height="12" rx="2"/><path d="M8 12v6m5-6v4m6-4v6m5-6v4M4 6h24M7 3 4 6l3 3m18-6 3 3-3 3"/>'],
+    color: ['plum', '<rect x="5" y="5" width="11" height="23" rx="2" transform="rotate(-18 10 26)"/><rect x="11" y="4" width="11" height="24" rx="2" fill="var(--game-tint)"/><path d="M11 12h11m-11 7h11"/><rect x="18" y="8" width="10" height="20" rx="2" transform="rotate(18 23 26)" fill="var(--game-tint)"/><circle cx="17" cy="24" r="1" fill="currentColor" stroke="none"/>'],
+    'buzzfeed-trivia': ['clay', '<path d="M7 4h18a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H13l-6 4v-4H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><path d="M12 11a4 4 0 1 1 6 4c-2 1-2 2-2 3M16 22h.01"/>'],
+    'immaculate-baseball': ['leaf', '<circle cx="16" cy="16" r="12"/><path d="M8 7c8 4 8 14 0 18M24 7c-8 4-8 14 0 18M9 10l4-2m-2 8h4m-6 6 4 2M23 10l-4-2m2 8h-4m6 6-4 2"/>'],
+    'immaculate-football': ['clay', '<path d="M5 27C0 11 11 0 27 5c5 16-6 27-22 22zM9 23 23 9M12 16l4 4m0-8 4 4M4 18l10 10M18 4l10 10"/>'],
+    basketball: ['honey', '<circle cx="16" cy="16" r="12"/><path d="M4 16h24M16 4v24M7 7c12 3 12 15 0 18M25 7c-12 3-12 15 0 18"/>'],
+    'immaculate-hockey': ['blue', '<path d="m8 3 12 20h8v5H17L4 5"/><ellipse cx="7" cy="24" rx="5" ry="2"/><path d="M2 24v4c0 3 10 3 10 0v-4"/>']
   };
-  const drawing = paths[game.logo || game.id] || '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>';
-  return `<span class="game-logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${drawing}</svg></span>`;
+  const colors = {
+    leaf: ['#3f6a4b', '#e8efe4'], plum: ['#735370', '#eee6ee'],
+    blue: ['#326779', '#e3edf0'], slate: ['#505c65', '#e8ebed'],
+    honey: ['#85611f', '#f4e9c8'], clay: ['#9a503e', '#f3e5de']
+  };
+  const key = game.id.startsWith('immaculate-basketball-') ? 'basketball' : game.id;
+  const [tone, drawing] = icons[key] || icons[game.logo] || ['slate', '<rect x="5" y="3" width="22" height="26" rx="3"/><path d="M10 10h12M10 16h12M10 22h8"/>'];
+  const [ink, tint] = colors[tone];
+  return `<span class="game-logo" style="--game-ink:${ink};--game-tint:${tint}" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${drawing}</svg></span>`;
 }
 
 function pinIcon(isPinned) {

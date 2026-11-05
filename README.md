@@ -2,6 +2,12 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Original game illustrations (2026-11-05)
+
+The Games catalog uses locally drawn SVG pictograms, visible game names, and muted subject-based colors rather than publisher logo files. Each supported game has a distinct subject cue; Immaculate Grid editions use sport-specific illustrations. Basketball editions share the ball illustration and keep their full names visible. Other views reuse the compact pictograms for consistency.
+
+The catalog labels these as “Supported games” and includes a short independence notice. These design choices are not a claim of trademark clearance or publisher permission. No scoring, import, pinning, or saved-data logic changed.
+
 ## Solvry ribbon identity (2026-11-04)
 
 The supplied brand board guides the three-ribbon S, lowercase serif wordmark, and tagline: **Your games. Your scores. One place.** The SVGs are a vector interpretation of the raster reference; the wordmark is outlined from local Georgia Bold so it renders consistently without a font download.
