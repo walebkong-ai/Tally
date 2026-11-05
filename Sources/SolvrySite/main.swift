@@ -3314,8 +3314,9 @@ h1:focus { outline: none; }
   .home-view .quick-game .game-logo { width: 24px; height: 24px; padding: 0; }
   .home-empty { flex-wrap: wrap; }
   .catalog-view .game-list { grid-template-columns: 1fr; }
-  .catalog-controls { gap: 8px; }
-  #pinnedFilter { padding: 10px; font-size: 12px; }
+  .catalog-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .catalog-search { width: 100%; min-width: 0; }
+  #pinnedFilter { width: auto; padding: 10px; font-size: 12px; }
   .game-section-label span { display: none; }
   .view-actions { width: 100%; }
   .view-actions > a { flex: 1; }
