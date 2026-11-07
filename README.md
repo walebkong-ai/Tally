@@ -2,6 +2,16 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Personal and shared custom games (2026-11-06)
+
+Use **Games → Add a custom game**, or **Add score → Enter manually → Other game**. Set a name, optional HTTP(S) website, and scoring style (higher/lower score, time, guesses, mistakes, completion). The game starts personal and device-local. Personal definitions, scores, and pins are omitted from the friend-readable cloud document. All custom games are excluded from combined daily rankings; per-game rankings still follow their scoring rule.
+
+On a custom game's page, **Share game → Share & copy link** explicitly enables sharing with connected friends. The URL contains only a versioned game definition and a random stable ID, never scores or profile data. A recipient reviews and confirms before adding the same game. Duplicate links do not duplicate or overwrite games. A conflicting definition is rejected. **Keep personal** stops future score sharing after the next successful cloud sync, but cannot revoke copies of the game definition already received.
+
+Shared definitions/scores use the existing connected-friend backend when configured. Friends must join the same game link; loading friend scores never silently adds a custom game. Without configured sign-in, links can still transfer game setup, but scores remain device-local. The current Site access policy still applies to recipients; this feature does not change the site's audience. Unknown/unsafe URLs, oversized links and unsupported versions are rejected. Clipboard denial exposes a selectable link fallback.
+
+Validation: custom-game link, data-minimization and ranking regression tests plus separate creator/recipient browser sessions. Existing local input/button styling was preserved.
+
 ## Original game illustrations (2026-11-05)
 
 The Games catalog uses locally drawn SVG pictograms, visible game names, and muted subject-based colors rather than publisher logo files. Each supported game has a distinct subject cue; Immaculate Grid editions use sport-specific illustrations. Basketball editions share the ball illustration and keep their full names visible. Other views reuse the compact pictograms for consistency.

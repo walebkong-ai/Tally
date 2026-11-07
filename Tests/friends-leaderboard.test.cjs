@@ -223,3 +223,26 @@ test('Color Daily ranks independently of higher challenge scores and rejects wro
   assert.equal(rows.find(r=>r.id==='a').solvryPoints,0);
   assert.equal(rows.find(r=>r.id==='b').solvryPoints,0);
 });
+
+test('personal custom games and their scores never enter friend-readable cloud payloads', () => {
+  const c=setup();
+  c.state.games.push({id:'custom-private',source:'custom',type:'points',sharing:'personal'}, {id:'custom-shared',source:'custom',type:'points',sharing:'friends'});
+  c.state.pinnedGameIds=['custom-private','custom-shared','wordle'];
+  c.state.entries['2026-11-02']={wordle:{you:entry('2/6')},'custom-private':{you:entry('999')},'custom-shared':{you:entry('45')}};
+  const payload=c.serializeCloudState();
+  assert.equal(payload.entries['2026-11-02']['custom-private'],undefined);
+  assert.equal(payload.entries['2026-11-02']['custom-shared'].you.score,'45');
+  assert.deepEqual(plain(payload.customGames.map(g=>g.id)),['custom-shared']);
+  assert.ok(!payload.pinnedGameIds.includes('custom-private'));
+});
+
+test('custom scores rank per game but never influence overall standings', () => {
+  const c=setup();
+  const game={id:'custom-quiz',source:'custom',type:'points',sharing:'friends'};
+  c.state.games.push(game);
+  c.state.entries['2026-11-02']={'custom-quiz':{you:entry('100'),a:entry('90')}};
+  assert.equal(c.buildGameLeaderboard(game)[0].id,'you');
+  assert.ok(c.buildOverallLeaderboard().every(row=>row.solvryPoints===0));
+  game.sharing='personal';
+  assert.deepEqual(plain(c.buildGameLeaderboard(game).map(p=>p.id)),['you']);
+});

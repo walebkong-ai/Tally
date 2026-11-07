@@ -35,9 +35,9 @@ let html = #"""
       name="description"
       content="One leaderboard for your daily games. Paste results, track your progress, and compare scores with friends."
     />
-    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=25" />
+    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=26" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=25" />
+    <link rel="stylesheet" href="styles.css?v=26" />
   </head>
   <body>
     <div class="app" id="app">
@@ -88,7 +88,7 @@ let html = #"""
         </section>
 
         <section class="app-view catalog-view" id="games" data-view="games" aria-label="Games" hidden>
-          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><a class="ghost-button" href="#import">Add a score</a></div>
+          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="ghost-button" href="#import">Add a score</a></div></div>
           <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
           <div class="game-list" id="gameList"></div>
           <p class="catalog-attribution">Game names belong to their respective owners. Icons are Solvry illustrations; no affiliation or endorsement is implied.</p>
@@ -100,6 +100,7 @@ let html = #"""
           <div class="panel game-detail-card">
             <div class="current-result" id="currentResult"></div>
             <div class="game-meta-row"><span class="pill" id="friendCompletion">0 friends done</span><span class="pill" id="privacyState">Answers hidden</span><button type="button" class="text-link" id="viewGameLeaderboard">View leaderboard →</button></div>
+            <div id="customGameTools" class="custom-game-tools" hidden><p id="customGameNote" class="field-help"></p><div class="view-actions"><button id="shareCustomGameButton" class="ghost-button" type="button">Share game</button><button id="keepGamePersonalButton" class="text-link" type="button" hidden>Keep personal</button></div><p id="customGameStatus" role="status" class="field-help"></p></div>
             <details class="scoring-details"><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p></details>
             <div class="solvry-game" id="solvryGame" hidden></div><div class="letter-board" id="letterBoard" hidden></div>
           </div>
@@ -276,12 +277,12 @@ let html = #"""
           </section>        </section>
       </main>
 
-      <dialog class="modal" id="gameDialog">
+      <dialog class="modal" id="gameDialog" aria-labelledby="gameDialogTitle">
         <form method="dialog" class="modal-content" id="gameForm">
           <div class="section-head compact">
             <div>
-              <p class="eyebrow">Track anything</p>
-              <h2>Add a daily game</h2>
+              <p class="eyebrow">Your games</p>
+              <h2 id="gameDialogTitle">Add a custom game</h2>
             </div>
             <button class="icon-button" id="closeGameDialogButton" type="button" aria-label="Close">x</button>
           </div>
@@ -289,6 +290,7 @@ let html = #"""
             Game name
             <input id="gameNameInput" type="text" placeholder="Game name" maxlength="60" required />
           </label>
+          <label>Game website <span class="field-help">(optional)</span><input id="gameUrlInput" type="url" placeholder="https://example.com" maxlength="500" /></label>
           <label>
             Scoring style
             <select id="gameTypeInput">
@@ -300,9 +302,22 @@ let html = #"""
               <option value="complete">Completion only</option>
             </select>
           </label>
+          <p class="field-help">Starts in your personal list on this device. Share it later from the game page. Custom scores count on this game’s board, not the overall leaderboard.</p>
           <p id="gameFormStatus" class="import-warning" role="status"></p>
           <button class="primary-button" value="default" type="submit">Add game &amp; enter score</button>
         </form>
+      </dialog>
+
+      <dialog class="modal" id="customShareDialog" aria-labelledby="customShareTitle">
+        <div class="modal-content">
+          <div class="section-head compact"><h2 id="customShareTitle">Share a game</h2><button class="icon-button" id="closeCustomShareButton" type="button" aria-label="Close sharing">x</button></div>
+          <p id="customShareDescription" class="field-help"></p>
+          <p id="customShareRules"></p>
+          <p id="customShareWebsite" class="field-help"></p>
+          <label id="customShareLinkLabel" hidden>Game link<textarea id="customShareLink" readonly rows="3"></textarea></label>
+          <p id="customShareStatus" role="status" class="field-help"></p>
+          <button id="customShareConfirm" type="button" class="primary-button">Share &amp; copy link</button>
+        </div>
       </dialog>
 
       <dialog class="modal" id="accountDialog">
@@ -327,7 +342,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=25" type="module"></script>
+    <script src="app.js?v=26" type="module"></script>
   </body>
 </html>
 """#
@@ -3194,6 +3209,9 @@ body { background: var(--paper); color: var(--ink); }
 .catalog-view .game-logo { width: 46px; height: 46px; padding: 7px; border-radius: 10px; background: var(--game-tint, #e8ebed); }
 .catalog-view .game-logo svg { width: 32px; height: 32px; }
 .catalog-view .game-select { grid-template-columns: 46px minmax(0,1fr) 14px; gap: 12px; }
+.custom-game-tools { border-top: 1px solid var(--line); padding-block: 14px; margin-top: 16px; }
+#customShareLink { width: 100%; overflow-wrap: anywhere; }
+#customShareWebsite { overflow-wrap: anywhere; }
 .catalog-attribution { margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--line); max-width: 760px; font-size: 12px; line-height: 1.6; color: var(--muted); }
 
 .game-section-label { grid-column: 1/-1; display: flex; align-items: baseline; gap: 12px; margin: 18px 0 4px; padding: 0 0 12px; border-bottom: 1px solid var(--line); }
@@ -3577,6 +3595,7 @@ const elements = {
   gameNameInput: document.querySelector("#gameNameInput"),
   gameTypeInput: document.querySelector("#gameTypeInput"),
   gameFormStatus: document.querySelector("#gameFormStatus"),
+  gameUrlInput: document.querySelector("#gameUrlInput"),
   accountControls: document.querySelector("#accountControls"),
   accountDialog: document.querySelector("#accountDialog"),
   accountForm: document.querySelector("#accountForm"),
@@ -3720,6 +3739,7 @@ elements.friendRoster.addEventListener("click", (event) => {
 });
 
 window.addEventListener("hashchange", () => {
+  handleCustomGameLink();
   renderNav();
   window.scrollTo({ top: 0, behavior: "instant" });
   const heading = document.querySelector(".app-view:not([hidden]) h1");
@@ -3779,6 +3799,7 @@ elements.friendForm.addEventListener("submit", (event) => {
 
 elements.addGameButton?.addEventListener("click", () => {
   elements.gameForm.reset();
+  elements.gameFormStatus.textContent = "";
   elements.gameDialog.showModal();
 });
 
@@ -3796,8 +3817,10 @@ elements.gameForm.addEventListener("submit", (event) => {
     return;
   }
   const type = elements.gameTypeInput.value;
-  const id = uniqueId(`custom-${slugify(name) || "game"}-${type}`, state.games.map((game) => game.id));
-  const game = { id, name, source: "custom", type, scoring: customScoringForType(type), logo: "custom", officialUrl: "" };
+  const officialUrl = safeCustomGameUrl(elements.gameUrlInput.value);
+  if (officialUrl === null) { elements.gameFormStatus.textContent = "Use an http:// or https:// website link without a username or password."; return; }
+  const id = `custom-${crypto.randomUUID()}`;
+  const game = { id, name, source: "custom", type, scoring: customScoringForType(type), logo: "custom", officialUrl, sharing: "personal", dailyRanked: false };
   const previousGameId = state.activeGameId;
   state.games.push(game);
   state.activeGameId = id;
@@ -3928,6 +3951,51 @@ elements.solvryGame.addEventListener("click", (event) => {
   if (play.kind === "holes" && play.shotPhase === "power") handleSolvryPlayAction("lock-power");
 });
 
+document.querySelector("#shareCustomGameButton").addEventListener("click", () => openCustomShareDialog(getActiveGame()));
+document.querySelector("#closeCustomShareButton").addEventListener("click", () => document.querySelector("#customShareDialog").close());
+document.querySelector("#customShareDialog").addEventListener("close", () => {
+  if (location.hash.startsWith("#join-game=")) { history.replaceState(null, "", "#games"); renderNav(); }
+});
+document.querySelector("#keepGamePersonalButton").addEventListener("click", () => {
+  const game = getActiveGame();
+  const previous = game.sharing;
+  game.sharing = "personal";
+  try { saveState(); } catch { game.sharing = previous; showAppNotice("Couldn't save your sharing preference. Try again."); return; }
+  render();
+  document.querySelector("#customGameStatus").textContent = "Kept personal on this device. Friends keep copies they already added; future score sharing stops after your next successful sync.";
+});
+document.querySelector("#customShareConfirm").addEventListener("click", async () => {
+  const dialog = document.querySelector("#customShareDialog");
+  const game = dialog._game;
+  const status = document.querySelector("#customShareStatus");
+  if (!game) return;
+  if (dialog._joining) {
+    const previousId = state.activeGameId;
+    if (state.games.some((item) => item.id === game.id)) { status.textContent = "This game is already in your list."; return; }
+    state.games.push(game);
+    state.activeGameId = game.id;
+    try { saveState(); } catch {
+      state.games = state.games.filter((item) => item !== game); state.activeGameId = previousId;
+      status.textContent = "Couldn't save this game. Free some device storage and try again."; return;
+    }
+    dialog.close();
+    render();
+    navigateTo("game");
+    return;
+  }
+  const previous = game.sharing;
+  game.sharing = "friends";
+  try { saveState(); } catch { game.sharing = previous; status.textContent = "Couldn't save sharing. Try again."; return; }
+  // Local previews produce a usable production link rather than a friend's localhost.
+  const base = ["localhost", "127.0.0.1"].includes(location.hostname) ? "https://solvry.walebkong.chatgpt.site/" : location.href;
+  const link = customGameShareLink(game, base);
+  document.querySelector("#customShareLink").value = link;
+  document.querySelector("#customShareLinkLabel").hidden = false;
+  renderCustomGameTools(game);
+  try { await navigator.clipboard.writeText(link); status.textContent = "Link copied. Send it to a friend who has access to Solvry. They’ll review the game before adding it."; }
+  catch { status.textContent = "Select and copy the game link above."; document.querySelector("#customShareLink").select(); }
+});
+
 function render(focusGolf = true) {
   const activeGame = getActiveGame();
   state.activeGameId = activeGame.id;
@@ -3951,6 +4019,7 @@ function render(focusGolf = true) {
   renderQuickGames();
   renderGameList();
   renderOfficialLink(activeGame);
+  renderCustomGameTools(activeGame);
   renderCurrentResult(activeGame, myEntry);
   renderSolvryGame(activeGame);
   if (SHOW_SOLVRY_GAMES) renderBoard(activeGame.name);
@@ -4203,7 +4272,10 @@ async function loadCloudState(uid) {
     const remote = snap.data();
     state.profile = { ...state.profile, ...(remote.profile || {}) };
     state.friends = Array.isArray(remote.friends) ? remote.friends : state.friends;
-    state.pinnedGameIds = Array.isArray(remote.pinnedGameIds) ? remote.pinnedGameIds : state.pinnedGameIds;
+    if (Array.isArray(remote.pinnedGameIds)) {
+      const personalPins = state.pinnedGameIds.filter((id) => state.games.some((game) => game.id === id && game.source === "custom" && game.sharing !== "friends"));
+      state.pinnedGameIds = [...new Set([...remote.pinnedGameIds, ...personalPins])];
+    }
     state.entries = mergeEntries(state.entries, remote.entries || {});
     state.games = mergeCustomGames(state.games, remote.customGames);
   } finally {
@@ -4212,8 +4284,9 @@ async function loadCloudState(uid) {
 }
 
 function serializeCloudState() {
+  const sharedGameIds = new Set(state.games.filter((game) => game.source !== "custom" || game.sharing === "friends").map((game) => game.id));
   const ownEntries = Object.fromEntries(Object.entries(state.entries).map(([date, games]) => [date,
-    Object.fromEntries(Object.entries(games).filter(([, entries]) => entries.you).map(([game, entries]) => [game, { you: entries.you }]))
+    Object.fromEntries(Object.entries(games).filter(([id, entries]) => sharedGameIds.has(id) && entries.you).map(([game, entries]) => [game, { you: entries.you }]))
   ]));
   return {
     profile: {
@@ -4223,8 +4296,8 @@ function serializeCloudState() {
     },
     friends: state.friends.filter((friend) => !isDemoFriend(friend)),
     entries: ownEntries,
-    customGames: state.games.filter((game) => game.source === "custom"),
-    pinnedGameIds: state.pinnedGameIds,
+    customGames: state.games.filter((game) => game.source === "custom" && game.sharing === "friends"),
+    pinnedGameIds: state.pinnedGameIds.filter((id) => sharedGameIds.has(id)),
     updatedAt: new Date().toISOString()
   };
 }
@@ -4404,8 +4477,16 @@ async function loadFriendEntries(friend) {
   const { doc, getDoc } = cloudBackend.modules.firestore;
   const snap = await getDoc(doc(cloudBackend.db, "users", friend.uid));
   if (!snap.exists()) { mergeFriendEntries(friend.id, {}); return; }
-  state.games = mergeCustomGames(state.games, snap.data().customGames);
-  mergeFriendEntries(friend.id, snap.data().entries || {});
+  const remote = snap.data();
+  // A friend never silently adds games to your catalog; join their link first.
+  const approved = new Set((Array.isArray(remote.customGames) ? remote.customGames : []).filter((game) => {
+    const local = state.games.find((item) => item.id === game.id);
+    return local?.sharing === "friends" && game.sharing === "friends" && sameCustomGame(local, game);
+  }).map((game) => game.id));
+  const entries = Object.fromEntries(Object.entries(remote.entries || {}).map(([date, games]) => [date,
+    Object.fromEntries(Object.entries(games || {}).filter(([id]) => !id.startsWith("custom-") || approved.has(id)))
+  ]));
+  mergeFriendEntries(friend.id, entries);
 }
 
 function mergeFriendEntries(friendId, entries) {
@@ -6594,7 +6675,7 @@ function saveManualScore() {
   manualFormDirty = false;
   render();
   elements.saveStatus.className = "save-status success";
-  elements.saveStatus.textContent = `${game.name} saved for ${date}. Manual score added to the leaderboard.`;
+  elements.saveStatus.textContent = `${game.name} saved for ${date}. Manual score added to ${game.source === "custom" ? "this game’s" : "the"} leaderboard.`;
   document.querySelector("#scoreNextSteps").hidden = false;
 }
 
@@ -6648,7 +6729,7 @@ function renderScoreboards(activeGame) {
   elements.leaderboardGameInput.value = game.id;
   elements.gameScoreboardTitle.textContent = `${game.name} scoreboard`;
   elements.gameScoreboardMeta.textContent = scoreStyleLabel(game);
-  elements.gameScoreboardNote.textContent = scoreStyleHelp(game);
+  elements.gameScoreboardNote.textContent = scoreStyleHelp(game) + (game.source === "custom" ? " Custom game: scores count here only, not in the overall leaderboard." : "");
   const overall = leaderboardView === "overall";
   [elements.overallTab, elements.gameBoardTab].forEach((tab, index) => {
     const selected = overall === (index === 0);
@@ -6731,6 +6812,7 @@ function buildOverallLeaderboard(days = 1) {
 }
 
 function eligibleForDailyRanking(game, entry, date) {
+  if (game.source === "custom") return false;
   if (game.dailyRanked !== false) return true;
   if (game.id !== "color" || entry?.source !== "official-share") return false;
   const parsed = parseShareText(entry.shareText).parsed;
@@ -6740,6 +6822,7 @@ function eligibleForDailyRanking(game, entry, date) {
 function buildGameLeaderboard(game, date = state.selectedDate, dailyOnly = false) {
   const entries = state.entries[date]?.[game.id] || {};
   const rows = getPeople()
+    .filter((person) => game.source !== "custom" || game.sharing === "friends" || person.id === "you")
     .map((person) => {
       const candidate = entries[person.id];
       const entry = dailyOnly && !eligibleForDailyRanking(game, candidate, date) ? null : candidate;
@@ -7482,17 +7565,110 @@ function customScoringForType(type) {
   return { ...scoringForType(type), ...styles[type] };
 }
 
+function safeCustomGameUrl(value) {
+  if (typeof value !== "string" || value.length > 500) return null;
+  if (!value.trim()) return "";
+  try {
+    const url = new URL(value.trim());
+    return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+
+function validateCustomGame(game) {
+  if (!game || game.source !== "custom" || typeof game.id !== "string" || !/^custom-[a-z0-9-]{1,150}$/.test(game.id)
+    || typeof game.name !== "string" || !game.name.trim() || game.name.length > 60
+    || !["points", "strokes", "time", "guesses", "mistakes", "complete"].includes(game.type)) return null;
+  const officialUrl = safeCustomGameUrl(game.officialUrl ?? "");
+  if (officialUrl === null) return null;
+  return { id: game.id, name: game.name.trim().replace(/\s+/g, " "), source: "custom", type: game.type,
+    scoring: customScoringForType(game.type), logo: "custom", officialUrl, dailyRanked: false,
+    sharing: game.sharing === "friends" ? "friends" : "personal" };
+}
+
+function sameCustomGame(a, b) {
+  return a.id === b.id && a.name === b.name && a.type === b.type && (a.officialUrl || "") === (b.officialUrl || "");
+}
+
 function mergeCustomGames(baseGames, savedGames = []) {
   const games = [...baseGames];
   const ids = new Set(games.map((game) => game.id));
-  for (const game of Array.isArray(savedGames) ? savedGames : []) {
-    if (!game || game.source !== "custom" || typeof game.id !== "string" || !/^custom-[a-z0-9-]+$/.test(game.id)
-      || ids.has(game.id) || typeof game.name !== "string" || !game.name.trim() || game.name.length > 60
-      || !["points", "strokes", "time", "guesses", "mistakes", "complete"].includes(game.type)) continue;
-    games.push({ id: game.id, name: game.name.trim(), source: "custom", type: game.type, scoring: customScoringForType(game.type), logo: "custom", officialUrl: "" });
+  for (const candidate of Array.isArray(savedGames) ? savedGames : []) {
+    const game = validateCustomGame(candidate);
+    if (!game || ids.has(game.id)) continue;
+    games.push(game);
     ids.add(game.id);
   }
   return games;
+}
+
+function customGameShareLink(game, baseUrl = location.href) {
+  const clean = validateCustomGame(game);
+  if (!clean) throw new Error("This game's details are invalid.");
+  const base = new URL(baseUrl);
+  base.search = "";
+  base.hash = "join-game=" + encodeURIComponent(JSON.stringify({ v: 1, game: {
+    id: clean.id, name: clean.name, source: "custom", type: clean.type, officialUrl: clean.officialUrl
+  } }));
+  return base.href;
+}
+
+function parseCustomGameLink(hash) {
+  if (!hash.startsWith("#join-game=") || hash.length > 6000) throw new Error("This game link is invalid or too long.");
+  let payload;
+  try { payload = JSON.parse(decodeURIComponent(hash.slice(11))); }
+  catch { throw new Error("This game link is incomplete. Ask your friend to copy it again."); }
+  const game = payload?.v === 1 ? validateCustomGame(payload.game) : null;
+  if (!game) throw new Error("This game link has unsupported or unsafe details.");
+  return { ...game, sharing: "friends" };
+}
+
+function renderCustomGameTools(game) {
+  const custom = game.source === "custom";
+  document.querySelector("#customGameTools").hidden = !custom;
+  if (!custom) return;
+  document.querySelector("#customGameNote").textContent = game.sharing === "friends"
+    ? "Shared game · Only this game's leaderboard. " + (cloudFriendsAvailable() ? "Scores sync with connected friends who have joined this game." : "The game link works now. Automatic friend-score syncing needs online sign-in, which isn't connected yet.")
+    : "Personal · Saved on this device. Share the game when you're ready to compare with friends. Excluded from overall rankings.";
+  document.querySelector("#keepGamePersonalButton").hidden = game.sharing !== "friends";
+  document.querySelector("#customGameStatus").textContent = "";
+}
+
+function openCustomShareDialog(game, joining = false) {
+  const dialog = document.querySelector("#customShareDialog");
+  dialog._game = game;
+  dialog._joining = joining;
+  document.querySelector("#customShareTitle").textContent = joining ? `Add ${game.name}?` : `Share ${game.name}`;
+  document.querySelector("#customShareDescription").textContent = joining
+    ? "Review this custom game before adding it. Its scores stay out of the overall leaderboard. Joining enables score sharing with connected friends who use the same game link."
+    : "Your link contains only the game name, website, and scoring rules—not your scores or account details. Sharing also lets connected friends who join this game see your scores.";
+  document.querySelector("#customShareRules").textContent = scoreStyleLabel(game);
+  document.querySelector("#customShareWebsite").textContent = game.officialUrl ? `Website: ${game.officialUrl}` : "No website added.";
+  document.querySelector("#customShareLinkLabel").hidden = true;
+  document.querySelector("#customShareLink").value = "";
+  document.querySelector("#customShareStatus").textContent = cloudFriendsAvailable() ? "" : "Game setup links need no Solvry account, but recipients need access to the site. Automatic score syncing is not connected yet.";
+  document.querySelector("#customShareConfirm").textContent = joining ? "Add to my games" : "Share & copy link";
+  dialog.showModal();
+}
+
+function handleCustomGameLink() {
+  if (!location.hash.startsWith("#join-game=")) return;
+  try {
+    const game = parseCustomGameLink(location.hash);
+    const existing = state.games.find((item) => item.id === game.id);
+    if (existing && !sameCustomGame(existing, game)) throw new Error("This link conflicts with a saved game. Your existing game and scores were kept.");
+    if (existing) {
+      history.replaceState(null, "", "#game");
+      state.activeGameId = existing.id;
+      render();
+      showAppNotice("This game is already in your list. No duplicate was added.");
+      return;
+    }
+    openCustomShareDialog(game, true);
+  } catch (error) {
+    history.replaceState(null, "", "#games");
+    renderNav();
+    showAppNotice(error.message);
+  }
 }
 
 function defaultScoreLabel(result) {
@@ -7611,4 +7787,5 @@ function flashStatus(element, message) {
 
 initCloudBackend();
 render();
+handleCustomGameLink();
 """#
