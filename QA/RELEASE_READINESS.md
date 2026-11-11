@@ -29,6 +29,18 @@ The two-account, user-assisted beta used computer Chrome and confirmed iPhone Sa
 
 These results combine user observations, captured sanitized permission reports/screenshots, and independent administrative read-back. They are not a fully automated cross-device production test. Previously downloaded or cached data cannot be recalled by removing a friendship.
 
+## Production account-management verification (2026-11-11)
+
+All four requested flows passed in desktop Chrome against the live backend using a fresh disposable Solvry account. The owner supplied the spare Google sign-in and approved final account deletion. Test actions used the normal application UI; administrative access was read-only verification, not an alternative cleanup path.
+
+- Downloaded account exports contained the intended private profile, scores, answers/notes, and diagnostics without sign-in token fields. Guest history was not imported.
+- Date correction rejected an occupied destination, then atomically moved a score to a free date. Independent read-back confirmed one commit for old/new private records and shared projections, preserved private fields, and no hidden-answer/note/raw-paste/grid leakage into the shared score.
+- Score deletion removed the result contents from private and shared records, preserved the other test score, and remained deleted in a fresh export after reload.
+- Account deletion completed Google reauthentication, removed the nonempty account through the application, showed the success notice, and returned to guest mode with Continue with Google available.
+- Independent Firebase read-back confirmed no authentication identity, private records, known shared result documents, profile, diagnostics, or sent/received requests for the deleted test account. Only the intended minimal lifecycle marker remains: schemaVersion, state=deleted, startedAt, and completedAt. The Google/Gmail account was not deleted. Existing participant accounts were not used for mutations.
+
+The test identity, raw exports, and screenshots remain in the private local QA archive. This account had no friend requests, so populated social cleanup, interrupted/resumed deletion, large live cleanup batches, cross-device deletion propagation, and direct stale-token production probes remain outside this run; existing automated coverage is separate. No application, provider, rules, billing, or audience change was required.
+
 ## Parser audit
 
 The remaining audited Wordle, Connections, Strands, and partial-completion defects were corrected with regression coverage. Malformed/contradictory shares are rejected, unknown Strands completion is saved as Played with a warning until manually confirmed, and partial puzzle attempts do not increase completion totals. Existing user history was not silently rewritten. Representative parser fixtures do not guarantee compatibility with future publisher format changes.
@@ -36,7 +48,7 @@ The remaining audited Wordle, Connections, Strands, and partial-completion defec
 ## Operations
 
 - Four active read/write quota-warning policies at 80%/95% of daily free allowances. Owner email delivery was tested with a temporary canary, then the canary was removed. Operational metric windows differ from exact quota accounting, and metrics/email may lag. Other quotas are not covered.
-- An operational usage dashboard and account-scoped health reporting are deployed. Health summaries exclude result content, free-form messages, stack traces, emails, and URLs. Production client delivery has not been separately captured since release.
+- An operational usage dashboard and account-scoped health reporting are deployed. Health summaries exclude result content, free-form messages, stack traces, emails, and URLs. The November 11 production account exports captured the signed-in client's health summary; account deletion then removed its health document, independently verified in Firebase.
 - AES-256-GCM local backup creation and a daily 03:00 local macOS schedule with 14-day retention were tested. A restore into fresh loopback Firestore/Auth emulators recovered all 20 documents and both Google identity records with matching hashes/metadata and zero production writes.
 - A final v67 → v65 → v67 application rollback drill completed in 41 seconds, with authenticated served-artifact hash checks. The compatible database/rules remained in place; application rollback is not a production data restore.
 
@@ -44,13 +56,12 @@ Backups depend on the operator's Mac, logged-in user, network, and Firebase CLI 
 
 ## Remaining launch checks
 
-1. Exercise export, score date correction/deletion, and complete account deletion on a disposable live account; verify cloud cleanup and stale-session protection.
-2. Exercise simultaneous conflicting edits across two devices and verify both resolution choices. Revisit the earlier date-entry and stale-score observations, whose causes were not reproduced.
-3. Run fresh onboarding with an independent tester. Android/mobile Chrome, duplicate/declined/cancelled/repeated friend requests, and request delivery without reload still need live coverage.
-4. Place encrypted backups off the operator's Mac and preserve the decryption key separately in secure storage.
-5. Confirm a production diagnostic report arrives without private content.
-6. After domain/DNS/HTTPS and sign-in configuration, verify the intended public pages and private-data restrictions from a fresh signed-out browser when public access is enabled.
-7. Observe actual beta usage before wider promotion; no load/capacity test for a traffic surge has been completed. Cold offline startup, offline reload, storage eviction, and long offline intervals remain untested.
+1. Exercise simultaneous conflicting edits across two devices and verify both resolution choices. Revisit the earlier date-entry and stale-score observations, whose causes were not reproduced.
+2. Run fresh onboarding with an independent tester. Android/mobile Chrome, duplicate/declined/cancelled/repeated friend requests, and request delivery without reload still need live coverage.
+3. Place encrypted backups off the operator's Mac and preserve the decryption key separately in secure storage.
+4. After domain/DNS/HTTPS and sign-in configuration, verify the intended public pages and private-data restrictions from a fresh signed-out browser when public access is enabled.
+5. Observe actual beta usage before wider promotion; no load/capacity test for a traffic surge has been completed. Cold offline startup, offline reload, storage eviction, and long offline intervals remain untested.
+6. Broaden account-deletion coverage beyond the completed normal flow: populated friend requests, interruption/resume, multiple cleanup batches, and old authenticated sessions on other devices. The emulator suite remains the evidence for those protections so far.
 
 ## Repository boundaries
 

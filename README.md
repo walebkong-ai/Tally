@@ -172,7 +172,9 @@ Required Firebase products are Authentication and Firestore. Deploy the checked-
 
 The v67 release validation passed **139 app tests**, **20 Firestore emulator tests**, JavaScript/module syntax checks, and live/source rule comparison. User-assisted computer Chrome and iPhone Safari checks covered sign-in, account isolation, accepted friendships, answer reveal/hide, removal permission revocation, and offline recovery. Backup restoration into isolated emulators and a live v67 → v65 → v67 application rollback were tested.
 
-These checks do not establish readiness for unrestricted public traffic. Live competing edits, complete account-management flows on a disposable account, new-tester onboarding, Android/mobile Chrome coverage, anonymous public/custom-domain access, production diagnostics delivery, and an independent off-device backup remain follow-up work. See [the release verification summary](QA/RELEASE_READINESS.md).
+On November 11, production account export, occupied-date protection, atomic score date correction, score deletion/reload persistence, and complete disposable account deletion passed through the normal desktop Chrome UI with independent Firebase read-back. Google reauthentication completed, cloud data and the Firebase identity were removed, and only the minimal deletion marker remained. Production diagnostic delivery and its removal during account deletion were also observed. Private test identities, exports, and screenshots are not published here.
+
+These checks do not establish readiness for unrestricted public traffic. Live competing edits, new-tester onboarding, Android/mobile Chrome coverage, anonymous public/custom-domain access, an independent off-device backup, and broader interrupted/stale-session deletion scenarios remain follow-up work. See [the release verification summary](QA/RELEASE_READINESS.md).
 
 The dated sections below retain historical implementation and test notes; the hidden Solvry Holes engine is not part of the public launch scope.
 
