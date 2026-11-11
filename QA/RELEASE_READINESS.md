@@ -52,13 +52,13 @@ The remaining audited Wordle, Connections, Strands, and partial-completion defec
 - AES-256-GCM local backup creation and a daily 03:00 local macOS schedule with 14-day retention were tested. A restore into fresh loopback Firestore/Auth emulators recovered all 20 documents and both Google identity records with matching hashes/metadata and zero production writes.
 - A final v67 → v65 → v67 application rollback drill completed in 41 seconds, with authenticated served-artifact hash checks. The compatible database/rules remained in place; application rollback is not a production data restore.
 
-Backups depend on the operator's Mac, logged-in user, network, and Firebase CLI session. Backup copies and their key are local; no independent off-device copy or backup-failure email is configured. Managed cloud backups, PITR, and billing budgets remain off under the selected Spark setup. See [Operations/RUNBOOK.md](../Operations/RUNBOOK.md).
+Daily backup creation depends on the operator's Mac, logged-in user, network, and Firebase CLI session. A November 11 encrypted snapshot is now stored in the owner's restricted Google Drive folder with a non-secret checksum manifest and recovery instructions. The key is separately saved in Apple Passwords, with its arrival on the owner's iPhone confirmed. The downloaded cloud copy matched its SHA-256 and byte length, decrypted successfully and restored 22 documents and 2 Google identity records into fresh loopback emulators, with matching document hashes/identity metadata and zero production writes. Future daily snapshots are not automatically uploaded offsite, and backup-failure email is not configured. Managed cloud backups, PITR, and billing budgets remain off under the selected Spark setup. See [Operations/RUNBOOK.md](../Operations/RUNBOOK.md).
 
 ## Remaining launch checks
 
 1. Exercise simultaneous conflicting edits across two devices and verify both resolution choices. Revisit the earlier date-entry and stale-score observations, whose causes were not reproduced.
 2. Run fresh onboarding with an independent tester. Android/mobile Chrome, duplicate/declined/cancelled/repeated friend requests, and request delivery without reload still need live coverage.
-3. Place encrypted backups off the operator's Mac and preserve the decryption key separately in secure storage.
+3. Maintain fresh offsite copies: the first encrypted snapshot and separately synced recovery key are verified, but future daily snapshots still require upload.
 4. After domain/DNS/HTTPS and sign-in configuration, verify the intended public pages and private-data restrictions from a fresh signed-out browser when public access is enabled.
 5. Observe actual beta usage before wider promotion; no load/capacity test for a traffic surge has been completed. Cold offline startup, offline reload, storage eviction, and long offline intervals remain untested.
 6. Broaden account-deletion coverage beyond the completed normal flow: populated friend requests, interruption/resume, multiple cleanup batches, and old authenticated sessions on other devices. The emulator suite remains the evidence for those protections so far.

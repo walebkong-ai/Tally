@@ -174,7 +174,9 @@ The v67 release validation passed **139 app tests**, **20 Firestore emulator tes
 
 On November 11, production account export, occupied-date protection, atomic score date correction, score deletion/reload persistence, and complete disposable account deletion passed through the normal desktop Chrome UI with independent Firebase read-back. Google reauthentication completed, cloud data and the Firebase identity were removed, and only the minimal deletion marker remained. Production diagnostic delivery and its removal during account deletion were also observed. Private test identities, exports, and screenshots are not published here.
 
-These checks do not establish readiness for unrestricted public traffic. Live competing edits, new-tester onboarding, Android/mobile Chrome coverage, anonymous public/custom-domain access, an independent off-device backup, and broader interrupted/stale-session deletion scenarios remain follow-up work. See [the release verification summary](QA/RELEASE_READINESS.md).
+An encrypted snapshot is now stored in the owner's private Google Drive, with its key separately saved in Apple Passwords and confirmed on an iPhone. The downloaded snapshot passed checksum/decryption verification and an isolated restore of 22 documents and 2 Google identity records. Future daily snapshots still need offsite upload.
+
+These checks do not establish readiness for unrestricted public traffic. Live competing edits, new-tester onboarding, Android/mobile Chrome coverage, anonymous public/custom-domain access, ongoing offsite backup uploads, and broader interrupted/stale-session deletion scenarios remain follow-up work. See [the release verification summary](QA/RELEASE_READINESS.md).
 
 The dated sections below retain historical implementation and test notes; the hidden Solvry Holes engine is not part of the public launch scope.
 
