@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=33" />
+    <link rel="stylesheet" href="styles.css?v=34" />
   </head>
   <body>
     <div class="app" id="app">
@@ -55,9 +55,9 @@ let html = #"""
           <a href="#friends">Friends</a>
         </nav>
         <div class="top-actions">
-          <a class="primary-button add-score-button nav-add-score" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a>
+          <a class="primary-button add-score-button nav-add-score header-action-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a>
           <div class="account-controls" id="accountControls">
-            <button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>
+            <button class="ghost-button compact-button header-action-button" type="button" data-account-action="login">Account</button>
           </div>
         </div>
       </header>
@@ -171,6 +171,7 @@ let html = #"""
               <label id="rarityField" hidden>Rarity score<input id="rarityInput" type="number" min="0" max="900" step="any" disabled /><small>Lower is better. Use the score, not a percentage.</small></label>
               <details class="manual-extras">
                 <summary>Answer &amp; note (optional)</summary>
+                <div class="manual-extra-fields">
                 <label>
                   Answer
                   <input id="answerInput" type="text" maxlength="4000" placeholder="Optional" autocomplete="off" />
@@ -180,6 +181,7 @@ let html = #"""
                 Note
                 <input id="noteInput" type="text" maxlength="12000" placeholder="Close call, lucky guess, weird clue..." autocomplete="off" />
               </label>
+                </div>
                 <label class="switch-row">
                   <input id="revealInput" type="checkbox" />
                   <span class="switch" aria-hidden="true"></span>
@@ -191,7 +193,7 @@ let html = #"""
               </div>
               <div class="save-status" id="saveStatus" role="status"></div>
             </form></section>
-            <aside class="score-manual-guide"><p class="score-step-label">Your score, your way</p><h2>A place for every game.</h2><p>Use manual entry when you don’t have a copied result, or choose Other game to create your own.</p><ol><li><strong>Choose your game</strong><span>Each game has its own scoring rules.</span></li><li><strong>Check the date</strong><span>Keep your daily history in the right place.</span></li><li><strong>Save your result</strong><span>Manual scores are labeled in your history and rankings.</span></li></ol><p class="field-help">Answers and notes are optional. Review your sharing choice before saving.</p></aside>
+            <details class="score-manual-guide"><summary>Manual entry tips</summary><p>Use manual entry when you don’t have a copied result, or choose Other game to create your own.</p><ol><li><strong>Choose your game</strong><span>Each game has its own scoring rules.</span></li><li><strong>Check the date</strong><span>Keep your daily history in the right place.</span></li><li><strong>Save your result</strong><span>Manual scores are labeled in your history and rankings.</span></li></ol><p class="field-help">Answers and notes are optional. Review your sharing choice before saving.</p></details>
             </div>
           <div id="scoreNextSteps" class="score-next-steps" hidden><a href="#today" class="text-link">Back to overview →</a><a href="#leaderboard" class="text-link">View leaderboard →</a></div>
         </section>
@@ -334,7 +336,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=38" type="module"></script>
+    <script src="app.js?v=39" type="module"></script>
   </body>
 </html>
 """#
@@ -3850,6 +3852,157 @@ button:disabled { cursor:wait; }
 .privacy-view p { line-height:1.75; }
 .score-management-actions { margin-top:18px; }
 
+/* Compact, fluid workspaces keep the next action within easy reach. */
+:root { --action-width: 128px; --action-height: 44px; --workspace-gap: clamp(14px,1.5vw,22px); }
+.topbar { padding-block: 10px; gap: 16px; }
+.top-actions { display: grid; grid-template-columns: repeat(2,var(--action-width)); align-items: center; gap: 10px; }
+.account-controls { min-width: 0; min-height: var(--action-height); }
+.add-score-button, .top-actions .add-score-button, .view-actions .add-score-button, .home-empty .add-score-button, .result-action.add-score-button,
+.top-actions .header-action-button {
+  box-sizing: border-box; inline-size: var(--action-width); min-inline-size: var(--action-width); block-size: var(--action-height); min-block-size: var(--action-height);
+  flex: 0 0 var(--action-width); padding: 8px; gap: 6px; font-size: 14px; line-height: 1.25; border-radius: 12px;
+}
+.top-actions .header-action-button { border: 1px solid var(--petrol); box-shadow: 0 3px 0 #173f49; white-space: nowrap; transform: none; }
+.top-actions .header-action-button:hover { transform: none; box-shadow: 0 3px 0 #173f49; }
+.result-action.add-score-button { inline-size: auto; flex-basis: auto; }
+.sync-strip { padding-block: 6px; }
+.workspace, .workspace:has(.home-view:not([hidden])) { padding: 18px clamp(16px,2.5vw,44px) 24px; }
+.view-head, .home-view .view-head, .game-page-head, .friends-view .view-head, .score-page-head { margin-bottom: 16px; gap: 16px; }
+.app-view h1, .game-view h1, .friends-view h1, .score-view h1 { font-size: clamp(30px,3vw,46px); }
+.home-view .view-head { padding-block: 0; }
+.home-welcome .eyebrow { margin-bottom: 6px; }
+.home-welcome .view-copy { margin-top: 6px; }
+.home-columns, .home-main, .home-side, .game-page-layout, .game-main-column, .game-side-column, .friends-view .friends-layout, .friends-sidebar { gap: var(--workspace-gap); }
+.home-metrics { margin-bottom: 18px; gap: 10px; }
+.home-metrics > div, .home-metrics > div:nth-child(n) { padding: 12px 16px; }
+.home-view .quick-game, .home-view .quick-game:nth-child(n) { min-height: 76px; padding: 10px; }
+.home-view .home-ranking, .home-view .activity-card, .home-view .home-scores { padding: 16px !important; }
+.home-view .home-scores .home-empty { padding-bottom: 0; }
+.game-view .back-link { margin-bottom: 12px; }
+.game-hero-icon .game-logo { width: 64px; height: 64px; padding: 12px; border-radius: 18px; }
+.game-view .game-detail-card { padding: clamp(20px,2vw,30px); }
+.game-view .game-detail-card > .eyebrow { margin-bottom: 14px; }
+.result-status-row { margin-bottom: 16px; }
+.result-description { margin: 12px 0 18px; }
+.game-view .game-meta-row { margin-top: 20px; padding-top: 14px; }
+.game-scoring-card, .game-standings, .game-view .game-answers { padding: 18px 20px; }
+.friends-directory { min-height: 0; padding: 20px; }
+.friends-directory .score-tabs { margin: 16px 0; }
+.friends-directory .friend-search { margin-bottom: 16px; }
+.friends-directory .social-empty { min-height: 150px; padding: 20px; }
+.friends-view .friend-person { padding: 16px; gap: 14px; }
+.friends-view .friend-sync .sync-card, .friends-view .add-friend-details { padding: 18px; }
+.leaderboard-view:not([hidden]) { min-height: 0; }
+.leaderboard-view .leaderboard { grid-auto-rows: auto; }
+.leaderboard-view .rank-row, .leaderboard-view .rank-row.is-you { padding-block: 10px; }
+.score-page-icon { width: 56px; height: 56px; border-radius: 16px; }
+.score-page-icon svg { width: 34px; height: 34px; }
+.score-view .import-surface > .score-tabs { margin-bottom: 16px; }
+.score-entry-layout, .score-view .manual-entry { gap: var(--workspace-gap); grid-template-columns: minmax(0,1.5fr) minmax(280px,1fr); }
+.score-compose-card, .score-review-card, .score-manual-guide { padding: clamp(18px,2vw,26px); border-radius: 18px; }
+.score-step-label { margin-bottom: 8px; }
+.score-card-copy { margin: 8px 0 16px; line-height: 1.5; }
+.score-view h2 { font-size: clamp(24px,2vw,30px); }
+.score-view .share-input { min-height: 160px; height: clamp(160px,24svh,260px); padding: 14px; line-height: 1.5; }
+.score-view .import-help { margin-top: 14px; padding-top: 10px; }
+.score-view .import-date { margin: 16px 0; }
+.preview-placeholder { padding: 16px; }
+.preview-placeholder svg { width: 36px; height: 36px; margin-bottom: 10px; }
+.preview-placeholder strong { font-size: 22px; }
+.preview-placeholder p { line-height: 1.5; }
+.score-view .import-actions { margin-top: 14px; }
+.score-review-card .import-status:empty { display: none; }
+.score-save-hint { margin-top: 10px; }
+.score-view .manual-entry .entry-form { margin-top: 16px; gap: 14px; }
+.score-view .manual-grid, .score-view .manual-entry .field-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.score-view .manual-entry input:not([type="checkbox"]), .score-view .manual-entry select { height: 44px; min-height: 44px; padding-block: 8px; }
+.score-view .manual-extras { padding: 12px 14px; }
+.manual-extra-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 12px; }
+.manual-extra-fields .wide-label { margin-top: 0; }
+.manual-extras .switch-row { margin-top: 12px; }
+.score-manual-guide > summary { font-family: var(--display); font-size: 23px; font-weight: 700; cursor: pointer; }
+.score-manual-guide ol { gap: 18px; margin-block: 20px; }
+.score-view input[type="date"] { min-inline-size: 0; max-inline-size: 100%; }
+.score-view input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.modal { max-height: calc(100dvh - 24px); overflow-y: auto; }
+@media (min-width: 761px) and (max-height: 800px) {
+  .brand-logo { width: 142px; }
+  .brand small { display: none; }
+  .workspace, .workspace:has(.home-view:not([hidden])) { padding-top: 14px; }
+  .view-copy { margin-top: 5px; }
+  .score-page-head .eyebrow { margin-bottom: 5px; }
+  .score-view .share-preview { gap: 12px; padding: 16px; }
+  .score-view .share-preview .share-grid { max-height: 150px; }
+  .game-flow-note { display: none; }
+}
+@media (max-width: 1000px) and (min-width: 761px) {
+  :root { --action-width: 112px; }
+  .topbar { gap: 12px; }
+  .brand-logo { width: 136px; }
+  .topnav { gap: 2px; }
+  .topnav a { padding-inline: 8px; font-size: 13px; }
+}
+@media (max-width: 760px) {
+  :root { --action-width: 96px; --workspace-gap: 14px; }
+  .topbar { padding: 8px 12px 0; gap: 6px 8px; }
+  .brand-logo { width: 116px; }
+  .top-actions { gap: 8px; }
+  .add-score-button, .top-actions .add-score-button, .view-actions .add-score-button, .home-empty .add-score-button, .result-action.add-score-button, .top-actions .header-action-button { font-size: 12px; }
+  .topnav { padding-bottom: 6px; gap: 2px; }
+  .topnav a { min-height: 40px; display: flex; align-items: center; justify-content: center; padding-block: 6px; }
+  .sync-strip { padding: 5px 16px; font-size: 11px; gap: 10px; }
+  .workspace, .workspace:has(.home-view:not([hidden])) { padding: 14px 16px 20px; }
+  .view-head, .home-view .view-head, .game-page-head, .friends-view .view-head, .score-page-head { margin-bottom: 14px; gap: 12px; }
+  .home-welcome h1 { font-size: clamp(28px,7vw,36px); }
+  .home-metrics { margin-bottom: 16px; gap: 8px; }
+  .home-metrics > div, .home-metrics > div:nth-child(n) { padding: 10px; }
+  .home-view .quick-game, .home-view .quick-game:nth-child(n) { min-height: 72px; }
+  .home-view .home-ranking, .home-view .activity-card, .home-view .home-scores { padding: 14px !important; }
+  .game-view .game-detail-card { padding: 20px; }
+  .game-title-lockup .eyebrow { margin-bottom: 6px; }
+  .game-view .current-result .result-headline { font-size: 38px; }
+  .friends-directory { padding: 16px; }
+  .friends-directory .score-tabs { margin-block: 12px; }
+  .friends-directory .social-empty { min-height: 130px; padding: 16px; }
+  .friends-view .friend-person { padding: 12px; }
+  .score-page-head { grid-template-columns: minmax(0,1fr) 44px; }
+  .score-page-icon { width: 44px; height: 44px; border-radius: 13px; }
+  .score-page-icon svg { width: 28px; height: 28px; }
+  .score-view .view-copy { font-size: 13px; line-height: 1.5; }
+  .score-entry-layout, .score-view .manual-entry { grid-template-columns: 1fr; gap: 12px; }
+  .score-compose-card, .score-review-card, .score-manual-guide { padding: 16px; border-radius: 16px; }
+  .score-view h2 { font-size: 24px; }
+  .score-step-label { font-size: 9px; }
+  .score-card-copy { margin: 6px 0 12px; font-size: 12px; }
+  .score-compose-card > .score-step-label, .score-compose-card > h2, .score-compose-card > .score-card-copy { display: none; }
+  .score-view .import-input-head { flex-direction: row; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .score-view #importClipboardButton { width: auto; min-height: 44px; padding: 8px 10px; font-size: 12px; }
+  .score-view .share-input { min-height: 130px; height: 130px; font-size: 16px; }
+  .score-review-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: center; }
+  .score-review-card > .score-step-label, .score-review-card > .preview-placeholder { display: none; }
+  .score-review-card h2 { font-size: 21px; }
+  .score-view .import-date { margin: 0; }
+  .score-review-card > .share-preview, .score-review-card > .import-status, .score-review-card > .import-actions, .score-review-card > .score-save-hint { grid-column: 1/-1; margin-top: 0; }
+  .score-view .share-preview { padding: 14px; gap: 12px; }
+  .preview-score { font-size: 38px; }
+  .score-view .manual-entry .entry-form { gap: 12px; margin-top: 0; }
+  .score-view .manual-grid, .score-view .manual-entry .field-grid, .manual-extra-fields { gap: 10px; }
+  .score-view .manual-entry input:not([type="checkbox"]), .score-view .manual-entry select { width: 100%; font-size: 16px; padding-inline: 8px; }
+  .score-view .manual-extras summary { font-size: 13px; min-height: 24px; }
+  .score-view .manual-extras .switch-row { font-size: 12px; }
+  .score-manual-guide > summary { font-size: 20px; }
+}
+@media (max-width: 380px) {
+  :root { --action-width: 88px; }
+  .topbar .brand-logo { width: 94px; }
+  .manual-extra-fields { grid-template-columns: 1fr; }
+}
+@media (max-width: 359px) {
+  .score-view .manual-grid, .score-view .manual-entry .field-grid { grid-template-columns: 1fr; }
+  .score-view .import-input-head { align-items: stretch; flex-direction: column; }
+  .score-view #importClipboardButton { width: 100%; }
+}
+
 """#
 
 let appScript = #"""
@@ -4601,7 +4754,7 @@ function focusHolesViewport(activeGame) {
 }
 
 function renderAccount() {
-  elements.accountControls.innerHTML = '<button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>';
+  elements.accountControls.innerHTML = '<button class="ghost-button compact-button header-action-button" type="button" data-account-action="login">Account</button>';
 }
 
 function currentView() {

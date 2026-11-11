@@ -4,18 +4,24 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v67**, through OpenAI Sites.
-- Sites source checkpoint: `45bf30f4133344b7c86215ec618b755332d62b46` (a separate source history from this repository).
+- Published application: **v68**, through OpenAI Sites.
+- Sites source checkpoint: `770fa029d929f2a79305fa71057d48e5d9f2dc74` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
 
+## Compact layout verification (v68)
+
+UI-only source update: equal-sized Add score/Account header buttons, compact workspace spacing, two-column manual fields where space permits, optional entry tips and removal of unnecessary viewport-height minimums. The Swift generator builds successfully, all 139 app tests pass, and generated JavaScript syntax is valid. The v67 security-rule suite remains the last rules run; no backend or rules changed.
+
+Live guest manual-entry checks measured matching 128×44px header buttons on a 1366×768 laptop and 88×44px buttons on a 375×667 phone viewport. Save is visible at both sizes (bottom at 706px and 646px respectively), with no horizontal overflow. A 390px phone uses matching 96×44px buttons; the 320px preview also has no horizontal overflow. Game details, Friends and the empty leaderboard were checked on the laptop; long game lists, expanded optional content and smaller screens can scroll naturally. These are browser viewport checks, not a new physical-device beta or a test with the software keyboard open. The built app.js SHA-256 is `6d1d19f7004f08ef090f0b86782e6406d6fbb1382cc278303b2cbbf512512dd3`; styles.css is `5b859996f5ed1ed97ab8bf08ecc9a40bd89e58ff626cc3af383cd55c52c1b9d5`. Published access remains custom/invite-only.
+
 ## Application and permissions
 
 Recorded v67 validation passed 139 application tests and 20 Firestore emulator tests, generated JavaScript/module syntax checks, native rule validation, and a comparison of deployed rules with tested source. Automated coverage includes account storage isolation, revision conflicts, score date correction/deletion, account deletion locks, private/shared projection separation, reconnect recovery, and bounded/redacted operational diagnostics.
 
-Before the November 11 GitHub upload, the source was rebuilt in this repository and the 139 app tests and 20 isolated Firestore permission tests passed again. The generated `dist/app.js` SHA-256 is `3d0d00af520da4ba7054d40bd42d4d0475c1fa78918432cedfd7f49e6fcbe89b`, matching the verified v67 served artifact. Application source, rules, Firebase configuration, and dependency lockfile match the release checkout. The upload scan found no private key, saved authentication token, service-account credential, or private beta fixture identifiers/content in the candidate files; the embedded Firebase browser API key is intentionally public client configuration.
+Before the November 11 GitHub upload, the source was rebuilt in this repository and the 139 app tests and 20 isolated Firestore permission tests passed again. The then-generated v67 `dist/app.js` SHA-256 was `3d0d00af520da4ba7054d40bd42d4d0475c1fa78918432cedfd7f49e6fcbe89b`, matching the verified v67 served artifact. Application source, rules, Firebase configuration, and dependency lockfile match the release checkout. The upload scan found no private key, saved authentication token, service-account credential, or private beta fixture identifiers/content in the candidate files; the embedded Firebase browser API key is intentionally public client configuration.
 
 The two-account, user-assisted beta used computer Chrome and confirmed iPhone Safari. Completed scenarios included:
 

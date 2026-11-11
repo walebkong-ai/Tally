@@ -4,11 +4,15 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v67**. The published source checkpoint is `45bf30f4133344b7c86215ec618b755332d62b46` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v68**. The published source checkpoint is `770fa029d929f2a79305fa71057d48e5d9f2dc74` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Compact responsive layout (2026-11-11)
+
+The Add score and Account header controls share exact dimensions at every breakpoint, including after account controls rerender. Compact spacing, paired manual fields, collapsible entry tips and content-sized standings reduce scrolling while preserving accessible controls and natural scrolling for long content. Live guest manual entry was checked at 1366×768 and 375×667: the Save button is visible without scrolling. Narrow 320px layout has no horizontal overflow. The 139 application tests and generated JavaScript syntax check pass; this UI release does not change Firebase data, rules or the invited audience.
 
 ## Launch operations (2026-11-10)
 
