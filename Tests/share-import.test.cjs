@@ -74,7 +74,7 @@ const fixtures = [
   ['Connections\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪', 'connections', '0 mistakes', 'solved'],
   ['Connections\nPuzzle #124\n🟨🟩🟦🟪\n🟩🟨🟦🟪\n🟦🟨🟩🟪\n🟪🟨🟩🟦', 'connections', '4 mistakes', 'missed'],
   ['Connections\n🟨🟨🟨🟨\n🟨🟩🟦🟪', 'connections', '1 mistake', 'played'],
-  ['Strands #123\n💡🔵🔵🟡🔵🔵🔵🔵', 'strands', '1 hint', 'solved'],
+  ['Strands #123\n💡🔵🔵🟡🔵🔵🔵🔵', 'strands', '1 hint', 'played'],
   ['I solved the Mini Crossword in 0:54!', 'mini-crossword', '00:54', 'solved'],
   ['Spelling Bee\nGood Start · 10 points', 'spelling-bee', 'Good Start · 10 pts', 'played'],
   ['Spelling Bee\nQueen Bee', 'spelling-bee', 'Queen Bee', 'solved'],

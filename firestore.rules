@@ -1,0 +1,183 @@
+// Account lifecycle: owner-only immutable deletion lock (schemaVersion:int, state:'deleting'|'deleted',
+// startedAt:timestamp, completedAt:timestamp only after cleanup). No names, email, or scores.
+// Private records remain owner-readable during cleanup. New/updated account data requires no lock.
+// Score removals are revisioned tombstones, with public projections changed atomically.
+// Profiles expose only name/handle; shared results require an accepted active connection.
+// Request participant IDs are immutable except re-opening the same two-party connection.
+// clientHealth/{uid}: one owner-readable operational summary, no result content or PII.
+// schemaVersion=1, release:string<=64, updatedAt:server timestamp, counts:fixed bounded integer map,
+// lastError:{area,code,route}:fixed enums. Updates at most once per five minutes; IAM operators can inspect.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owner(uid) { return signedIn() && request.auth.uid == uid; }
+    function accountActive(uid) { return !exists(/databases/$(database)/documents/accountLifecycle/$(uid)); }
+    function writeActive(uid) { return !existsAfter(/databases/$(database)/documents/accountLifecycle/$(uid)); }
+    function deleting(uid) { return exists(/databases/$(database)/documents/accountLifecycle/$(uid)); }
+    function recentSignIn() { return request.auth.token.auth_time is int && request.time.toMillis() / 1000 - request.auth.token.auth_time < 300; }
+    function validLifecycle(r) {
+      return r.keys().hasOnly(['schemaVersion','state','startedAt','completedAt']) && r.schemaVersion == 1
+        && r.startedAt is timestamp && r.state in ['deleting','deleted']
+        && (r.state == 'deleting' ? !('completedAt' in r) : r.completedAt is timestamp);
+    }
+    function ready() { return get(/databases/$(database)/documents/system/security).data.accountDataVersion == 2; }
+    function accepted(path, a, b) {
+      return exists(path) && get(path).data.status == 'accepted'
+        && ((get(path).data.fromUid == a && get(path).data.toUid == b)
+          || (get(path).data.fromUid == b && get(path).data.toUid == a));
+    }
+    function connected(a, b) {
+      return signedIn() && accountActive(a) && accountActive(b) && (accepted(/databases/$(database)/documents/friendRequests/$(a + '__' + b), a, b)
+        || accepted(/databases/$(database)/documents/friendRequests/$(b + '__' + a), a, b));
+    }
+    function customAccess(uid, gameId) {
+      let ownGame = get(/databases/$(database)/documents/privateUsers/$(uid)/records/$('game_' + gameId)).data;
+      let myGame = get(/databases/$(database)/documents/privateUsers/$(request.auth.uid)/records/$('game_' + gameId)).data;
+      return !ownGame.deleted && !myGame.deleted && ownGame.value.sharing == 'friends' && myGame.value.sharing == 'friends'
+        && ownGame.value.id == myGame.value.id && ownGame.value.name == myGame.value.name
+        && ownGame.value.type == myGame.value.type && ownGame.value.officialUrl == myGame.value.officialUrl;
+    }
+    function validProfile(p) {
+      return p is map && p.keys().hasOnly(['name','handle','handleLower'])
+        && p.name is string && p.name.size() > 0 && p.name.size() <= 256
+        && p.handle is string && p.handleLower is string && p.handleLower.size() > 0 && p.handleLower.size() <= 256
+        && p.handle.lower() == '@' + p.handleLower;
+    }
+    function validEntry(e) {
+      return e is map && e.keys().hasOnly(['score','result','source','reveal','answer','note','shareText','grid','dailyDate'])
+        && e.score is string && e.score.size() <= 256 && e.result in ['solved','played','missed']
+        && e.source in ['manual','official-share'] && e.reveal is bool
+        && e.answer is string && e.answer.size() <= 4000 && e.note is string && e.note.size() <= 12000
+        && e.shareText is string && e.shareText.size() <= 12000 && e.grid is list && e.grid.size() <= 100
+        && (!('dailyDate' in e) || (e.dailyDate is string && e.dailyDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')));
+    }
+    function validGame(v, gameId) {
+      return v is map && v.id == gameId && (v.sharing == 'personal'
+        ? v.keys().hasOnly(['id','sharing'])
+        : v.sharing == 'friends' && v.keys().hasOnly(['id','name','type','officialUrl','sharing','definitionKey'])
+          && v.name is string && v.name.size() > 0 && v.name.size() <= 60
+          && v.type in ['points','strokes','time','guesses','mistakes','complete']
+          && v.officialUrl is string && v.officialUrl.size() <= 500 && v.definitionKey is string && v.definitionKey.size() <= 2000);
+    }
+    function sharedMatches(shared, record, uid, gameId, date) {
+      return shared.schemaVersion == 2 && shared.ownerUid == uid && shared.gameId == gameId && shared.date == date
+        && shared.revision == record.revision && shared.deleted == record.deleted
+        && (record.deleted
+          ? shared.keys().hasOnly(['schemaVersion','revision','ownerUid','gameId','date','deleted'])
+          : shared.keys().hasOnly(['schemaVersion','revision','ownerUid','gameId','date','deleted','score','result','source','reveal','answer','dailyDate'])
+            && shared.score == record.value.score && shared.result == record.value.result && shared.source == record.value.source
+            && shared.reveal == record.value.reveal
+            && (record.value.reveal && record.value.answer != ''
+              ? shared.answer == record.value.answer : !('answer' in shared))
+            && (!('dailyDate' in shared) || (gameId == 'color' && shared.dailyDate == date && record.value.dailyDate == date)));
+    }
+    function recordShape(r, id) {
+      return r.keys().hasOnly(['schemaVersion','revision','updatedAt','kind','deleted','value','date','gameId','personId'])
+        && r.schemaVersion == 2 && r.revision is int && r.revision >= 1 && r.updatedAt == request.time && r.deleted is bool
+        && (r.deleted ? r.value == null : r.value != null)
+        && (r.kind == 'profile' ? id == 'profile' && (r.deleted || validProfile(r.value))
+          : r.kind == 'result' ? r.date is string && r.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && r.gameId is string && r.gameId.matches('^[a-z0-9-]{1,180}$') && id == 'result_' + r.date + '_' + r.gameId
+            && (r.deleted || validEntry(r.value))
+          : r.kind == 'game' ? r.gameId is string && r.gameId.matches('^custom-[a-z0-9-]{1,150}$') && id == 'game_' + r.gameId && (r.deleted || validGame(r.value, r.gameId))
+          : r.kind == 'pin' ? r.gameId is string && id == 'pin_' + r.gameId && (r.deleted || r.value == true)
+          : r.kind == 'friend' && r.personId is string && id.matches('^friend_.+') && (r.deleted || r.value is map && r.value.id == r.personId));
+    }
+    function projectionUpdated(r, uid) {
+      return r.kind == 'result'
+        ? sharedMatches(getAfter(/databases/$(database)/documents/sharedScores/$(uid)/games/$(r.gameId)/results/$(r.date)).data, r, uid, r.gameId, r.date)
+        : r.kind != 'profile' || (r.deleted
+          ? !existsAfter(/databases/$(database)/documents/profiles/$(uid))
+          : getAfter(/databases/$(database)/documents/profiles/$(uid)).data.profile == r.value);
+    }
+    match /accountLifecycle/{uid} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && recentSignIn() && validLifecycle(request.resource.data)
+        && request.resource.data.state == 'deleting' && request.resource.data.startedAt == request.time;
+      allow update: if owner(uid) && recentSignIn() && validLifecycle(request.resource.data)
+        && resource.data.state == 'deleting' && request.resource.data.state == 'deleted'
+        && request.resource.data.startedAt == resource.data.startedAt && request.resource.data.completedAt == request.time;
+      allow delete: if false;
+    }
+    match /system/security {
+      allow get: if signedIn();
+      allow write, list: if false;
+    }
+    match /privateUsers/{uid}/records/{id} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && writeActive(uid) && ready() && recordShape(request.resource.data, id)
+        && request.resource.data.revision == 1 && projectionUpdated(request.resource.data, uid);
+      allow update: if owner(uid) && writeActive(uid) && ready() && recordShape(request.resource.data, id)
+        && request.resource.data.kind == resource.data.kind
+        && request.resource.data.revision == resource.data.revision + 1 && projectionUpdated(request.resource.data, uid);
+      allow delete: if owner(uid) && deleting(uid);
+    }
+    match /profiles/{uid} {
+      allow read: if signedIn();
+      allow create, update: if owner(uid) && writeActive(uid) && ready() && request.resource.data.keys().hasOnly(['schemaVersion','profile'])
+        && request.resource.data.schemaVersion == 2 && validProfile(request.resource.data.profile)
+        && getAfter(/databases/$(database)/documents/privateUsers/$(uid)/records/profile).data.value == request.resource.data.profile;
+      allow delete: if owner(uid) && (deleting(uid) || getAfter(/databases/$(database)/documents/privateUsers/$(uid)/records/profile).data.deleted);
+    }
+    match /sharedScores/{uid}/games/{gameId}/results/{date} {
+      allow read: if owner(uid) || signedIn() && resource.data.deleted == false && connected(uid, request.auth.uid)
+        && (!gameId.matches('^custom-.*') || customAccess(uid, gameId));
+      allow create, update: if owner(uid) && writeActive(uid) && ready() && sharedMatches(request.resource.data,
+        getAfter(/databases/$(database)/documents/privateUsers/$(uid)/records/$('result_' + date + '_' + gameId)).data, uid, gameId, date);
+      allow delete: if owner(uid) && deleting(uid);
+    }
+    function requestShape(r, id) {
+      return r.keys().hasOnly(['fromUid','toUid','fromProfile','toProfile','status','createdAt','updatedAt'])
+        && r.fromUid is string && r.toUid is string && r.fromUid != r.toUid
+        && (id == r.fromUid + '__' + r.toUid || id == r.toUid + '__' + r.fromUid)
+        && r.fromProfile is map && r.fromProfile.keys().hasOnly(['name','handle'])
+        && r.toProfile is map && r.toProfile.keys().hasOnly(['name','handle'])
+        && r.fromProfile.name is string && r.fromProfile.handle is string && r.toProfile.name is string && r.toProfile.handle is string
+        && r.createdAt is string && r.updatedAt is string;
+    }
+    match /friendRequests/{id} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/friendRequests/$(id))
+        || request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+      allow list: if signedIn() && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+      allow create: if signedIn() && writeActive(request.auth.uid) && writeActive(request.resource.data.toUid) && ready() && requestShape(request.resource.data, id)
+        && request.resource.data.fromUid == request.auth.uid && request.resource.data.status == 'pending';
+      allow update: if signedIn() && writeActive(request.auth.uid) && writeActive(resource.data.fromUid) && writeActive(resource.data.toUid) && ready() && requestShape(request.resource.data, id)
+        && request.auth.uid in [resource.data.fromUid, resource.data.toUid]
+        && request.resource.data.fromUid in [resource.data.fromUid, resource.data.toUid]
+        && request.resource.data.toUid in [resource.data.fromUid, resource.data.toUid]
+        && (resource.data.status in ['rejected','cancelled','removed']
+          ? request.resource.data.fromUid == request.auth.uid && request.resource.data.status == 'pending'
+          : request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+            && (resource.data.status == 'pending'
+              ? request.auth.uid == resource.data.toUid && request.resource.data.status in ['accepted','rejected']
+                || request.auth.uid == resource.data.fromUid && request.resource.data.status == 'cancelled'
+              : resource.data.status == 'accepted' && request.auth.uid in [resource.data.fromUid,resource.data.toUid] && request.resource.data.status == 'removed'));
+      allow delete: if signedIn() && deleting(request.auth.uid) && request.auth.uid in [resource.data.fromUid,resource.data.toUid];
+    }
+    function healthCount(c, k) { return c[k] is int && c[k] >= 0 && c[k] <= 1000000; }
+    function validHealth(h) {
+      return h.keys().hasAll(['schemaVersion','release','updatedAt','counts','lastError'])
+        && h.keys().hasOnly(['schemaVersion','release','updatedAt','counts','lastError'])
+        && h.schemaVersion == 1 && h.release is string && h.release.size() <= 64 && h.release.matches('^solvry-[0-9A-Za-z.-]+$')
+        && h.updatedAt == request.time && h.counts is map
+        && h.counts.keys().hasAll(['session','scoreSave','importRejected','syncSuccess','syncFailure','friendAction','error'])
+        && h.counts.keys().hasOnly(['session','scoreSave','importRejected','syncSuccess','syncFailure','friendAction','error'])
+        && healthCount(h.counts,'session') && healthCount(h.counts,'scoreSave') && healthCount(h.counts,'importRejected')
+        && healthCount(h.counts,'syncSuccess') && healthCount(h.counts,'syncFailure') && healthCount(h.counts,'friendAction') && healthCount(h.counts,'error')
+        && h.lastError is map && h.lastError.keys().hasAll(['area','code','route']) && h.lastError.keys().hasOnly(['area','code','route'])
+        && h.lastError.area in ['app','auth','sync','friends','import','storage']
+        && h.lastError.route in ['today','games','game','leaderboard','friends','import','privacy']
+        && h.lastError.code in ['unknown','unavailable','permission-denied','deadline-exceeded','resource-exhausted','failed-precondition','aborted','internal','invalid-argument','network-request-failed','popup-closed-by-user','popup-blocked','operation-not-allowed','requires-recent-login','quota-exceeded','type-error','syntax-error','range-error','script-error'];
+    }
+    match /clientHealth/{uid} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && writeActive(uid) && ready() && validHealth(request.resource.data);
+      allow update: if owner(uid) && writeActive(uid) && ready() && validHealth(request.resource.data)
+        && request.time >= resource.data.updatedAt + duration.value(5,'m');
+      allow delete: if owner(uid) && deleting(uid);
+    }
+    // Old mixed profile/history documents are available only to trusted migration tooling.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

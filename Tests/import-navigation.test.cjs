@@ -3,9 +3,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 function setup() {
   const c = vm.createContext({
+    safety, storageOwner: '', storageBaseline: {}, storageProblem: '', ORIGINAL_STORAGE_KEY: 'original',
     state: {selectedDate:'2026-11-03',entries:{}},
     elements: {shareTextInput:{value:''},importDate:{value:'2026-11-03'}},
     importDrafts:new Map(), importDraftRevision:0

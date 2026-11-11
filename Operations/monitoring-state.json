@@ -1,0 +1,29 @@
+{
+  "project": "solvry-walebkong",
+  "billingEnabled": false,
+  "notificationChannel": "projects/solvry-walebkong/notificationChannels/8964625112049085097",
+  "channelVerificationStatus": "not-required-or-unspecified",
+  "dashboard": "projects/32814860247/dashboards/9c89a92c-9391-4f67-914f-3b4ab1e6c8d9",
+  "policies": [
+    {
+      "name": "projects/solvry-walebkong/alertPolicies/2768589914904809013",
+      "displayName": "Solvry reads 80% free-quota warning",
+      "enabled": true
+    },
+    {
+      "name": "projects/solvry-walebkong/alertPolicies/10256598671801348681",
+      "displayName": "Solvry reads 95% free-quota warning",
+      "enabled": true
+    },
+    {
+      "name": "projects/solvry-walebkong/alertPolicies/14610673129422479090",
+      "displayName": "Solvry writes 80% free-quota warning",
+      "enabled": true
+    },
+    {
+      "name": "projects/solvry-walebkong/alertPolicies/14610673129422476631",
+      "displayName": "Solvry writes 95% free-quota warning",
+      "enabled": true
+    }
+  ]
+}

@@ -35,9 +35,9 @@ let html = #"""
       name="description"
       content="One leaderboard for your daily games. Paste results, track your progress, and compare scores with friends."
     />
-    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=26" />
+    <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=26" />
+    <link rel="stylesheet" href="styles.css?v=33" />
   </head>
   <body>
     <div class="app" id="app">
@@ -55,40 +55,41 @@ let html = #"""
           <a href="#friends">Friends</a>
         </nav>
         <div class="top-actions">
-          <a class="primary-button nav-add-score" href="#import">＋ Add score</a>
+          <a class="primary-button add-score-button nav-add-score" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a>
           <div class="account-controls" id="accountControls">
             <button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>
           </div>
         </div>
       </header>
 
+      <div class="sync-strip"><span id="syncSummary" role="status" aria-live="polite">Saved on this device</span><a href="#privacy">Privacy</a></div>
       <main class="workspace" id="mainContent">
         <p id="appNotice" class="app-notice" role="status" hidden></p>
         <section class="app-view home-view" id="today" data-view="today" aria-label="Today">
           <div class="view-head">
-            <div><h1>Your daily results</h1></div>
+            <div class="home-welcome"><p class="eyebrow">A little play, every day</p><h1>Your daily results<span class="welcome-spark" aria-hidden="true">✳</span></h1><p class="view-copy">Big wins, close calls. Keep them all here.</p></div>
             <label class="date-control">Viewing date<input id="playDate" type="date" /></label>
           </div>
           <div class="metrics home-metrics" aria-label="Your progress">
-            <div><strong id="playedMetric">0</strong><span>results this day</span></div>
-            <div><strong id="streakMetric">0</strong><span>day streak</span></div>
-            <div><strong id="totalSolvesMetric">0</strong><span>total results</span></div>
+            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="6" width="22" height="23" rx="5"/><path d="M10 3v6m12-6v6M5 13h22m-16 7 4 4 7-7"/></svg><strong id="playedMetric">0</strong><span>results this day</span></div>
+            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3c2 8 8 10 8 17a10 10 0 0 1-20 0c0-4 2-7 6-10-1 5 1 7 3 8 3-4 4-9 3-15Z"/><path d="M17 20c0 3 3 4 3 6a4 4 0 0 1-8 0c0-2 2-4 5-6Z"/></svg><strong id="streakMetric">0</strong><span>day streak</span></div>
+            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 3.7 7.5 8.3 1.2-6 5.9 1.4 8.3-7.4-3.9-7.4 3.9 1.4-8.3-6-5.9 8.3-1.2Z"/></svg><strong id="totalSolvesMetric">0</strong><span>total results</span></div>
             <span id="solvedMetric" hidden>0</span>
           </div>
           <div class="home-columns">
             <div class="home-main">
               <section class="panel home-games"><div class="section-head compact"><div><h2>Your games</h2><p class="field-help" id="quickGamesHint">Pin your favorites to keep them here.</p></div><a class="text-link" href="#games">Browse all →</a></div><div class="dashboard-strip" id="quickGames" aria-label="Your games"></div></section>
-              <section class="panel home-scores"><div class="section-head compact"><h2>Your scores</h2><a class="text-link" href="#import">Add score →</a></div><div id="homeScores" class="home-score-list"></div></section>
+              <section class="panel home-scores"><div class="section-head compact"><h2>Your scores</h2><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div><div id="homeScores" class="home-score-list"></div></section>
             </div>
             <div class="home-side">
-              <section class="panel home-ranking"><div class="section-head compact"><h2>Overall leaderboard</h2></div><p class="field-help" id="homeRankingDate"></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
+              <section class="panel home-ranking"><div class="section-head compact"><h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0V3Zm0 2H3v3a4 4 0 0 0 5 4m9-7h4v3a4 4 0 0 1-5 4m-4 2v6m-4 1h8"/></svg>Overall leaderboard</h2></div><p class="field-help" id="homeRankingDate"></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
               <section class="panel activity-card"><h2>Recent activity</h2><div class="progress-days" id="progressDays" aria-label="Recent play history"></div></section>
             </div>
           </div>
         </section>
 
         <section class="app-view catalog-view" id="games" data-view="games" aria-label="Games" hidden>
-          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="ghost-button" href="#import">Add a score</a></div></div>
+          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div></div>
           <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
           <div class="game-list" id="gameList"></div>
           <p class="catalog-attribution">Game names belong to their respective owners. Icons are Solvry illustrations; no affiliation or endorsement is implied.</p>
@@ -96,71 +97,53 @@ let html = #"""
 
         <section class="app-view game-view" id="game" data-view="game" aria-label="Game details" hidden>
           <a class="text-link back-link" href="#games">← All games</a>
-          <div class="view-head"><div><p class="eyebrow" id="gameDateLabel">Your daily game</p><h1 id="activeGameTitle">Wordle</h1></div><div class="view-actions"><a class="ghost-button" id="officialLink" href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener">Play official ↗</a><a class="primary-button" href="#import">Add score</a></div></div>
-          <div class="panel game-detail-card">
-            <div class="current-result" id="currentResult"></div>
-            <div class="game-meta-row"><span class="pill" id="friendCompletion">0 friends done</span><span class="pill" id="privacyState">Answers hidden</span><button type="button" class="text-link" id="viewGameLeaderboard">View leaderboard →</button></div>
-            <div id="customGameTools" class="custom-game-tools" hidden><p id="customGameNote" class="field-help"></p><div class="view-actions"><button id="shareCustomGameButton" class="ghost-button" type="button">Share game</button><button id="keepGamePersonalButton" class="text-link" type="button" hidden>Keep personal</button></div><p id="customGameStatus" role="status" class="field-help"></p></div>
-            <details class="scoring-details"><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p></details>
-            <div class="solvry-game" id="solvryGame" hidden></div><div class="letter-board" id="letterBoard" hidden></div>
+          <div class="view-head game-page-head">
+            <div class="game-title-lockup"><div id="gameHeroIcon" class="game-hero-icon" aria-hidden="true"></div><div><p class="eyebrow"><span id="gameTypeLabel">Supported game</span> · <span id="gameDateLabel">Your daily game</span></p><h1 id="activeGameTitle">Wordle</h1></div></div>
+            <div class="view-actions"><a class="ghost-button" id="officialLink" href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener">Play official ↗</a><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>
           </div>
-          <details class="game-answers" id="gameAnswers"><summary>Answers &amp; notes</summary>
-        <section class="panel answer-panel" id="answers">
-          <div class="section-head compact">
-            <div>
-              <p class="eyebrow">Spoiler-safe</p>
-              <h2>Answers and reactions</h2>
+          <div class="game-page-layout">
+            <div class="game-main-column">
+              <div class="panel game-detail-card">
+                <p class="eyebrow">Your result</p>
+                <div class="current-result" id="currentResult"></div>
+                <div class="game-meta-row"><span class="pill" id="friendCompletion">0 friends done</span><span class="pill" id="privacyState">Answers hidden</span></div>
+                <div id="customGameTools" class="custom-game-tools" hidden><p id="customGameNote" class="field-help"></p><div class="view-actions"><button id="shareCustomGameButton" class="ghost-button" type="button">Share game</button><button id="keepGamePersonalButton" class="text-link" type="button" hidden>Keep personal</button></div><p id="customGameStatus" role="status" class="field-help"></p></div>
+                <div class="solvry-game" id="solvryGame" hidden></div><div class="letter-board" id="letterBoard" hidden></div>
+              </div>
+              <details class="game-answers" id="gameAnswers"><summary>Answers &amp; notes<span class="spoiler-caption">Reveal at your own pace</span></summary>
+                <section class="panel answer-panel" id="answers">
+                  <div class="section-head compact"><div><p class="eyebrow">Spoiler-safe</p><h2>Answers and reactions</h2></div><button class="ghost-button" id="copyButton" type="button">Copy recap</button></div>
+                  <div class="answer-feed" id="answerFeed"></div>
+                </section>
+              </details>
             </div>
-            <button class="ghost-button" id="copyButton" type="button">Copy recap</button>
+            <aside class="game-side-column" aria-label="Scoring and standings">
+              <details class="scoring-details game-scoring-card" open><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p><div class="score-example"><span>Example result</span><strong id="gameScoreExample"></strong></div></details>
+              <section class="game-standings"><div class="section-head compact"><h2>This game’s standings</h2><button type="button" class="text-link" id="viewGameLeaderboard">View all →</button></div><p id="gameStandingsNote" class="field-help"></p><div id="gameStandings" class="leaderboard"></div></section>
+              <div class="game-flow-note"><span aria-hidden="true">✳</span><p>Play a little. Keep your progress.<br />Come back for the next round.</p></div>
+            </aside>
           </div>
-          <div class="answer-feed" id="answerFeed"></div>
-        </section>
-          </details>
         </section>
 
         <section class="app-view score-view panel" id="scoreView" data-view="import" aria-label="Add score" hidden>
           <div class="import-surface" id="import">
-            <div>
-              <p class="eyebrow">From your daily games</p>
-              <h1>Add a score</h1><p class="view-copy">Paste a shared result or enter a score. Review it before saving.</p>
-            </div>
-            <div class="score-tabs" role="tablist" aria-label="Add score method">
-              <button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button>
-              <button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button>
-            </div>
-            <div id="pastePanel" class="paste-panel" role="tabpanel" aria-labelledby="pasteTab">
-            <div class="import-input-head">
-              <label for="shareTextInput">Your copied result</label>
-              <button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button>
-            </div>
-            <textarea id="shareTextInput" class="share-input" rows="4" aria-describedby="importStatus" placeholder="Paste your game's shared result here" spellcheck="false"></textarea>
-            <label class="import-date">
-              Played on
-              <input id="importDate" type="date" required />
-            </label>
-            <div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
-            <div class="share-preview" id="sharePreview" hidden></div>
-            <div class="import-actions">
-              <button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button>
-              <button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button>
-            </div>
-            <details class="import-help">
-              <summary>Supported games &amp; sample results</summary>
-              <label>Game<select id="importExampleGame">
-                <option value="wordle">Wordle</option>
-                <option value="connections">Connections</option>
-                <option value="strands">Strands</option>
-                <option value="mini-crossword">Mini Crossword</option>
-                <option value="spelling-bee">Spelling Bee</option>
-                <option value="krillion">Krillion</option>
-              </select></label>
-              <pre id="importExampleText" class="share-grid"></pre>
-              <a id="importExampleLink" target="_blank" rel="noopener">Open game</a>
-            </details>
+            <div class="view-head score-page-head"><div><p class="eyebrow">From your daily games</p><h1>Add score</h1><p class="view-copy">A good round deserves a place here. Paste a result or enter it yourself.</p></div><span class="score-page-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="8" width="23" height="28" rx="5"/><rect x="15" y="4" width="11" height="8" rx="3" fill="#f5eedb"/><path d="m15 25 4 4 8-10M5 13H3m2 8H2M36 7l2-2"/></svg></span></div>
+            <div class="score-tabs" role="tablist" aria-label="Add score method"><button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button><button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button></div>
+            <div id="pastePanel" class="paste-panel score-entry-layout" role="tabpanel" aria-labelledby="pasteTab">
+              <section class="score-compose-card"><p class="score-step-label">01 · Bring your result</p><h2>Copy. Paste. You’re in.</h2><p class="score-card-copy">Use your game’s Share button to copy the full result. We’ll recognize supported games.</p>
+                <div class="import-input-head"><label for="shareTextInput">Your copied result</label><button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button></div>
+                <textarea id="shareTextInput" class="share-input" rows="7" aria-describedby="importStatus" placeholder="Paste your game’s shared result here…" spellcheck="false"></textarea>
+                <details class="import-help"><summary>Supported games &amp; sample results</summary><label>Game<select id="importExampleGame"><option value="wordle">Wordle</option><option value="connections">Connections</option><option value="strands">Strands</option><option value="mini-crossword">Mini Crossword</option><option value="spelling-bee">Spelling Bee</option><option value="krillion">Krillion</option></select></label><pre id="importExampleText" class="share-grid"></pre><a id="importExampleLink" target="_blank" rel="noopener">Open game ↗</a></details>
+              </section>
+              <section class="score-review-card"><p class="score-step-label">02 · Review &amp; save</p><h2>Check your result.</h2><label class="import-date">Played on<input id="importDate" type="date" required /></label>
+                <div class="preview-placeholder"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="11" y="9" width="27" height="34" rx="5"/><rect x="18" y="5" width="13" height="8" rx="3"/><path d="M19 22h11m-11 6h7m-7 6h13M6 18H3m3 9H2"/></svg><strong>Your next score goes here.</strong><p>Paste a result to preview the game and score before saving.</p></div>
+                <div class="share-preview" id="sharePreview" role="group" aria-label="Score preview" hidden></div><div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
+                <div class="import-actions"><button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button><button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button></div><p class="score-save-hint">Review the date and score before saving.</p>
+              </section>
             </div>
           </div>
-
             <div class="manual-entry" id="manualEntry" role="tabpanel" aria-labelledby="manualTab" hidden>
+            <section class="score-compose-card"><p class="score-step-label">01 · Enter your result</p><h2>Your game. Your score.</h2><p class="score-card-copy">Choose a game and the day you played, then enter your result.</p>
             <form class="entry-form" id="entryForm">
               <div class="manual-grid">
                 <label>Game<select id="manualGameInput"></select></label>
@@ -190,12 +173,12 @@ let html = #"""
                 <summary>Answer &amp; note (optional)</summary>
                 <label>
                   Answer
-                  <input id="answerInput" type="text" placeholder="Optional" autocomplete="off" />
+                  <input id="answerInput" type="text" maxlength="4000" placeholder="Optional" autocomplete="off" />
                   <small class="field-help">Only shared when reveal is on.</small>
                 </label>
               <label class="wide-label">
                 Note
-                <input id="noteInput" type="text" placeholder="Close call, lucky guess, weird clue..." autocomplete="off" />
+                <input id="noteInput" type="text" maxlength="12000" placeholder="Close call, lucky guess, weird clue..." autocomplete="off" />
               </label>
                 <label class="switch-row">
                   <input id="revealInput" type="checkbox" />
@@ -207,13 +190,15 @@ let html = #"""
                 <button class="primary-button" id="manualSaveButton" type="submit">Save score</button>
               </div>
               <div class="save-status" id="saveStatus" role="status"></div>
-            </form>
+            </form></section>
+            <aside class="score-manual-guide"><p class="score-step-label">Your score, your way</p><h2>A place for every game.</h2><p>Use manual entry when you don’t have a copied result, or choose Other game to create your own.</p><ol><li><strong>Choose your game</strong><span>Each game has its own scoring rules.</span></li><li><strong>Check the date</strong><span>Keep your daily history in the right place.</span></li><li><strong>Save your result</strong><span>Manual scores are labeled in your history and rankings.</span></li></ol><p class="field-help">Answers and notes are optional. Review your sharing choice before saving.</p></aside>
             </div>
           <div id="scoreNextSteps" class="score-next-steps" hidden><a href="#today" class="text-link">Back to overview →</a><a href="#leaderboard" class="text-link">View leaderboard →</a></div>
         </section>
 
         <section class="app-view leaderboard-view panel" id="leaderboard" data-view="leaderboard" aria-label="Leaderboard" hidden>
           <div class="view-head"><div><h1>Leaderboard</h1><p class="view-copy">Compare your daily results with friends.</p></div><a class="text-link" href="#friends">Manage friends →</a></div>
+          <div class="leaderboard-toolbar">
           <div class="score-tabs" role="tablist" aria-label="Leaderboard view">
             <button id="overallTab" role="tab" aria-selected="true" aria-controls="overallBoard" type="button">Overall</button>
             <button id="gameBoardTab" role="tab" aria-selected="false" aria-controls="gameBoard" tabindex="-1" type="button">Per game</button>
@@ -224,7 +209,8 @@ let html = #"""
             <label id="leaderboardGameLabel" hidden>Game<select id="leaderboardGameInput"></select></label>
             <p class="scoreboard-note" id="leaderboardDates"></p>
           </div>
-          <p id="leaderboardSummary" class="leaderboard-summary" role="status"></p>
+          </div>
+          <div class="leaderboard-status"><p id="leaderboardSummary" class="leaderboard-summary" role="status"></p><span id="leaderboardCount" class="leaderboard-count"></span></div>
           <div class="scoreboard-stack">
             <section class="scoreboard-block" id="overallBoard" role="tabpanel" aria-labelledby="overallTab">
               <div class="scoreboard-head">
@@ -232,6 +218,7 @@ let html = #"""
                 <span>Combined points</span>
               </div>
               <details class="ranking-rules"><summary>Points &amp; ties</summary><p>Daily places earn 10, 7, 5, 3, 2, then 1 point. Tied scores share the same place and points. Missed or invalid results earn no points. Overall totals reward playing more games.</p></details>
+              <div class="standings-labels" aria-hidden="true"><span>Place</span><span>Player</span><span>Performance</span><span>Score</span></div>
               <div class="leaderboard" id="overallLeaderboard"></div>
             </section>
             <section class="scoreboard-block" id="gameBoard" role="tabpanel" aria-labelledby="gameBoardTab" hidden>
@@ -240,41 +227,44 @@ let html = #"""
                 <span id="gameScoreboardMeta">Fewest guesses</span>
               </div>
               <p class="scoreboard-note" id="gameScoreboardNote">Lower guess counts rank higher.</p>
+              <div class="standings-labels" aria-hidden="true"><span>Place</span><span>Player</span><span>Performance</span><span>Score</span></div>
               <div class="leaderboard" id="gameLeaderboard"></div>
             </section>
           </div>
         </section>
 
         <section class="app-view friends-view panel" id="friends" data-view="friends" aria-label="Friends" hidden>
-          <div class="view-head"><div><h1>Friends</h1><p class="view-copy">Manage the people you compare results with.</p></div><button class="ghost-button compact-button" id="refreshFriendsButton" type="button">Refresh scores</button></div>
-          <section class="friends-section" aria-labelledby="friendsTitle">
-          <div class="scoreboard-head"><h3 id="friendsTitle">Friends</h3><span id="friendsCount"></span></div>
-          <div class="friend-sync" id="friendSync"></div>
-          <div class="friend-toolbar"><button id="copyHandleButton" class="ghost-button compact-button" type="button" hidden>Copy my handle</button><label class="demo-toggle"><input id="showDemoFriends" type="checkbox" />Show sample friends</label></div>
-          <div class="score-tabs" role="tablist" aria-label="Friends view">
-            <button id="friendsTab" role="tab" aria-selected="true" aria-controls="friendsPanel" type="button">Friends</button>
-            <button id="requestsTab" role="tab" aria-selected="false" aria-controls="requestsPanel" tabindex="-1" type="button">Requests</button>
-          </div>
-          <div id="friendsPanel" role="tabpanel" aria-labelledby="friendsTab">
-            <label class="friend-search">Find a friend<input id="friendSearch" type="search" placeholder="Name or handle" autocomplete="off" /></label>
-            <div id="friendRoster" class="friend-roster"></div>
-          </div>
-          <div id="requestsPanel" role="tabpanel" aria-labelledby="requestsTab" hidden><div id="friendRequests" class="friend-roster"></div></div>
-          <details class="add-friend-details"><summary id="addFriendSummary">Add a local friend</summary>
-          <form class="friend-form" id="friendForm">
-            <label>
-              Friend name
-              <input id="friendNameInput" type="text" placeholder="Avery" autocomplete="off" maxlength="60" required />
-            </label>
-            <label>
-              Handle
-              <input id="friendHandleInput" type="text" placeholder="@averyplays" autocomplete="off" maxlength="60" />
-            </label>
-            <button class="primary-button" id="friendSubmitButton" type="submit">Add local friend</button>
-          </form>
-          </details>
-          <p id="friendStatus" class="friend-status" role="status"></p>
-          </section>        </section>
+          <div class="view-head"><div><p class="eyebrow">A little friendly competition</p><h1>Better with friends</h1><p class="view-copy">Your people. Your daily games. A little motivation to play.</p></div><button class="ghost-button compact-button" id="refreshFriendsButton" type="button">Refresh friends</button></div>
+          <section class="friends-section friends-layout" aria-labelledby="friendsTitle">
+            <div class="friends-directory">
+              <div class="friends-directory-head"><div><h2 id="friendsTitle">Your friends</h2><p class="field-help">Keep your favorite rivals close.</p></div><span class="friends-count" id="friendsCount"></span></div>
+              <div class="score-tabs" role="tablist" aria-label="Friends view"><button id="friendsTab" role="tab" aria-selected="true" aria-controls="friendsPanel" type="button">Friends</button><button id="requestsTab" role="tab" aria-selected="false" aria-controls="requestsPanel" tabindex="-1" type="button">Requests</button></div>
+              <div id="friendsPanel" role="tabpanel" aria-labelledby="friendsTab"><label class="friend-search">Find a friend<input id="friendSearch" type="search" placeholder="Search by name or handle…" autocomplete="off" /></label><div id="friendRoster" class="friend-roster"></div></div>
+              <div id="requestsPanel" role="tabpanel" aria-labelledby="requestsTab" hidden><p id="friendRequestNotice" class="field-help" role="status"></p><div id="friendRequests" class="friend-roster"></div></div>
+            </div>
+            <aside class="friends-sidebar" aria-label="Add friends and connection status">
+              <div class="friend-sync" id="friendSync"></div>
+              <details class="add-friend-details" open><summary id="addFriendSummary">Add a local friend</summary><form class="friend-form" id="friendForm"><label>Friend name<input id="friendNameInput" type="text" placeholder="Avery" autocomplete="off" maxlength="60" required /></label><label>Handle<input id="friendHandleInput" type="text" placeholder="@averyplays" autocomplete="off" maxlength="60" /></label><button class="primary-button" id="friendSubmitButton" type="submit">Add local friend</button></form><p id="friendStatus" class="friend-status" role="status"></p></details>
+              <div class="friend-toolbar"><button id="copyHandleButton" class="ghost-button compact-button" type="button" hidden>Copy my handle</button><label class="demo-toggle"><input id="showDemoFriends" type="checkbox" />Show sample friends</label><p class="field-help">See how friend rankings look with example players.</p></div>
+            </aside>
+          </section>
+        </section>
+        <section class="app-view privacy-view panel" data-view="privacy" id="privacy" aria-label="Privacy notice" hidden>
+          <a class="text-link" href="#today">← Back to Solvry</a><p class="eyebrow">Your data</p><h1>Privacy notice</h1><p class="field-help">Updated November 10, 2026</p>
+          <h2>What you save</h2><p>Solvry tracks the game results you choose to add. Browser storage holds your scores, copied result text, answers, notes, pins, custom games, preferences, local game progress, and recovery copies of edits. It may also cache friends’ previously shared scores and sample data. Guest history and each signed-in account use separate storage. Signing in does not automatically import guest history.</p>
+          <h2>When you sign in</h2><p>Google and Firebase Authentication process your sign-in. Solvry receives an account ID, email address, display name, and provider information. Google may also supply a profile photo to Firebase Authentication; Solvry does not use it in scoreboards. Your device keeps account details and sign-in state. Firebase holds your sign-in identity; we do not receive your Google password. Your Solvry name and handle are stored in a directory that other signed-in Solvry users can search.</p>
+          <p>Eligible account scores, answers, notes, copied result text, result grids, pins, and friend references are saved in owner-only Firestore records. Personal custom-game definitions and scores stay on the device. Shared custom-game definitions and their scores sync after you choose to share them. Making a previously shared game personal stops future sharing, but previously synced private score records can remain until you delete those scores or the account. Some preferences and built-in game progress stay on the device.</p>
+          <h2>What friends can see</h2><p>After both people accept a friend request, connected friends can read eligible game scores, dates, completion status, and whether a result was pasted or entered manually. Answers are included only when you turn answer sharing on. Notes, raw pasted results, and grids are not included in friend-visible records. Shared custom games also require both people to join the same game and enable sharing. Friend requests include the participants’ names and handles.</p>
+          <p>Removing a connection or making a custom game personal revokes future reads after the cloud change succeeds. Previously received, copied, downloaded, or offline-cached information cannot be recalled.</p>
+          <h2>Hosting, storage, and providers</h2><p>The website is hosted through OpenAI Sites. Google Firebase provides account sign-in and cloud database services. The current Firestore database is in Toronto, Canada; this does not mean all hosting, authentication, logs, or provider processing takes place in Canada. Providers process technical and security information needed to run their services. This version of Solvry does not include Google Analytics or advertising trackers.</p>
+          <p>See <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase privacy information</a>, <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google’s privacy policy</a>, and <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">OpenAI’s privacy policy</a>.</p>
+          <h2>Operational diagnostics and backups</h2><p>Signed-in sessions send an account-linked health summary to owner-only Firebase records: release, update time, fixed activity counters, and the latest error category, code and app section. Reports exclude messages, stack traces, URLs, email addresses, scores, answers, notes and pasted results. Uploads are batched at most once every five minutes. Unsigned sessions are not uploaded. Queued diagnostics older than seven days are discarded when the app next loads, records an event or attempts an upload. A closed browser can retain the stored copy until it reopens; account deletion clears it on this device. Account exports include the fetched health summary. Health records remain until account deletion or operator removal; automatic expiry is not enabled on Spark.</p><p>Encrypted operator backups include database records and Google sign-in identity metadata, including email and account IDs. Local backups are retained for fourteen days. Backup availability depends on the operator’s computer and Firebase access; these copies are not managed cloud backups. Data deleted from the live account can remain in backups until they expire. The operator can inspect health summaries and platform usage metrics to run the service. No Google Analytics or advertising trackers are included.</p>
+          <h2>Your controls and retention</h2><p>Use Account to download JSON exports. An account export includes the cloud snapshot fetched at that time plus this device’s own scores and unsynced edits; a device export covers the current account or guest namespace and may omit data saved elsewhere. Exports exclude cached friends’ scores and sign-in tokens. Keep downloaded exports private.</p>
+          <p>Use a saved game’s Change date or Delete score controls to correct or remove a result. Cloud changes are confirmed by the sync indicator. Deleted cloud scores retain a minimal revisioned deletion record without score details to prevent an old device restoring the result. Browser recovery journals can retain previous score details until the account’s local storage is cleared, including through account deletion. Provider logs or backups, where retained, follow the providers’ own policies.</p>
+          <p>Delete account requires Google reauthentication and an explicit confirmation. The app first locks cloud writes, then removes its profile, requests, shared scores, and private records, and finally deletes the Firebase sign-in identity. Keep the page open until completion. If interrupted, sign in again and resume deletion; the account stays locked rather than silently reporting completion. A minimal account-ID deletion marker with status and timestamps is retained to block old sessions from recreating account data. No score details or email are kept in that marker.</p>
+          <p>Account deletion clears that account’s browser storage on this device. Other connected app sessions clear their account copy when they observe the deletion marker; offline devices may retain a copy until they reconnect. Guest data, downloaded exports, other people’s copies, and provider logs/backups are separate. Signing out alone does not erase browser data. Use separate browser or OS profiles on shared devices.</p>
+          <h2>Questions</h2><p>For questions about Solvry data, contact <a href="mailto:walebkong@gmail.com">walebkong@gmail.com</a>. This notice describes the current app; changes to storage or sharing will be reflected here.</p>
+        </section>
       </main>
 
       <dialog class="modal" id="gameDialog" aria-labelledby="gameDialogTitle">
@@ -320,6 +310,8 @@ let html = #"""
         </div>
       </dialog>
 
+      <dialog class="modal" id="scoreManagementDialog"><form class="modal-content" id="scoreManagementForm"><div class="section-head compact"><h2 id="scoreManagementTitle">Change score date</h2><button type="button" class="icon-button" id="closeScoreManagement" aria-label="Close">×</button></div><p id="scoreManagementCopy"></p><label id="scoreMoveDateLabel">Played on<input type="date" id="scoreMoveDate" required /></label><p class="field-help" role="status" id="scoreManagementStatus"></p><div class="view-actions"><button type="button" class="ghost-button" id="cancelScoreManagement">Cancel</button><button type="submit" class="primary-button" id="confirmScoreManagement">Change date</button></div></form></dialog>
+      <dialog class="modal" id="deleteAccountDialog"><form class="modal-content" id="deleteAccountForm"><div class="section-head compact"><h2>Delete your account?</h2><button type="button" class="icon-button" id="closeDeleteAccount" aria-label="Close">×</button></div><p id="deleteAccountIdentity" class="account-copy"></p><p>This permanently removes your Solvry cloud profile, scores, requests, and sign-in identity. Your account’s data on this device is cleared. Guest history is separate. Download an export first if you want a copy.</p><p class="field-help">A minimal account-ID deletion marker is retained to stop old sessions restoring data. Keep this page open until complete. Interrupted deletion can be resumed.</p><label>Type DELETE to confirm<input id="deleteAccountConfirmation" autocomplete="off" required pattern="DELETE" /></label><p class="field-help" role="status" id="deleteAccountStatus"></p><button type="submit" class="danger-button" id="confirmDeleteAccount">Reauthenticate &amp; delete</button></form></dialog>
       <dialog class="modal" id="accountDialog">
         <form method="dialog" class="modal-content account-modal" id="accountForm">
           <div class="section-head compact">
@@ -329,20 +321,20 @@ let html = #"""
             </div>
             <button class="icon-button" id="closeAccountDialogButton" type="button" aria-label="Close">x</button>
           </div>
-          <p class="account-copy">Save your profile and get ready to sync scores with friends.</p>
-          <button class="provider-button" type="button" data-provider="Apple">
-            <span class="provider-mark">A</span>
-            <span>Continue with Apple</span>
-          </button>
+          <p class="account-copy">Sign in to keep your scores across devices and compare with friends.</p>
           <button class="provider-button" type="button" data-provider="Google">
             <span class="provider-mark google">G</span>
             <span>Continue with Google</span>
           </button>
+          <p id="accountIdentity" class="account-copy"></p>
+          <section id="syncConflictControls" class="sync-conflict-controls" hidden><h3>Review competing edits</h3><ul id="syncConflictList"></ul><div class="view-actions"><button type="button" class="ghost-button" data-sync-action="remote">Use account/device copy</button><button type="button" class="primary-button" data-sync-action="local">Keep my edits</button></div></section>
+          <div class="account-safety-actions"><button id="importDeviceHistory" type="button" class="ghost-button" data-sync-action="import" hidden>Import device history</button><button id="retryAccountSync" type="button" class="ghost-button" data-sync-action="retry" hidden>Retry sync</button><button id="accountSignOut" type="button" class="text-link" data-sync-action="signout" hidden>Sign out</button></div>
+          <section class="account-data-controls"><h3>Your data</h3><p class="field-help" id="accountSyncDetail"></p><div class="view-actions"><button type="button" class="ghost-button" data-sync-action="export" id="exportAccountData" hidden>Export account + device</button><button type="button" class="ghost-button" data-sync-action="export-local">Export device copy</button><a class="text-link" href="#privacy" id="accountPrivacyLink">Privacy notice</a></div><button type="button" class="danger-button" data-sync-action="delete-account" id="deleteAccountButton" hidden>Delete account</button><p class="field-help" role="status" id="accountDataStatus"></p></section>
           <p class="account-note" id="accountStatus">Online sign-in isn’t available yet. You can keep tracking scores on this device.</p>
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=26" type="module"></script>
+    <script src="app.js?v=38" type="module"></script>
   </body>
 </html>
 """#
@@ -3246,7 +3238,16 @@ body { background: var(--paper); color: var(--ink); }
 .score-tabs button { min-height: 44px; padding: 10px 18px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; font-size: 14px; font-weight: 500; box-shadow: none; color: var(--muted); }
 .score-tabs button[aria-selected="true"] { color: var(--green); border-color: var(--green); background: none; box-shadow: none; font-weight: 650; }
 label { font-size: 13px; line-height: 1.5; font-weight: 600; color: var(--ink); }
-input, select, textarea { background: #fffefa; border: 1px solid #b7ae98; border-radius: 4px; padding: 10px 12px; font-size: 15px; font-weight: 400; color: var(--ink); }
+input, select, textarea, .date-control input { background: var(--petrol); border: 1px solid var(--petrol); border-radius: 4px; padding: 10px 12px; font-size: 15px; font-weight: 400; color: #fff; color-scheme: dark; }
+input::placeholder, textarea::placeholder { color: #e0edf0; opacity: 1; }
+select option, select optgroup { background: var(--petrol); color: #fff; }
+input:autofill, textarea:autofill { box-shadow: inset 0 0 0 1000px var(--petrol); -webkit-text-fill-color: #fff; }
+input:disabled, select:disabled, textarea:disabled { opacity: .65; cursor: not-allowed; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--petrol); outline-offset: 3px; }
+.ghost-button, .icon-button, .provider-button { background: var(--petrol); border-color: var(--petrol); color: #fff; }
+.ghost-button:hover, .icon-button:hover, .provider-button:hover { background: #1d505c; border-color: #1d505c; color: #fff; }
+#pinnedFilter[aria-pressed="true"] { background: #1d505c; border-color: #1d505c; color: #fff; box-shadow: inset 0 -3px var(--gold); }
+.official-link.disabled { background: var(--petrol); border-color: var(--petrol); color: #fff; opacity: .65; }
 .import-input-head { margin-top: 0; }
 .share-input { min-height: 140px; font-size: 15px; font-weight: 400; }
 .import-date { margin-top: 16px; }
@@ -3351,17 +3352,523 @@ h1:focus { outline: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
 
+/* Playful surfaces keep the ribbon identity and make each daily game feel inviting. */
+:root { --surface: #fffdf6; --soft-shadow: 0 3px 0 #373b3509; }
+.topbar { background: #fbf7eb; }
+.topnav { gap: 6px; }
+.topnav a { border: 1px solid transparent; border-radius: 12px; padding: 10px 14px; }
+.topnav a:hover { color: var(--petrol); background: #eee9dc; }
+.topnav a.active { color: var(--petrol); background: #e2edeb; border-color: #c5d9d5; }
+.primary-button, .ghost-button, .official-link, .provider-button { border-radius: 12px; transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+.primary-button { box-shadow: 0 3px 0 #173f49; }
+.primary-button:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #173f49; }
+.primary-button:active { transform: translateY(1px); box-shadow: 0 1px 0 #173f49; }
+input, select, textarea, .date-control input { border-radius: 10px; }
+.home-view .view-head { padding-block: 5px 12px; margin-bottom: 18px; }
+.home-welcome .eyebrow { color: var(--petrol); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin: 0 0 10px; }
+.home-welcome h1 { display: flex; align-items: center; gap: 16px; }
+.welcome-spark { display: inline-block; color: var(--terracotta); font-family: system-ui, sans-serif; font-size: .75em; transform: rotate(-12deg); }
+.home-welcome .view-copy { margin-top: 10px; }
+.home-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; padding: 0; border: 0; margin-bottom: 28px; }
+.home-metrics > div, .home-metrics > div:nth-child(n) { display: grid; grid-template-columns: 42px minmax(0,1fr); grid-template-rows: auto auto; column-gap: 14px; row-gap: 4px; padding: 16px 20px; border: 1px solid #ddce9e; border-radius: 16px; background: #f6e9c6; box-shadow: var(--soft-shadow); }
+.home-metrics > div:nth-child(2) { background: #f3dfd5; border-color: #dfc1b3; }
+.home-metrics > div:nth-child(3) { background: #e3ebe0; border-color: #c7d5c3; }
+.home-metrics strong { grid-column: 2; font-size: 30px; }
+.home-metrics span { grid-column: 2; font-size: 12px; }
+.metric-icon { grid-row: 1 / 3; align-self: center; width: 34px; height: 34px; color: #866424; }
+.home-metrics > div:nth-child(2) .metric-icon { color: #a14b35; }
+.home-metrics > div:nth-child(3) .metric-icon { color: #48694a; }
+.home-columns { gap: 28px; }
+.home-side { border: 0; padding: 0; gap: 20px; }
+.home-main { gap: 24px; }
+.home-view .dashboard-strip { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.home-view .quick-game, .home-view .quick-game:nth-child(n) { --tile: #fffdf6; display: grid; grid-template-columns: 42px minmax(0,1fr) 14px; gap: 10px; min-height: 102px; padding: 16px 12px; border: 1px solid #d8cfbc; border-radius: 16px; background: var(--tile); box-shadow: var(--soft-shadow); transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
+.home-view .quick-game:nth-child(6n+1) { --tile: #edf1e5; }
+.home-view .quick-game:nth-child(6n+2) { --tile: #f0e7ef; }
+.home-view .quick-game:nth-child(6n+3) { --tile: #e6eff1; }
+.home-view .quick-game:nth-child(6n+4) { --tile: #edece6; }
+.home-view .quick-game:nth-child(6n+5) { --tile: #f7eacb; }
+.home-view .quick-game:nth-child(6n+6) { --tile: #f4e3d9; }
+.home-view .quick-game:hover { transform: translateY(-3px); border-color: #8fa89d; box-shadow: 0 6px 0 #373b350d; }
+.home-view .quick-game.active { border-color: #86a69d; }
+.home-view .quick-game::after { color: var(--petrol); font-size: 24px; }
+.home-view .quick-game.is-saved::after { content: '✓'; font-size: 17px; }
+.home-view .quick-game strong { font-size: 13px; }
+.home-view .quick-game span span { font-size: 11px; }
+.home-view .quick-game .game-logo { width: 42px; height: 46px; padding: 7px; border-radius: 12px; background: #fffdf6b3; transform: rotate(-5deg); transition: transform 160ms ease; }
+.home-view .quick-game:nth-child(even) .game-logo { transform: rotate(5deg); }
+.home-view .quick-game:hover .game-logo { transform: rotate(0deg) scale(1.07); }
+.home-view .quick-game .game-logo svg { width: 30px; height: 30px; }
+.home-view .home-ranking, .home-view .activity-card, .home-view .home-scores { padding: 20px !important; background: var(--surface); border: 1px solid #d8cfbc; border-radius: 18px; box-shadow: var(--soft-shadow); }
+.home-view .home-ranking h2 { display: flex; align-items: center; gap: 9px; }
+.section-icon { width: 23px; height: 23px; flex-shrink: 0; color: #957020; }
+.home-view .home-ranking .section-head { margin-bottom: 8px; }
+.home-ranking .ranking-empty { border: 0; padding: 16px 0 12px; }
+.home-ranking .block-link { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
+.home-empty { padding: 10px 0; }
+.home-empty .primary-button { font-size: 13px; }
+.progress-days { gap: 6px; }
+.progress-day, .progress-day.done, .progress-day.today { border: 1px solid #e4decd; border-radius: 10px; background: #f7f3e7; padding: 12px 2px; }
+.progress-day.today { border: 1px solid var(--petrol); background: #e8efec; }
+.progress-day.done { border-color: #cadac4; background: #e8efdf; color: #3e6344; }
+.progress-day span { font-size: 10px; }
+.catalog-view .game-list { gap: 12px; }
+.catalog-view .game-card { padding: 14px; background: var(--surface); border: 1px solid #d8cfbc; border-radius: 16px; box-shadow: var(--soft-shadow); transition: transform 160ms ease, border-color 160ms ease; }
+.catalog-view .game-card:hover { transform: translateY(-2px); border-color: #8fa89d; }
+.catalog-view .game-card.active { border-color: #86a69d; }
+.catalog-view .game-logo { border-radius: 13px; transform: rotate(-4deg); }
+.catalog-view .game-card:nth-child(odd) .game-logo { transform: rotate(4deg); }
+.game-detail-card { border: 1px solid #d8cfbc; border-radius: 18px; padding: 22px; background: var(--surface); }
+.game-detail-card .game-logo { border-radius: 10px; background: var(--game-tint); }
+.score-tabs, .social-tabs { gap: 5px; padding: 5px; border: 1px solid #d8cfbc; border-radius: 14px; background: #eee7d7; }
+.score-tabs button, .social-tabs button { border: 0; border-radius: 10px; }
+.score-tabs button[aria-selected="true"], .social-tabs button[aria-selected="true"] { border: 0; background: var(--surface); box-shadow: 0 2px 4px #373b3510; }
+.sync-card { padding: 16px; border: 1px solid #d8cfbc; border-radius: 14px; background: var(--surface); }
+.rank-row .rank { display: grid; place-items: center; border-radius: 9px; background: #f4ead0; font-family: inherit; font-size: 15px; }
+.rank-row.is-you { border-radius: 10px; background: #eaf0e7; }
+.modal { border-radius: 20px; }
+@media (max-width: 1100px) {
+  .topnav a { padding-inline: 10px; }
+  .home-view .dashboard-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .home-view .quick-game, .home-view .quick-game:nth-child(n) { min-height: 88px; }
+  .home-columns { gap: 20px; }
+}
+@media (max-width: 760px) {
+  .topbar { padding-top: 10px; }
+  .topnav { gap: 4px; padding-bottom: 8px; }
+  .topnav a { padding: 9px 3px; border-radius: 10px; }
+  .home-view .view-head { align-items: start; gap: 16px; }
+  .home-welcome .eyebrow { font-size: 10px; }
+  .home-welcome h1 { gap: 10px; font-size: clamp(28px,7.5vw,36px); }
+  .home-welcome .view-copy { font-size: 13px; }
+  .date-control { gap: 8px; }
+  .date-control input { width: 150px; }
+  .home-metrics { gap: 8px; margin-bottom: 24px; }
+  .home-metrics > div, .home-metrics > div:nth-child(n) { grid-template-columns: 1fr; padding: 14px 10px; gap: 5px; border-radius: 12px; }
+  .home-metrics strong, .home-metrics span { grid-column: 1; }
+  .home-metrics strong { font-size: 28px; }
+  .home-metrics span { margin: 0; font-size: 10px; }
+  .metric-icon { display: none; }
+  .home-columns { grid-template-columns: 1fr; }
+  .home-side { border: 0; padding: 0; }
+  .home-view .quick-game, .home-view .quick-game:nth-child(n) { grid-template-columns: 34px minmax(0,1fr); padding: 12px 10px; gap: 9px; min-height: 88px; }
+  .home-view .quick-game::after { display: none; }
+  .home-view .quick-game .game-logo { width: 34px; height: 40px; padding: 5px; }
+  .home-view .quick-game strong { font-size: 12px; }
+  .home-view .quick-game span span { font-size: 10px; }
+  .home-view .home-ranking, .home-view .activity-card, .home-view .home-scores { padding: 17px !important; }
+  .home-view h2 { font-size: 17px; }
+  .home-empty { gap: 12px; }
+  .catalog-view .game-list { gap: 10px; }
+  .game-detail-card { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quick-game, .game-logo, .game-card, .primary-button { transition: none !important; }
+  .home-view .quick-game:hover, .catalog-view .game-card:hover, .primary-button:hover, .primary-button:active { transform: none; }
+}
+
+/* Standings use the full workspace and grow with the viewport. */
+.rank-avatar, .rank-performance { display: none; }
+.leaderboard-view { max-width: none; width: 100%; scroll-margin-top: 160px; }
+.leaderboard-view:not([hidden]) { display: flex; flex-direction: column; gap: 14px; min-height: calc(100svh - 136px); }
+.leaderboard-view .view-head { margin: 0; }
+.leaderboard-view h1 { font-size: clamp(34px,3vw,50px); }
+.leaderboard-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 8px 20px; border: 1px solid #d8cfbc; border-radius: 18px; background: var(--surface); box-shadow: var(--soft-shadow); }
+.leaderboard-toolbar .score-tabs { flex: 0 1 360px; min-width: 240px; margin: 0; }
+.leaderboard-toolbar .leaderboard-controls { display: grid; grid-template-columns: minmax(170px,220px) minmax(220px,300px); gap: 16px; align-items: end; margin: 0; }
+.leaderboard-toolbar label { gap: 6px; font-size: 12px; }
+.leaderboard-toolbar input, .leaderboard-toolbar select { min-height: 44px; width: 100%; }
+.leaderboard-status { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 46px; padding: 12px 18px; border: 1px solid #c8d9d3; border-radius: 13px; background: #e5eee7; }
+.leaderboard-status .leaderboard-summary { margin: 0; padding: 0; color: #315b4d; font-size: 14px; font-weight: 600; }
+.leaderboard-count { color: #315b4d; font-size: 13px; white-space: nowrap; }
+.leaderboard-view .scoreboard-stack { display: flex; flex: 1; }
+.leaderboard-view .scoreboard-block { display: flex; flex: 1; flex-direction: column; min-width: 0; padding: 18px 24px 12px; border: 1px solid #d8cfbc; border-radius: 20px; background: var(--surface); box-shadow: var(--soft-shadow); gap: 8px; }
+.leaderboard-view .scoreboard-head { align-items: center; gap: 16px; }
+.leaderboard-view .scoreboard-head h3 { font-family: var(--display); font-size: clamp(22px,2vw,30px); letter-spacing: -.025em; }
+.leaderboard-view .scoreboard-head > span { padding: 6px 10px; border-radius: 8px; background: #f2ead5; color: #6a572c; font-size: 12px; font-weight: 600; }
+.leaderboard-view .ranking-rules { margin: 0; font-size: 12px; }
+.leaderboard-view .ranking-rules summary { padding: 2px 0 6px; }
+.leaderboard-view .ranking-rules p { max-width: 760px; }
+.standings-labels, .leaderboard-view .rank-row, .leaderboard-view .rank-row.is-you { display: grid; grid-template-columns: 64px minmax(180px,1fr) minmax(210px,1fr) minmax(100px,140px); align-items: center; gap: 24px; }
+.standings-labels { padding: 10px 16px; border-block: 1px solid #e6dfcd; color: #6d6b5d; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
+.standings-labels > :last-child { text-align: right; }
+.leaderboard-view .leaderboard { flex: 1; gap: 8px; grid-auto-rows: minmax(76px,1fr); }
+.leaderboard-view .leaderboard:has(.rank-row:only-child) { flex: 0; }
+.leaderboard-view .rank-row, .leaderboard-view .rank-row.is-you { padding: 14px 16px; margin: 0; border: 1px solid transparent; border-bottom-color: #e8e2d2; border-radius: 12px; box-shadow: none; }
+.leaderboard-view .rank-row:hover { background: #f7f3e7; }
+.leaderboard-view .rank-row.is-you { background: #e8f0e7; border-color: #b3cbb9; box-shadow: inset 4px 0 var(--petrol); }
+.leaderboard-view .rank-row .rank { width: 42px; height: 42px; border-radius: 12px; font-size: 18px; color: #655e4c; background: #f1ecde; }
+.leaderboard-view .rank-row[data-rank="1"] .rank { color: #765514; background: #f5df9e; }
+.leaderboard-view .rank-row[data-rank="2"] .rank { color: #665275; background: #e8dfed; }
+.leaderboard-view .rank-row[data-rank="3"] .rank { color: #8a4934; background: #f0d8c8; }
+.leaderboard-view .rank-person { display: flex; align-items: center; gap: 14px; }
+.leaderboard-view .rank-person > span:last-child { min-width: 0; }
+.leaderboard-view .rank-avatar { display: grid; place-items: center; flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; background: #eee6ef; color: #775775; font-family: var(--display); font-size: 22px; }
+.leaderboard-view .rank-row:nth-child(3n+2) .rank-avatar { background: #e1ecef; color: #326779; }
+.leaderboard-view .rank-row:nth-child(3n) .rank-avatar { background: #f3e7c8; color: #85611f; }
+.leaderboard-view .rank-row.is-you .rank-avatar { color: white; background: var(--petrol); }
+.leaderboard-view .rank-person strong { font-size: 17px; line-height: 1.4; }
+.leaderboard-view .rank-mobile-detail { display: none; }
+.leaderboard-view .rank-performance { display: block; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.leaderboard-view .rank-row .points { max-width: none; font-size: clamp(20px,1.8vw,28px); font-variant-numeric: tabular-nums; }
+.leaderboard-view .rank-row .points small { margin-top: 3px; font-size: 11px; font-weight: 500; }
+@media (min-width: 1400px) and (min-height: 850px) {
+  .leaderboard-view:not([hidden]) { min-height: calc(100svh - 144px); }
+}
+@media (min-width: 1600px) and (min-height: 850px) {
+  .leaderboard-view:not([hidden]) { min-height: calc(100svh - 144px); gap: 24px; }
+  .leaderboard-view .scoreboard-block { padding: 28px 30px 16px; }
+  .leaderboard-view .rank-person strong { font-size: 20px; }
+  .leaderboard-view .rank-performance { font-size: 16px; }
+  .leaderboard-view .rank-row .rank { width: 48px; height: 48px; font-size: 21px; }
+  .leaderboard-view .rank-avatar { width: 52px; height: 52px; font-size: 26px; }
+}
+@media (max-width: 1000px) {
+  .leaderboard-toolbar { flex-wrap: wrap; gap: 14px; }
+  .leaderboard-toolbar .score-tabs { flex: 1 1 100%; }
+  .leaderboard-toolbar .leaderboard-controls { width: 100%; grid-template-columns: 1fr 1fr; }
+  .standings-labels, .leaderboard-view .rank-row, .leaderboard-view .rank-row.is-you { grid-template-columns: 48px minmax(0,1fr) minmax(100px,140px); gap: 16px; }
+  .standings-labels > :nth-child(3), .leaderboard-view .rank-performance { display: none; }
+  .leaderboard-view .rank-mobile-detail { display: block; margin-top: 4px; font-size: 12px; line-height: 1.5; }
+}
+@media (max-width: 600px) {
+  .leaderboard-view:not([hidden]) { min-height: auto; gap: 16px; }
+  .leaderboard-view .view-head { align-items: start; gap: 12px; }
+  .leaderboard-view h1 { font-size: 34px; }
+  .leaderboard-view .view-copy { font-size: 13px; }
+  .leaderboard-view .view-head > .text-link { font-size: 12px; }
+  .leaderboard-toolbar { padding: 12px; border-radius: 14px; }
+  .leaderboard-toolbar .score-tabs { min-width: 0; }
+  .leaderboard-toolbar .leaderboard-controls { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+  .leaderboard-toolbar input, .leaderboard-toolbar select { min-width: 0; padding: 10px 8px; font-size: 14px; }
+  .leaderboard-status { align-items: start; padding: 12px; gap: 10px; }
+  .leaderboard-status .leaderboard-summary { font-size: 12px; line-height: 1.6; }
+  .leaderboard-count { padding-top: 2px; font-size: 11px; }
+  .leaderboard-view .scoreboard-block { padding: 16px 10px 8px; border-radius: 16px; }
+  .leaderboard-view .scoreboard-head, .leaderboard-view .scoreboard-note, .leaderboard-view .ranking-rules { margin-inline: 4px; }
+  .leaderboard-view .scoreboard-head h3 { font-size: 23px; }
+  .leaderboard-view .scoreboard-head > span { padding: 5px 7px; font-size: 10px; }
+  .standings-labels, .leaderboard-view .rank-row, .leaderboard-view .rank-row.is-you { grid-template-columns: 28px minmax(0,1fr) minmax(64px,auto); gap: 10px; padding: 12px 8px; }
+  .standings-labels { font-size: 9px; }
+  .leaderboard-view .leaderboard { grid-auto-rows: auto; gap: 5px; }
+  .leaderboard-view .rank-row .rank { width: 28px; height: 32px; border-radius: 8px; font-size: 14px; }
+  .leaderboard-view .rank-person { gap: 8px; }
+  .leaderboard-view .rank-avatar { width: 30px; height: 30px; font-size: 17px; }
+  .leaderboard-view .rank-person strong { font-size: 13px; }
+  .leaderboard-view .rank-mobile-detail { font-size: 10px; }
+  .leaderboard-view .rank-row .points { max-width: 110px; overflow-wrap: anywhere; font-size: 18px; }
+  .leaderboard-view .rank-row .points small { font-size: 9px; }
+}
+
+/* Game detail and friend management share generous, responsive surfaces. */
+.game-view, .friends-view { max-width: none; width: 100%; scroll-margin-top: 160px; }
+.game-view .back-link { margin-bottom: 20px; }
+.game-page-head { margin-bottom: 26px; }
+.game-title-lockup { display: flex; align-items: center; gap: 20px; }
+.game-title-lockup .eyebrow { margin-bottom: 9px; color: var(--muted); font-size: 11px; }
+.game-view h1, .friends-view h1 { font-size: clamp(36px,3.4vw,54px); }
+.game-hero-icon .game-logo { width: 82px; height: 82px; padding: 17px; border: 1px solid #d9d3bc; border-radius: 23px; background: var(--game-tint); transform: rotate(-5deg); box-shadow: 0 4px 0 #373b3509; }
+.game-hero-icon .game-logo svg { width: 48px; height: 48px; }
+.game-page-layout { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(320px,1fr); align-items: start; gap: 24px; }
+.game-main-column, .game-side-column { display: grid; gap: 22px; min-width: 0; }
+.game-view .game-detail-card { position: relative; overflow: hidden; padding: clamp(24px,3vw,44px); border-radius: 24px; background: #eaf0e3; border: 1px solid #cbd5be; box-shadow: var(--soft-shadow); }
+.game-view .game-detail-card > .eyebrow { color: #4c684f; margin: 0 0 22px; letter-spacing: .12em; font-size: 11px; }
+.game-view .current-result { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; background: none; border: 0; }
+.result-status-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.result-status { display: inline-block; padding: 7px 12px; border: 1px solid #bdcdb5; border-radius: 999px; background: #f8faf3; color: #3d6246; font-size: 12px; font-weight: 650; text-transform: capitalize; }
+.result-status.is-missed { background: #f5e4d9; border-color: #d9bba8; color: #8a4933; }
+.result-source { color: #61705c; font-size: 12px; font-weight: 400; }
+.game-view .current-result .result-headline { display: block; font-family: var(--display); font-size: clamp(36px,4.1vw,68px); line-height: 1.1; font-weight: 700; letter-spacing: -.04em; color: var(--ink); overflow-wrap: anywhere; }
+.result-description { max-width: 560px; margin: 18px 0 28px; color: #576451; font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
+.result-action { align-self: flex-start; gap: 24px; }
+.result-action > span { font-size: 18px; color: inherit; }
+.result-share-grid { align-self: flex-start; max-width: 100%; max-height: 220px; overflow: auto; margin: 0 0 24px; padding: 16px; border: 1px solid #cbd5be; border-radius: 14px; background: #fffdf6b3; font-family: system-ui,sans-serif; font-size: 22px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.game-view .game-meta-row { margin-top: 30px; padding-top: 20px; border-top: 1px solid #cbd5be; gap: 12px; }
+.game-view .game-meta-row .pill { padding: 7px 11px; border-radius: 8px; background: #fffdf680; color: #52644d; font-size: 12px; font-weight: 500; }
+.game-view .custom-game-tools { border-color: #cbd5be; }
+.game-scoring-card, .game-standings, .game-view .game-answers { padding: 22px 24px; margin: 0; border: 1px solid #d8cfbc; border-radius: 20px; background: var(--surface); box-shadow: var(--soft-shadow); }
+.game-view .game-scoring-card { background: #f8edcf; border-color: #dfd0a5; }
+.game-scoring-card > summary { font-family: var(--display); font-size: 23px; letter-spacing: -.02em; }
+.game-scoring-card .score-hint { margin: 16px 0; color: #695c3b; font-size: 14px; line-height: 1.7; }
+.score-example { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #fffdf68c; }
+.score-example span { font-size: 12px; color: #756441; }
+.score-example strong { font-family: var(--display); font-size: 23px; overflow-wrap: anywhere; }
+.game-standings h2 { font-size: 18px; }
+.game-standings .section-head { flex-wrap: wrap; }
+.game-standings .leaderboard { margin-top: 12px; }
+.game-standings .rank-row { padding: 13px 0; gap: 10px; }
+.game-standings .rank-row.is-you { padding-left: 10px; }
+.game-standings .rank-person { display: flex; gap: 10px; align-items: center; }
+.game-standings .rank-avatar { display: grid; width: 32px; height: 32px; flex-shrink: 0; place-items: center; border-radius: 50%; background: #eee6ef; color: #775775; font-family: var(--display); font-size: 17px; }
+.game-standings .rank-row.is-you .rank-avatar { background: var(--petrol); color: white; }
+.game-standings .rank-person strong { font-size: 13px; }
+.game-standings .rank-person small { font-size: 10px; }
+.game-standings .points { font-size: 18px; }
+.game-standings .points small { font-size: 10px; }
+.game-standings-empty { padding: 20px 0 4px; }
+.game-standings-empty strong { font-family: var(--display); font-size: 24px; }
+.game-standings-empty p { max-width: 360px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.game-flow-note { display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+.game-flow-note > span { color: var(--terracotta); font-size: 42px; }
+.game-flow-note p { color: #766d5b; font-size: 13px; line-height: 1.7; margin: 0; }
+.game-view .game-answers > summary { padding: 0; font-size: 17px; font-weight: 650; }
+.spoiler-caption { float: right; padding-top: 3px; font-size: 11px; color: var(--muted); font-weight: 400; }
+.game-answers[open] > summary { margin-bottom: 22px; }
+.game-view .answer-panel { background: none; border: 0; padding: 0; }
+.game-view .answer-feed { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.game-view .answer-card { min-width: 0; padding: 16px; border: 1px solid #e0d8c4; border-radius: 14px; background: #faf7ed; }
+.game-view .answer-card .locked { border-radius: 8px; font-size: 14px; }
+.friends-view .eyebrow { color: var(--petrol); font-size: 11px; letter-spacing: .12em; }
+.friends-view .view-head { margin-bottom: 26px; }
+.friends-view .friends-layout { display: grid; grid-template-columns: minmax(0,1.65fr) minmax(300px,.9fr); gap: 24px; align-items: start; }
+.friends-directory { min-width: 0; min-height: 520px; padding: 26px; border: 1px solid #d8cfbc; border-radius: 22px; background: var(--surface); box-shadow: var(--soft-shadow); }
+.friends-directory-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.friends-directory-head h2 { font-family: var(--display); font-size: 28px; }
+.friends-count { flex-shrink: 0; padding: 8px 12px; border-radius: 10px; background: #e8efe3; color: #47654a; font-size: 12px; }
+.friends-directory .score-tabs { margin: 24px 0 20px; max-width: 440px; }
+.friends-directory .friend-search { margin: 0 0 22px; }
+.friends-directory .friend-search input { margin-top: 7px; }
+.friends-directory .friend-roster { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.friends-view .friend-person { display: flex; align-items: stretch; min-width: 0; flex-direction: column; gap: 20px; margin: 0; padding: 18px; border: 1px solid #dcd4c2; border-radius: 16px; background: #faf7ed; }
+.friend-card-head { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.friend-card-head > span:last-child { min-width: 0; }
+.friend-avatar { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border: 1px solid #ddcfe0; border-radius: 15px; background: #eee3ee; color: #795675; font-family: var(--display); font-size: 26px; transform: rotate(-4deg); }
+.friend-person:nth-child(3n+2) .friend-avatar { transform: rotate(4deg); border-color: #ccdce0; background: #e3edf0; color: #326779; }
+.friend-person:nth-child(3n) .friend-avatar { border-color: #e4d5ac; background: #f4e9c8; color: #85611f; }
+.friends-view .friend-person strong { font-size: 16px; line-height: 1.4; }
+.friends-view .friend-person small { margin-top: 4px; font-size: 12px; font-weight: 400; }
+.friend-card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid #e4ddcc; }
+.friend-kind { padding: 5px 8px; border-radius: 7px; background: #ece5d7; color: #72634e; font-size: 11px; }
+.friend-kind.is-connected { color: #416448; background: #e3eddf; }
+.friend-card-footer .text-link, .sample-caption { font-size: 11px; color: var(--muted); }
+.friend-card-footer .text-link:disabled { opacity: .5; cursor: not-allowed; }
+.friends-directory .social-empty { grid-column: 1/-1; display: grid; align-content: center; min-height: 200px; margin: 0; padding: 30px; border: 1px dashed #d2c7ad; border-radius: 16px; background: #f8f4e7; text-align: center; font-size: 14px; line-height: 1.8; }
+.friend-empty-state { justify-items: center; }
+.friend-empty-state svg { width: 52px; height: 52px; margin-bottom: 12px; color: #77917b; }
+.friend-empty-state strong { font-family: var(--display); color: var(--ink); font-size: 25px; line-height: 1.3; }
+.friend-empty-state p { max-width: 390px; margin: 8px 0 0; }
+.friends-sidebar { min-width: 0; display: grid; gap: 20px; }
+.friends-view .friend-sync { margin: 0; }
+.friends-view .friend-sync .sync-card { padding: 22px; border-radius: 20px; background: #e4edef; border-color: #c6d9de; }
+.friends-view .friend-sync .sync-card header { gap: 12px; flex-wrap: wrap; }
+.friends-view .friend-sync .sync-card strong { color: #2d5d68; font-size: 16px; }
+.friends-view .friend-sync .sync-card small { display: block; margin-top: 14px; color: #4c6770; font-size: 13px; font-weight: 400; }
+.friends-view .sync-pill { padding: 5px 9px; border-radius: 7px; background: #fffdf6a6; color: #456774; font-size: 11px; }
+.friends-view .add-friend-details { margin: 0; padding: 22px; border: 1px solid #d8cfbc; border-radius: 20px; background: var(--surface); box-shadow: var(--soft-shadow); }
+.friends-view .add-friend-details > summary { padding: 0; font-family: var(--display); font-size: 23px; font-weight: 700; }
+.friends-view .friend-form { display: grid; gap: 16px; margin-top: 22px; }
+.friends-view .friend-form .primary-button { width: 100%; margin-bottom: 3px; }
+.friends-view .friend-status:empty { display: none; }
+.friends-view .friend-status { margin: 16px 0 0; line-height: 1.6; font-size: 12px; }
+.friends-view .friend-toolbar { display: flex; flex-direction: column; align-items: start; margin: 0; padding: 0 6px; gap: 10px; }
+.friends-view .friend-toolbar .field-help { max-width: 300px; margin: 0; }
+.friends-directory #friendRequests .sync-card { padding: 18px; border-radius: 15px; background: #faf7ed; }
+.friends-view .view-head > button:disabled { opacity: .5; cursor: not-allowed; }
+@media (min-width: 1600px) and (min-height: 850px) {
+  .game-page-layout { gap: 32px; grid-template-columns: minmax(0,1.5fr) minmax(360px,1fr); }
+  .game-view .game-detail-card { padding: 44px; }
+  .game-view .current-result .result-headline { font-size: 72px; }
+  .friends-directory { min-height: calc(100svh - 285px); }
+  .friends-view .friend-person { padding: 24px; }
+}
+@media (max-width: 1100px) {
+  .game-page-layout { grid-template-columns: minmax(0,1.2fr) minmax(300px,1fr); gap: 18px; }
+  .game-view .game-detail-card { padding: 26px; }
+  .friends-view .friends-layout { grid-template-columns: minmax(0,1.3fr) minmax(280px,1fr); gap: 18px; }
+  .friends-directory { padding: 22px; }
+  .friends-directory .friend-roster { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .game-title-lockup { gap: 14px; }
+  .game-title-lockup .eyebrow { font-size: 10px; line-height: 1.6; }
+  .game-hero-icon .game-logo { width: 60px; height: 60px; padding: 12px; border-radius: 17px; }
+  .game-hero-icon .game-logo svg { width: 36px; height: 36px; }
+  .game-view h1, .friends-view h1 { font-size: 36px; }
+  .game-page-head { gap: 20px; margin-bottom: 22px; }
+  .game-page-layout { grid-template-columns: 1fr; gap: 20px; }
+  .game-main-column, .game-side-column { gap: 20px; }
+  .game-view .game-detail-card { padding: 24px; border-radius: 20px; }
+  .game-view .current-result .result-headline { font-size: 42px; }
+  .result-description { font-size: 14px; }
+  .result-status-row { margin-bottom: 20px; gap: 8px; }
+  .result-source { font-size: 11px; }
+  .result-action { align-self: stretch; }
+  .game-scoring-card, .game-standings, .game-view .game-answers { padding: 20px; }
+  .game-view .answer-feed { grid-template-columns: 1fr; }
+  .spoiler-caption { display: block; float: none; margin-top: 6px; }
+  .game-view .answer-panel .section-head { align-items: start; flex-wrap: wrap; }
+  .friends-view .friends-layout { grid-template-columns: 1fr; gap: 20px; }
+  .friends-directory { min-height: 0; padding: 20px; }
+  .friends-directory-head h2 { font-size: 25px; }
+  .friends-directory .score-tabs { max-width: none; margin-top: 20px; }
+  .friends-directory .friend-roster { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .friends-view .friend-person { padding: 14px; gap: 16px; }
+  .friend-card-head { align-items: start; flex-direction: column; gap: 12px; }
+  .friends-view .friend-person strong { font-size: 14px; }
+  .friends-view .friend-person small { font-size: 11px; }
+  .friend-avatar { width: 42px; height: 42px; font-size: 23px; }
+  .friend-kind, .sample-caption, .friend-card-footer .text-link { font-size: 10px; }
+  .friends-view .view-head > button { width: auto; }
+  .friends-directory .social-empty { padding: 22px; min-height: 160px; }
+}
+@media (max-width: 380px) {
+  .game-title-lockup { gap: 12px; }
+  .game-view h1, .friends-view h1 { font-size: 32px; }
+  .game-hero-icon .game-logo { width: 50px; height: 50px; padding: 10px; }
+  .game-view .game-detail-card { padding: 20px; }
+  .game-view .current-result .result-headline { font-size: 36px; }
+  .friends-directory { padding: 16px; }
+  .friends-directory .friend-roster { grid-template-columns: 1fr; }
+  .friend-card-head { align-items: center; flex-direction: row; }
+}
+
+/* A shared entry button keeps Add score recognizable across every view. */
+.add-score-button, .top-actions .add-score-button, .view-actions .add-score-button, .home-empty .add-score-button, .result-action.add-score-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--petrol); border-radius: 12px; background: var(--petrol); color: white; font-size: 14px; font-weight: 600; line-height: 1.3; white-space: nowrap; box-shadow: 0 3px 0 #173f49; }
+.add-score-button .add-score-icon, .current-result .add-score-button .add-score-icon { color: inherit; font-family: system-ui,sans-serif; font-size: 19px; font-weight: 500; line-height: 1; }
+.add-score-button > span, .current-result .add-score-button > span { color: inherit; font-size: inherit; font-weight: inherit; }
+.nav-add-score { min-width: 120px; }
+.nav-add-score[aria-current="page"] { outline: none; }
+.add-score-button:hover { background: #1d505c; }
+.add-score-button:focus-visible, .nav-add-score[aria-current="page"]:focus-visible { outline: 2px solid var(--petrol); outline-offset: 4px; }
+.score-view { max-width: none; width: 100%; scroll-margin-top: 160px; }
+.score-view .import-surface { display: block; }
+.score-page-head { margin-bottom: 24px; }
+.score-page-head .eyebrow { font-size: 11px; letter-spacing: .12em; color: var(--petrol); }
+.score-view h1 { font-size: clamp(36px,3.4vw,54px); }
+.score-page-icon { display: grid; place-items: center; width: 76px; height: 76px; flex-shrink: 0; border: 1px solid #d2dfe0; border-radius: 22px; background: #e4edef; color: var(--petrol); transform: rotate(6deg); }
+.score-page-icon svg { width: 45px; height: 45px; }
+.score-view .import-surface > .score-tabs { max-width: 440px; margin: 0 0 24px; }
+.score-entry-layout, .score-view .manual-entry { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(320px,1fr); gap: 24px; align-items: start; }
+.score-compose-card, .score-review-card, .score-manual-guide { min-width: 0; padding: clamp(22px,2.5vw,36px); border: 1px solid #d8cfbc; border-radius: 22px; background: var(--surface); box-shadow: var(--soft-shadow); }
+.score-view h2 { font-family: var(--display); font-size: clamp(26px,2vw,34px); line-height: 1.2; letter-spacing: -.025em; }
+.score-step-label { margin: 0 0 12px; color: var(--petrol); font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .12em; }
+.score-card-copy { max-width: 580px; margin: 14px 0 26px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.score-view .import-input-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin: 0 0 12px; }
+.score-view .import-input-head label { font-size: 13px; }
+.score-view .share-input { min-height: 250px; padding: 20px; border-radius: 14px; font-size: 16px; line-height: 1.7; font-weight: 400; }
+.score-view .share-input::placeholder { color: #e0edf0; }
+.score-view .share-input[aria-invalid="true"] { outline: 2px solid #a04e36; outline-offset: 3px; }
+.score-view .import-help { margin-top: 24px; padding-top: 12px; font-size: 13px; }
+.score-view .import-help summary { line-height: 1.5; }
+.score-view .import-help label { margin-top: 14px; }
+.score-view .import-help pre { padding: 16px; border: 1px solid #e0d5bc; border-radius: 12px; background: #f5ecd6; }
+.score-view .import-help a { color: var(--petrol); text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
+.score-review-card { background: #eaf0e3; border-color: #cbd5be; }
+.score-review-card .score-step-label { color: #4c684f; }
+.score-view .import-date { display: flex; flex-direction: column; align-items: stretch; gap: 7px; margin: 24px 0; font-size: 12px; }
+.score-view .import-date input { width: 100%; min-height: 46px; }
+.preview-placeholder { display: grid; justify-items: center; padding: 26px 20px; border: 1px dashed #bac8ad; border-radius: 16px; text-align: center; }
+.preview-placeholder svg { width: 52px; height: 52px; margin-bottom: 16px; color: #789274; }
+.preview-placeholder strong { font-family: var(--display); font-size: 25px; font-weight: 700; line-height: 1.25; color: #465b41; }
+.preview-placeholder p { max-width: 290px; margin: 10px 0 0; color: #61705b; font-size: 13px; line-height: 1.7; }
+.score-review-card:has(#sharePreview:not([hidden])) .preview-placeholder { display: none; }
+.score-view .share-preview { gap: 18px; margin: 0; padding: 24px; border: 1px solid #c6d2ba; border-radius: 16px; background: #fffdf6bd; }
+.score-view .import-result-head { gap: 12px; }
+.score-view .import-result-head .game-logo { width: 48px; height: 48px; flex-basis: 48px; padding: 8px; border-radius: 12px; background: var(--game-tint); }
+.score-view .import-result-head .game-logo svg { width: 32px; height: 32px; }
+.score-view .import-result-head strong { font-size: 17px; line-height: 1.4; }
+.score-view .import-result-head small { font-size: 11px; font-weight: 400; }
+.preview-score { display: block; font-family: var(--display); font-size: clamp(36px,3.8vw,62px); font-weight: 700; line-height: 1.1; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.preview-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+.preview-meta span { padding: 5px 8px; border-radius: 7px; background: #e6eddf; color: #506648; font-size: 11px; }
+.score-view .share-preview details summary { padding: 0; color: var(--petrol); font-size: 12px; }
+.score-view .share-preview .share-grid { max-height: 220px; overflow: auto; padding-top: 10px; }
+.score-review-card .import-status { min-height: 0; margin-top: 18px; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.6; }
+.score-review-card .import-status.error { border: 1px solid #d8b5a5; background: #f4e2d8; color: #82422d; }
+.score-view .import-actions { grid-template-columns: 1fr; gap: 12px; margin-top: 22px; }
+.score-view .import-actions .primary-button { min-height: 46px; }
+.score-view #importClearButton { background: transparent; border-color: #a6bba1; color: var(--petrol); }
+.score-view #importClearButton:hover { background: #dde6d4; }
+.score-view button.primary-button:disabled:hover { transform: none; box-shadow: 0 3px 0 #173f49; }
+.score-save-hint { margin: 16px 0 0; color: #61705b; font-size: 11px; line-height: 1.6; text-align: center; }
+.score-view:has(#scoreNextSteps:not([hidden])) .score-save-hint { display: none; }
+.score-view .manual-entry .entry-form { margin-top: 24px; gap: 22px; }
+.score-view .manual-grid, .score-view .manual-entry .field-grid { gap: 18px; align-items: start; }
+.score-view .manual-entry input:not([type="checkbox"]), .score-view .manual-entry select { min-height: 46px; }
+.score-view .manual-extras { padding: 16px; border: 1px solid #ded4bf; border-radius: 13px; background: #f7f1e3; }
+.score-view .manual-extras summary { padding: 0; font-size: 14px; }
+.score-view .manual-entry .form-actions { margin-top: 0; }
+.score-view .manual-entry .form-actions .primary-button { min-height: 46px; }
+.score-manual-guide { background: #e4edef; border-color: #c6d9de; }
+.score-manual-guide h2 { color: #315e67; }
+.score-manual-guide > p:not(.score-step-label) { color: #4f6a70; font-size: 14px; line-height: 1.8; }
+.score-manual-guide ol { counter-reset: score-step; display: grid; gap: 24px; list-style: none; margin: 28px 0; padding: 0; }
+.score-manual-guide li { counter-increment: score-step; position: relative; padding-left: 46px; }
+.score-manual-guide li::before { content: counter(score-step); display: grid; place-items: center; position: absolute; top: 0; left: 0; width: 30px; height: 32px; border-radius: 9px; background: #fffdf6b3; color: var(--petrol); font-family: var(--display); font-size: 17px; font-weight: 700; }
+.score-manual-guide li strong { display: block; color: #315e67; font-size: 14px; }
+.score-manual-guide li span { display: block; margin-top: 6px; color: #557077; font-size: 12px; line-height: 1.7; }
+.score-view .score-next-steps { justify-content: flex-end; flex-wrap: wrap; padding-top: 22px; }
+@media (min-width: 1600px) and (min-height: 850px) {
+  .score-entry-layout, .score-view .manual-entry { gap: 32px; grid-template-columns: minmax(0,1.5fr) minmax(360px,1fr); }
+  .score-view .share-input { min-height: 300px; }
+}
+@media (max-width: 900px) {
+  .score-entry-layout, .score-view .manual-entry { gap: 18px; grid-template-columns: minmax(0,1.2fr) minmax(280px,1fr); }
+  .score-compose-card, .score-review-card, .score-manual-guide { padding: 24px; }
+}
+@media (max-width: 760px) {
+  .add-score-button, .top-actions .add-score-button, .view-actions .add-score-button, .home-empty .add-score-button, .result-action.add-score-button { min-height: 38px; padding: 8px 10px; gap: 6px; font-size: 12px; }
+  .nav-add-score { min-width: 100px; }
+  .score-page-icon { width: 56px; height: 56px; border-radius: 16px; }
+  .score-page-icon svg { width: 36px; height: 36px; }
+  .score-page-head { display: grid; grid-template-columns: minmax(0,1fr) 56px; align-items: start; gap: 14px; }
+  .score-view h1 { font-size: 36px; }
+  .score-view .view-copy { font-size: 13px; }
+  .score-view .import-surface > .score-tabs { max-width: none; }
+  .score-entry-layout, .score-view .manual-entry { grid-template-columns: 1fr; gap: 20px; }
+  .score-compose-card, .score-review-card, .score-manual-guide { padding: 22px; border-radius: 18px; }
+  .score-view h2 { font-size: 28px; }
+  .score-view .import-input-head { align-items: start; flex-direction: column; }
+  .score-view #importClipboardButton { width: 100%; }
+  .score-view .share-input { min-height: 210px; padding: 16px; }
+  .score-card-copy { font-size: 13px; }
+  .score-view .share-preview { padding: 18px; }
+  .preview-score { font-size: 46px; }
+  .score-view .manual-grid, .score-view .manual-entry .field-grid { grid-template-columns: 1fr; gap: 16px; }
+  .score-view .manual-entry .entry-form { gap: 18px; }
+  .score-view .score-next-steps { justify-content: space-between; }
+}
+
+@media (max-width: 380px) { .topbar .brand-logo { width: 105px; } }
+
+.account-safety-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; }
+.sync-conflict-controls { padding: 16px; border: 1px solid #d8b5a5; border-radius: 14px; background: #f5e5db; margin-block: 16px; }
+.sync-conflict-controls ul { padding-left: 18px; max-height: 240px; overflow: auto; }
+.sync-conflict-controls li { margin-block: 12px; font-size: 13px; }
+.sync-conflict-controls small { display: block; line-height: 1.6; }
+.sync-conflict-controls .view-actions { flex-wrap: wrap; }
+.sync-strip { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:9px 3%; border-bottom:1px solid var(--line); font-size:12px; color:var(--muted); }
+.sync-strip [data-tone="error"], .danger-text { color:#9b342d; }
+.sync-strip [data-tone="pending"] { color:#775318; }
+.account-data-controls { border-top:1px solid var(--line); margin-top:20px; padding-top:16px; }
+.account-data-controls .view-actions, .score-management-actions { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+.account-data-controls .danger-button { margin-top:18px; }
+.danger-button { border:1px solid #953d34; color:white; background:#953d34; border-radius:10px; padding:12px 18px; font:inherit; font-weight:700; cursor:pointer; }
+button:disabled { cursor:wait; }
+.privacy-view { max-width:880px; margin-inline:auto; padding:clamp(20px,4vw,48px); }
+.privacy-view h2 { margin-top:30px; }
+.privacy-view p { line-height:1.75; }
+.score-management-actions { margin-top:18px; }
+
 """#
 
 let appScript = #"""
-const STORAGE_KEY = "solvry-state-v1";
-const LEGACY_STORAGE_KEY = "tallyo-state-v1";
+import * as safety from "./assets/sync-safety.mjs?v=35";
+import * as management from "./assets/account-management.mjs?v=37";
+import * as operations from "./assets/launch-ops.mjs?v=2";
+const STORAGE_KEY = "solvry-state-v2";
+const LEGACY_STORAGE_KEY = "solvry-state-v1";
+const ORIGINAL_STORAGE_KEY = "tallyo-state-v1";
+const storageWriter = crypto.randomUUID();
+let storageOwner = "";
+let storageBaseline = {};
+let storageProblem = "";
 const today = localDateKey();
 
 function localDateKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
-const SOLVRY_FIREBASE_CONFIG = window.SOLVRY_FIREBASE_CONFIG || null;
+const SOLVRY_FIREBASE_CONFIG = window.SOLVRY_FIREBASE_CONFIG || {"projectId":"solvry-walebkong","appId":"1:32814860247:web:c6734f8601d709d64e6d92","storageBucket":"solvry-walebkong.firebasestorage.app","apiKey":"AIzaSyCGUfK1w-l-AK-r-zlqMUpNTNEn6Ae4nzU","authDomain":"solvry-walebkong.firebaseapp.com","messagingSenderId":"32814860247","projectNumber":"32814860247","version":"2"};
 const FIREBASE_MODULES = {
   app: "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js",
   auth: "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js",
@@ -3574,6 +4081,7 @@ const elements = {
   leaderboardGameLabel: document.querySelector("#leaderboardGameLabel"),
   leaderboardDates: document.querySelector("#leaderboardDates"),
   leaderboardSummary: document.querySelector("#leaderboardSummary"),
+  leaderboardCount: document.querySelector("#leaderboardCount"),
   friendsCount: document.querySelector("#friendsCount"),
   friendsTab: document.querySelector("#friendsTab"),
   requestsTab: document.querySelector("#requestsTab"),
@@ -3582,6 +4090,7 @@ const elements = {
   friendSearch: document.querySelector("#friendSearch"),
   friendRoster: document.querySelector("#friendRoster"),
   friendRequests: document.querySelector("#friendRequests"),
+  friendRequestNotice: document.querySelector("#friendRequestNotice"),
   friendStatus: document.querySelector("#friendStatus"),
   friendSubmitButton: document.querySelector("#friendSubmitButton"),
   addFriendSummary: document.querySelector("#addFriendSummary"),
@@ -3614,8 +4123,34 @@ let cloudBackend = {
   modules: null,
   unsubscribers: [],
   saveTimer: 0,
-  applyingRemote: false
+  applyingRemote: false,
+  generation: 0,
+  syncReady: false,
+  saving: false,
+  saveAgain: false,
+  savePromise: null,
+  retryPromise: null,
+  loading: false,
+  deletionPending: false,
+  scoreBusy: false,
+  requestsLoading: false,
+  requestsChecked: false,
+  requestsError: "",
+  lastSyncedAt: ""
 };
+let scoreManagement = null;
+let accountDeletionBusy = false;
+let deletionTarget = null;
+const launchReporter = operations.createReporter({
+  storage: { getItem: key => localStorage.getItem(key), setItem: (key,value) => localStorage.setItem(key,value) },
+  prefix: STORAGE_KEY,
+  send: (uid,batch,isCurrent) => {
+    if (!isCurrent() || cloudBackend.auth?.currentUser?.uid !== uid || !cloudBackend.syncReady || cloudBackend.deletionPending || navigator.onLine === false) return false;
+    return operations.sendHealth({firestore:cloudBackend.modules.firestore,db:cloudBackend.db,uid,batch,isCurrent});
+  }
+});
+window.addEventListener('error', event => launchReporter.error('app',event.error,currentView()));
+window.addEventListener('unhandledrejection', event => launchReporter.error('app',event.reason,currentView()));
 
 elements.playDate.value = state.selectedDate;
 elements.importDate.value = state.selectedDate;
@@ -3681,6 +4216,7 @@ wireSocialTabs([elements.friendsTab, elements.requestsTab], (index) => {
   });
   elements.friendsPanel.hidden = index === 1;
   elements.requestsPanel.hidden = index === 0;
+  if (index === 1 && cloudFriendsAvailable()) runFriendAction(refreshCloudFriends);
 });
 elements.leaderboardRange.addEventListener("change", () => {
   leaderboardDays = Number(elements.leaderboardRange.value) === 7 ? 7 : 1;
@@ -3715,11 +4251,7 @@ elements.copyHandleButton.addEventListener("click", async () => {
     setFriendStatus("Handle copied. Share it with a friend so they can find you.");
   } catch { setFriendStatus(`Copy your handle: ${state.profile.handle}`, true); }
 });
-elements.refreshFriendsButton.addEventListener("click", () => runFriendAction(async () => {
-  await refreshAcceptedFriends();
-  saveState();
-  setFriendStatus("Friend scores refreshed.");
-}));
+elements.refreshFriendsButton.addEventListener("click", () => runFriendAction(refreshCloudFriends));
 elements.friendRoster.addEventListener("click", (event) => {
   const button = event.target.closest("[data-remove-friend]");
   if (!button) return;
@@ -3854,6 +4386,16 @@ elements.closeAccountDialogButton.addEventListener("click", () => {
 });
 
 elements.accountForm.addEventListener("click", (event) => {
+  const action = event.target.closest("[data-sync-action]")?.dataset.syncAction;
+  if (action === "export" || action === "export-local") { exportAccountData(action === "export-local").catch(error => { document.querySelector("#accountDataStatus").textContent = error.message; }); return; }
+  if (action === "delete-account") { openDeleteAccount(); return; }
+  if (action === "import") { importDeviceHistory().catch((error) => updateAccountStatus(error.message)); return; }
+  if (action === "local" || action === "remote") { resolveSyncConflicts(action === "local"); return; }
+  if (action === "signout") { signOutAccount(); return; }
+  if (action === "retry") {
+    recoverAccountConnection().catch(() => {});
+    return;
+  }
   const providerButton = event.target.closest("[data-provider]");
   if (!providerButton) return;
   signInWithProvider(providerButton.dataset.provider);
@@ -4008,6 +4550,9 @@ function render(focusGolf = true) {
 
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
+  document.querySelector("#gameHeroIcon").innerHTML = gameLogo(activeGame);
+  document.querySelector("#gameTypeLabel").textContent = activeGame.source === "custom" ? "Custom game" : activeGame.source === "solvry" ? "Solvry original" : "Supported game";
+  document.querySelector("#gameScoreExample").textContent = scoreStyleExample(activeGame);
   document.querySelector("#gameDateLabel").textContent = state.selectedDate;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
@@ -4016,6 +4561,7 @@ function render(focusGolf = true) {
 
   renderNav();
   renderAccount();
+  updateSyncStatus();
   renderQuickGames();
   renderGameList();
   renderOfficialLink(activeGame);
@@ -4055,26 +4601,13 @@ function focusHolesViewport(activeGame) {
 }
 
 function renderAccount() {
-  if (state.account?.signedIn) {
-    elements.accountControls.innerHTML = `
-      <span class="account-name">
-        ${escapeHtml(state.profile.name)}
-        <small>${escapeHtml(state.account.provider)} · ${state.account.backend === "cloud" ? "synced" : "local"}</small>
-      </span>
-      <button class="ghost-button compact-button" type="button" data-account-action="signout">Sign out</button>
-    `;
-    return;
-  }
-
-  elements.accountControls.innerHTML = `
-    <button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>
-  `;
+  elements.accountControls.innerHTML = '<button class="ghost-button compact-button" type="button" data-account-action="login">Account</button>';
 }
 
 function currentView() {
   const route = location.hash.slice(1) || "today";
   if (route === "answers") return "game";
-  return ["today", "games", "game", "leaderboard", "friends", "import"].includes(route) ? route : "today";
+  return ["today", "games", "game", "leaderboard", "friends", "import", "privacy"].includes(route) ? route : "today";
 }
 
 function renderNav() {
@@ -4118,10 +4651,10 @@ function renderHome() {
   });
   document.querySelector("#homeScores").innerHTML = scoreRows.length
     ? scoreRows.slice(0, 3).join("") + (scoreRows.length > 3 ? `<details class="more-home-scores"><summary>Show ${scoreRows.length - 3} more ${scoreRows.length === 4 ? "score" : "scores"}</summary>${scoreRows.slice(3).join("")}</details>` : "")
-    : '<div class="home-empty"><div><h3>No scores yet.</h3><p>Copy a game’s result and paste it here.</p></div><a class="primary-button" href="#import">Add your first score</a></div>';
+    : '<div class="home-empty"><div><h3>No scores yet.</h3><p>Copy a game’s result and paste it here.</p></div><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
   const rows = buildOverallLeaderboard();
   const ranked = rows.filter((row) => row.rank);
-  document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><strong>No ranked results yet.</strong><p>Save a result to see your place. Compare scores with friends when they’re available.</p><a class="text-link" href="#import">Add a result →</a></div>';
+  document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><strong>No ranked results yet.</strong><p>Save a result to see your place. Compare scores with friends when they’re available.</p><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
   document.querySelector("#homeRankingDate").textContent = `${state.selectedDate} · Daily combined points`;
 }
 
@@ -4166,10 +4699,7 @@ async function initCloudBackend() {
     cloudBackend.ready = true;
     cloudBackend.status = "ready";
     authModule.onAuthStateChanged(cloudBackend.auth, (user) => {
-      handleCloudAuthUser(user).catch((error) => {
-        cloudBackend.error = error.message || "Could not sync account.";
-        updateAccountStatus();
-      });
+      handleCloudAuthUser(user);
     });
     updateAccountStatus();
   } catch (error) {
@@ -4181,14 +4711,26 @@ async function initCloudBackend() {
 
 function updateAccountStatus(message = "") {
   if (!elements.accountStatus) return;
-  const text = message
-    || (cloudBackend.ready
-      ? "Google and Apple sign-in are connected. Scores, friends, and requests sync to Solvry Cloud."
-      : cloudBackend.configured
-        ? cloudBackend.error || "Connecting Solvry Cloud."
-        : "Online sign-in isn’t available yet. Your scores are saved on this device.");
-  elements.accountStatus.textContent = text;
-  elements.accountStatus.classList.toggle("error", !!cloudBackend.error || (!cloudBackend.ready && !cloudBackend.configured));
+  const connected = cloudFriendsAvailable();
+  elements.accountStatus.textContent = message || cloudBackend.error || (connected
+    ? "Signed in. Private account data and friend-visible scores are stored separately."
+    : cloudBackend.ready ? "Sign in to use your account’s separate storage. Device history stays separate."
+    : "Online sign-in isn’t available yet. Your scores are saved on this device.");
+  elements.accountStatus.classList.toggle("error", !!cloudBackend.error);
+  const signedIn = !!state.account?.uid && cloudBackend.auth?.currentUser?.uid === state.account.uid;
+  elements.accountForm.querySelectorAll("[data-provider]").forEach((button) => { button.hidden = signedIn; });
+  document.querySelector("#accountIdentity").textContent = signedIn ? `${state.profile.name} · ${state.account.email || state.profile.handle}` : "";
+  document.querySelector("#accountSignOut").hidden = !signedIn;
+  document.querySelector("#importDeviceHistory").hidden = !signedIn;
+  document.querySelector("#retryAccountSync").hidden = !signedIn || cloudBackend.deletionPending;
+  document.querySelector("#importDeviceHistory").disabled = cloudBackend.deletionPending;
+  document.querySelector("#exportAccountData").hidden = !signedIn;
+  document.querySelector("#deleteAccountButton").hidden = !signedIn;
+  document.querySelector("#deleteAccountButton").textContent = cloudBackend.deletionPending ? "Resume account deletion" : "Delete account";
+  updateSyncStatus();
+  const conflicts = state.syncConflicts || [];
+  document.querySelector("#syncConflictControls").hidden = !conflicts.length;
+  document.querySelector("#syncConflictList").innerHTML = conflicts.map((conflict) => `<li><strong>${escapeHtml(conflict.local?.gameId || conflict.local?.kind || "Saved data")}${conflict.local?.date ? ` · ${escapeHtml(conflict.local.date)}` : ""}</strong><small>This device: ${escapeHtml(conflict.local?.value?.score || "a different edit")} · Account/device copy: ${escapeHtml(conflict.remote?.value?.score || "a different version")}</small></li>`).join("");
 }
 
 async function signInWithProvider(providerName) {
@@ -4209,50 +4751,97 @@ async function signInWithProvider(providerName) {
 }
 
 async function signOutAccount() {
-  if (cloudBackend.ready && cloudBackend.auth?.currentUser) {
-    try {
-      await cloudBackend.modules.auth.signOut(cloudBackend.auth);
-    } catch (error) {
-      cloudBackend.error = error.message || "Could not sign out of Solvry Cloud.";
-      setFriendStatus("Couldn't sign out. Please try again.", true);
-      return;
-    }
+  try {
+    if (cloudBackend.auth?.currentUser) await cloudBackend.modules.auth.signOut(cloudBackend.auth);
+    if (!cloudBackend.auth?.currentUser) await handleCloudAuthUser(null);
+  } catch (error) {
+    cloudBackend.error = "Could not sign out. Please try again.";
+    updateAccountStatus();
   }
-  clearCloudSubscriptions();
-  state.account = { signedIn: false, provider: "", email: "", uid: "", backend: "local" };
-  state.friendRequests = { incoming: [], outgoing: [] };
-  saveState();
-  render();
+}
+
+function cloudSession() {
+  return { uid: storageOwner, generation: cloudBackend.generation };
+}
+
+function currentCloudSession(session) {
+  return !cloudBackend.deletionPending && !!session.uid && session.uid === storageOwner && session.generation === cloudBackend.generation && cloudBackend.auth?.currentUser?.uid === session.uid;
 }
 
 async function handleCloudAuthUser(user) {
-  if (!user) return;
+  const generation = ++cloudBackend.generation;
   clearCloudSubscriptions();
-  const provider = getAuthProviderLabel(user);
-  const profile = {
-    name: user.displayName || state.profile.name || "You",
-    handle: state.profile.handle && state.profile.handle !== "@solvry" ? state.profile.handle : `@${slugify((user.displayName || user.email || "solvry").split("@")[0])}`
-  };
-  state.profile = { ...state.profile, ...profile, id: "you" };
-  state.account = {
-    signedIn: true,
-    provider,
-    email: user.email || "",
-    uid: user.uid,
-    backend: "cloud"
-  };
+  cloudBackend.savePromise = null;
+  cloudBackend.retryPromise = null;
+  cloudBackend.saving = false;
+  cloudBackend.saveAgain = false;
+  cloudBackend.loading = !!user;
+  cloudBackend.deletionPending = false;
+  cloudBackend.scoreBusy = false;
+  cloudBackend.requestsLoading = false;
+  cloudBackend.requestsChecked = false;
+  cloudBackend.requestsError = "";
+  cloudBackend.lastSyncedAt = "";
+  cloudBackend.syncReady = false;
+  cloudBackend.error = "";
+  storageOwner = user?.uid || "";
+  if (typeof launchReporter !== 'undefined') launchReporter.setAccount(storageOwner);
+  state = loadState(storageOwner);
+  friendBusy = false;
+  document.querySelector("#accountDataStatus").textContent = "";
+  scoreManagement = null;
+  deletionTarget = null;
+  document.querySelector("#deleteAccountDialog").close();
+  document.querySelector("#deleteAccountConfirmation").value = "";
+  document.querySelector("#scoreManagementDialog").close();
+  document.querySelector("#confirmScoreManagement").disabled = false;
+  importDrafts.clear();
+  importDraftRevision += 1;
+  elements.shareTextInput.value = "";
+  elements.answerInput.value = "";
+  elements.noteInput.value = "";
+  manualFormDirty = false;
+  manualFormKey = "";
+  lastRenderedGameId = null;
+  elements.playDate.value = state.selectedDate;
+  elements.importDate.value = state.selectedDate;
+  elements.manualDateInput.value = state.selectedDate;
+  state.account = user ? { signedIn: true, provider: getAuthProviderLabel(user), email: user.email || "", uid: user.uid, backend: "cloud" } : { signedIn: false, provider: "", email: "", uid: "", backend: "local" };
+  render();
+  if (!user) { cloudBackend.loading = false; updateAccountStatus(); updateSyncStatus(); return; }
+  const session = cloudSession();
   try {
-    await loadCloudState(user.uid);
-    await persistCloudState();
-    subscribeFriendRequests(user.uid);
-    await refreshAcceptedFriends();
-    elements.accountDialog.close();
+    const { doc, getDocFromServer, onSnapshot } = cloudBackend.modules.firestore;
+    const lifecycleRef = doc(cloudBackend.db, "accountLifecycle", user.uid);
+    const lifecycle = await getDocFromServer(lifecycleRef);
+    if (!accountSessionMatches(session)) return;
+    if (lifecycle.exists()) { blockDeletedAccount(user.uid); return; }
+    cloudBackend.unsubscribers.push(onSnapshot(lifecycleRef, snapshot => {
+      if (accountSessionMatches(session) && snapshot.exists()) blockDeletedAccount(user.uid);
+    }, error => { if (accountSessionMatches(session)) { cloudBackend.error = error.message; updateSyncStatus(); } }));
+    await loadCloudState(user.uid, session);
+    if (!currentCloudSession(session)) return;
+    if (!state.cloudBase.profile && state.profile.handle === "@solvry") {
+      state.profile = { id: "you", name: (user.displayName || "You").slice(0, 256), handle: `@${slugify((user.displayName || user.email || "player").split("@")[0]).slice(0, 80)}-${user.uid.slice(-6)}` };
+    }
+    cloudBackend.syncReady = true;
+    cloudBackend.loading = false;
     saveState();
+    subscribeFriendRequests(user.uid);
+    if (typeof launchReporter !== 'undefined') launchReporter.count('session');
+    refreshCloudFriendRequests().catch(() => {});
+    await refreshAcceptedFriends();
+    if (!currentCloudSession(session)) return;
+    if (!state.syncConflicts.length) elements.accountDialog.close();
     render();
-  } catch (error) {
-    cloudBackend.error = error.message || "Could not finish account sync.";
     updateAccountStatus();
-    renderFriendSync();
+  } catch (error) {
+    if (generation !== cloudBackend.generation) return;
+    cloudBackend.loading = false;
+    cloudBackend.error = error.message || "Account sync is unavailable. Your edits remain saved in this account’s device storage.";
+    if (typeof launchReporter !== 'undefined') launchReporter.error('auth',error,currentView());
+    render();
+    updateAccountStatus();
   }
 }
 
@@ -4263,61 +4852,173 @@ function getAuthProviderLabel(user) {
   return "Solvry";
 }
 
-async function loadCloudState(uid) {
-  const { doc, getDoc } = cloudBackend.modules.firestore;
-  cloudBackend.applyingRemote = true;
-  try {
-    const snap = await getDoc(doc(cloudBackend.db, "users", uid));
-    if (!snap.exists()) return;
-    const remote = snap.data();
-    state.profile = { ...state.profile, ...(remote.profile || {}) };
-    state.friends = Array.isArray(remote.friends) ? remote.friends : state.friends;
-    if (Array.isArray(remote.pinnedGameIds)) {
-      const personalPins = state.pinnedGameIds.filter((id) => state.games.some((game) => game.id === id && game.source === "custom" && game.sharing !== "friends"));
-      state.pinnedGameIds = [...new Set([...remote.pinnedGameIds, ...personalPins])];
+function accountRecords() {
+  return safety.cloudRecords(state, (entry, date) => {
+    const parsed = parseShareText(entry.shareText).parsed;
+    return parsed?.gameId === "color" && parsed.dailyMonthDay && parsed.score === entry.score && !importDateError(parsed, date) ? date : "";
+  });
+}
+
+async function loadCloudState(uid, session = cloudSession()) {
+  const { doc, collection, getDocFromServer: getDoc, getDocsFromServer: getDocs } = cloudBackend.modules.firestore;
+  const marker = await getDoc(doc(cloudBackend.db, "system", "security"));
+  if (!currentCloudSession(session)) return;
+  if (!marker.exists() || marker.data().accountDataVersion !== 2) throw new Error("Secure account storage needs to be configured before cloud sync can start. Device history is kept separate.");
+  const snapshot = await getDocs(collection(cloudBackend.db, "privateUsers", uid, "records"));
+  if (!currentCloudSession(session)) return;
+  const remote = Object.fromEntries(snapshot.docs.map((item) => [item.id, safety.validateRecord(item.id, item.data())]));
+  const local = accountRecords();
+  if (!state.cloudBase.profile && state.profile.handle === "@solvry") delete local.profile;
+  const merged = safety.mergeEdits(state.cloudBase, local, remote);
+  const customCopies = new Map(state.games.filter(game => game.source === "custom").map(game => [game.id, Object.fromEntries(Object.entries(state.entries).filter(([, games]) => games[game.id]?.you).map(([date, games]) => [date, structuredClone(games[game.id].you)]))]));
+  safety.applyRecords(state, merged.records);
+  state.games = mergeCustomGames(starterState.games, state.games);
+  for (const game of state.games.filter(game => game.source === "custom" && game.sharing !== "friends" && customCopies.has(game.id))) {
+    for (const games of Object.values(state.entries)) if (games[game.id]) delete games[game.id].you;
+    for (const [date, entry] of Object.entries(customCopies.get(game.id))) {
+      state.entries[date] ||= {}; state.entries[date][game.id] ||= {}; state.entries[date][game.id].you = entry;
     }
-    state.entries = mergeEntries(state.entries, remote.entries || {});
-    state.games = mergeCustomGames(state.games, remote.customGames);
-  } finally {
-    cloudBackend.applyingRemote = false;
   }
+  state.syncConflicts = safety.combineConflicts(state.syncConflicts, merged.conflicts.map((conflict) => ({ ...conflict, scope: "cloud" })));
+  state.cloudBase = remote;
+  if (merged.conflicts.length) showAppNotice("Some saved edits need review. Open Account to choose which version to keep.");
 }
 
 function serializeCloudState() {
-  const sharedGameIds = new Set(state.games.filter((game) => game.source !== "custom" || game.sharing === "friends").map((game) => game.id));
-  const ownEntries = Object.fromEntries(Object.entries(state.entries).map(([date, games]) => [date,
-    Object.fromEntries(Object.entries(games).filter(([id, entries]) => sharedGameIds.has(id) && entries.you).map(([game, entries]) => [game, { you: entries.you }]))
-  ]));
-  return {
-    profile: {
-      name: state.profile.name,
-      handle: state.profile.handle,
-      handleLower: normalizeHandle(state.profile.handle)
-    },
-    friends: state.friends.filter((friend) => !isDemoFriend(friend)),
-    entries: ownEntries,
-    customGames: state.games.filter((game) => game.source === "custom" && game.sharing === "friends"),
-    pinnedGameIds: state.pinnedGameIds.filter((id) => sharedGameIds.has(id)),
-    updatedAt: new Date().toISOString()
-  };
+  const entries = {};
+  const records = accountRecords();
+  for (const record of Object.values(records)) {
+    if (record.kind !== "result" || record.deleted) continue;
+    const game = state.games.find((item) => item.id === record.gameId);
+    if (!game || (game.source === "custom" && game.sharing !== "friends")) continue;
+    const shared = safety.sharedResult({ ...record, revision: 1 }, storageOwner);
+    const { schemaVersion, revision, ownerUid, gameId, date, deleted, ...entry } = shared;
+    entries[date] ||= {};
+    entries[date][gameId] = { you: entry };
+  }
+  return { profile: records.profile?.value || {}, entries, customGames: state.games.filter((game) => game.source === "custom" && game.sharing === "friends") };
 }
 
 function queueCloudSave() {
-  if (!cloudFriendsAvailable() || cloudBackend.applyingRemote) return;
+  updateSyncStatus();
+  if (!cloudFriendsAvailable() || cloudBackend.applyingRemote || navigator.onLine === false || cloudBackend.scoreBusy) return;
+  const session = cloudSession();
   window.clearTimeout(cloudBackend.saveTimer);
   cloudBackend.saveTimer = window.setTimeout(() => {
+    if (!currentCloudSession(session)) return;
     persistCloudState().catch((error) => {
-      cloudBackend.error = error.message || "Could not save to Solvry Cloud.";
+      if (!currentCloudSession(session)) return;
+      cloudBackend.error = error.message || "Could not sync. Your edits are still saved on this device.";
+      updateAccountStatus();
       renderFriendSync();
     });
   }, 420);
 }
 
-async function persistCloudState() {
-  if (!cloudFriendsAvailable()) return;
-  const { doc, setDoc } = cloudBackend.modules.firestore;
-  await setDoc(doc(cloudBackend.db, "users", state.account.uid), serializeCloudState(), { mergeFields: ["profile", "friends", "entries", "customGames", "pinnedGameIds", "updatedAt"] });
-  cloudBackend.error = "";
+async function commitCloudRecord(id, wanted, session, keepLocal = false) {
+  if (!currentCloudSession(session)) return false;
+  const { doc, runTransaction, serverTimestamp, getDocFromServer } = cloudBackend.modules.firestore;
+  const expectedRevision = state.cloudBase[id]?.revision || 0;
+  const ref = doc(cloudBackend.db, "privateUsers", session.uid, "records", id);
+  let result;
+  try {
+    result = await runTransaction(cloudBackend.db, async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      if (!currentCloudSession(session)) throw new Error("The active account changed. This operation was stopped.");
+      const remote = snapshot.exists() ? safety.validateRecord(id, snapshot.data()) : null;
+      if (safety.equal(safety.payload(remote), wanted)) return { record: remote };
+      if ((remote?.revision || 0) !== expectedRevision) return { conflict: true, record: remote };
+      const record = { ...wanted, schemaVersion: 2, revision: expectedRevision + 1 };
+      transaction.set(ref, { ...record, updatedAt: serverTimestamp() });
+      if (record.kind === "profile") {
+        const profileRef = doc(cloudBackend.db, "profiles", session.uid);
+        if (record.deleted) transaction.delete(profileRef);
+        else transaction.set(profileRef, { schemaVersion: 2, profile: record.value });
+      }
+      if (record.kind === "result") {
+        transaction.set(doc(cloudBackend.db, "sharedScores", session.uid, "games", record.gameId, "results", record.date), safety.sharedResult(record, session.uid));
+      }
+      return { record };
+    });
+  } catch (error) {
+    if (!currentCloudSession(session)) return false;
+    if (!["permission-denied", "aborted", "failed-precondition"].includes(error.code)) throw error;
+    // Rules may reject a stale revision before the SDK receives a retryable conflict.
+    const snapshot = await getDocFromServer(ref);
+    if (!currentCloudSession(session)) return false;
+    const remote = snapshot.exists() ? safety.validateRecord(id, snapshot.data()) : null;
+    if (safety.equal(safety.payload(remote), wanted)) result = { record: remote };
+    else if ((remote?.revision || 0) !== expectedRevision) result = { conflict: true, record: remote };
+    else throw error;
+  }
+  if (!currentCloudSession(session)) return false;
+  const latest = accountRecords()[id];
+  if (result.record) state.cloudBase[id] = result.record;
+  else delete state.cloudBase[id];
+  if (result.conflict) {
+    state.syncConflicts = state.syncConflicts.filter((conflict) => conflict.id !== id || conflict.scope !== "cloud");
+    state.syncConflicts.push({ id, scope: "cloud", local: latest || wanted, remote: result.record });
+    safety.applyRecord(state, result.record || safety.tombstone(wanted));
+    showAppNotice("Another device changed the same data. Open Account to review both versions.");
+  } else if (!keepLocal && safety.equal(latest, wanted)) {
+    safety.applyRecord(state, result.record);
+  }
+  saveState(false);
+  return !result.conflict;
+}
+
+function persistCloudState() {
+  if (!cloudFriendsAvailable() || navigator.onLine === false) { updateSyncStatus(); return Promise.resolve(false); }
+  if (cloudBackend.savePromise) { cloudBackend.saveAgain = true; return cloudBackend.savePromise; }
+  const session = cloudSession();
+  cloudBackend.saving = true;
+  updateSyncStatus();
+  const task = performCloudStateSave(session).finally(() => {
+    if (cloudBackend.savePromise !== task) return;
+    cloudBackend.savePromise = null;
+    cloudBackend.saving = false;
+    updateSyncStatus();
+    if (cloudBackend.saveAgain) { cloudBackend.saveAgain = false; queueCloudSave(); }
+  });
+  cloudBackend.savePromise = task;
+  return task;
+}
+
+async function performCloudStateSave(session) {
+  try {
+    const records = accountRecords();
+    const changed = Object.entries(records).filter(([id, record]) => !safety.equal(record, safety.payload(state.cloudBase[id])));
+    const blockedGames = new Set();
+    const activations = [];
+    for (const [id, record] of changed.filter(([, record]) => record.kind === "game")) {
+      if (!currentCloudSession(session)) return;
+      if (!record.deleted && record.value.sharing === "friends" && state.cloudBase[id]?.value?.sharing !== "friends") {
+        const staged = { ...record, value: { id: record.gameId, sharing: "personal" } };
+        if (await commitCloudRecord(id, staged, session, true)) activations.push([id, record]);
+        else blockedGames.add(record.gameId);
+      } else if (!await commitCloudRecord(id, record, session)) blockedGames.add(record.gameId);
+    }
+    for (const [id, record] of changed.filter(([, record]) => record.kind !== "game")) {
+      if (!currentCloudSession(session)) return;
+      if (blockedGames.has(record.gameId) || state.syncConflicts.some((conflict) => conflict.id === id && conflict.scope === "cloud")) continue;
+      if (!await commitCloudRecord(id, record, session)) blockedGames.add(record.gameId);
+    }
+    for (const [id, record] of activations) {
+      const game = state.games.find((item) => item.id === record.gameId);
+      if (!blockedGames.has(record.gameId) && !state.syncConflicts.some((conflict) => conflict.local?.gameId === record.gameId) && game?.sharing === "friends") await commitCloudRecord(id, record, session);
+    }
+    if (!currentCloudSession(session)) return;
+    cloudBackend.error = state.syncConflicts.length ? "Some edits need review. Choose which version to keep below." : "";
+    render();
+    updateAccountStatus();
+    if (!pendingCloudChanges() && !state.syncConflicts.length) cloudBackend.lastSyncedAt = new Date().toISOString();
+    if (typeof launchReporter !== 'undefined') launchReporter.count('syncSuccess');
+    return true;
+  } catch (error) {
+    if (typeof launchReporter !== 'undefined' && currentCloudSession(session)) { launchReporter.count('syncFailure'); launchReporter.error('sync',error,currentView()); }
+    if (currentCloudSession(session)) { cloudBackend.error = error.message || "Cloud sync failed. Your changes remain on this device."; updateSyncStatus(); }
+    throw error;
+  }
 }
 
 function clearCloudSubscriptions() {
@@ -4328,22 +5029,66 @@ function clearCloudSubscriptions() {
 
 function subscribeFriendRequests(uid) {
   const { collection, onSnapshot, query, where } = cloudBackend.modules.firestore;
+  const session = cloudSession();
   const requests = collection(cloudBackend.db, "friendRequests");
   const incoming = onSnapshot(query(requests, where("toUid", "==", uid)), (snapshot) => {
+    if (!currentCloudSession(session)) return;
     state.friendRequests.incoming = snapshot.docs.map(requestSnapshotToState);
+    cloudBackend.requestsChecked = true;
     applyAcceptedRequests();
     refreshSocialViews();
-  }, friendSubscriptionError);
+  }, (error) => { if (currentCloudSession(session)) friendSubscriptionError(error); });
   const outgoing = onSnapshot(query(requests, where("fromUid", "==", uid)), (snapshot) => {
+    if (!currentCloudSession(session)) return;
     state.friendRequests.outgoing = snapshot.docs.map(requestSnapshotToState);
     applyAcceptedRequests();
     refreshSocialViews();
-  }, friendSubscriptionError);
+  }, (error) => { if (currentCloudSession(session)) friendSubscriptionError(error); });
   cloudBackend.unsubscribers.push(incoming, outgoing);
 }
 
-function friendSubscriptionError() {
-  setFriendStatus("Couldn't refresh friend requests. Check your connection and try signing in again.", true);
+function friendSubscriptionError(error) {
+  cloudBackend.requestsError = error?.code || "connection unavailable";
+  setFriendStatus("Live request updates paused. Tap Refresh friends to retry.", true);
+  renderFriendSync();
+}
+
+async function refreshCloudFriendRequests() {
+  const session = cloudSession();
+  if (!cloudFriendsAvailable() || !currentCloudSession(session)) throw new Error("Sign in to refresh friend requests.");
+  const { collection, getDocsFromServer, query, where } = cloudBackend.modules.firestore;
+  cloudBackend.requestsLoading = true;
+  cloudBackend.requestsError = "";
+  renderFriendSync();
+  try {
+    const requests = collection(cloudBackend.db, "friendRequests");
+    const [incoming, outgoing] = await Promise.all([
+      getDocsFromServer(query(requests, where("toUid", "==", session.uid))),
+      getDocsFromServer(query(requests, where("fromUid", "==", session.uid)))
+    ]);
+    if (!currentCloudSession(session)) return false;
+    state.friendRequests = { incoming: incoming.docs.map(requestSnapshotToState), outgoing: outgoing.docs.map(requestSnapshotToState) };
+    cloudBackend.requestsChecked = true;
+    applyAcceptedRequests();
+    return true;
+  } catch (error) {
+    if (currentCloudSession(session)) cloudBackend.requestsError = error.code || "connection unavailable";
+    throw error;
+  } finally {
+    if (currentCloudSession(session)) {
+      cloudBackend.requestsLoading = false;
+      refreshSocialViews();
+    }
+  }
+}
+
+async function refreshCloudFriends() {
+  const session = cloudSession();
+  if (!await refreshCloudFriendRequests() || !currentCloudSession(session)) return;
+  await refreshAcceptedFriends();
+  if (!currentCloudSession(session)) return;
+  saveState();
+  setFriendStatus("Friend requests and scores refreshed.");
 }
 
 function requestSnapshotToState(snapshot) {
@@ -4355,6 +5100,7 @@ function applyAcceptedRequests() {
   requests.filter((request) => ["rejected", "cancelled", "removed"].includes(request.status)).forEach((request) => {
     const uid = request.fromUid === state.account.uid ? request.toUid : request.fromUid;
     state.friends = state.friends.filter((friend) => friend.uid !== uid);
+    mergeFriendEntries(uid, {});
   });
   [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])]
     .filter((request) => request.status === "accepted")
@@ -4371,7 +5117,7 @@ function applyAcceptedRequests() {
         status: "accepted"
       });
     });
-  saveState();
+  try { saveState(); } catch { setFriendStatus("Friend updates could not be cached on this device. Your account connection is still saved online.", true); }
 }
 
 async function handleFriendSubmit() {
@@ -4399,11 +5145,13 @@ async function handleFriendSubmit() {
 }
 
 async function sendCloudFriendRequest(name, handle) {
+  const session = cloudSession();
   const normalizedHandle = normalizeHandle(handle);
   if (!normalizedHandle) throw new Error("Enter a friend's Solvry handle to send a request.");
   if (normalizedHandle === normalizeHandle(state.profile.handle)) throw new Error("You can't send yourself a friend request.");
   const { collection, doc, getDocs, query, runTransaction, where } = cloudBackend.modules.firestore;
-  const users = await getDocs(query(collection(cloudBackend.db, "users"), where("profile.handleLower", "==", normalizedHandle)));
+  const users = await getDocs(query(collection(cloudBackend.db, "profiles"), where("profile.handleLower", "==", normalizedHandle)));
+  if (!currentCloudSession(session)) throw new Error("The active account changed. Send the request again from the intended account.");
   const matches = users.docs.filter((item) => item.id !== state.account.uid);
   if (!matches.length) throw new Error(`No Solvry account found for @${normalizedHandle}. Check the handle with your friend.`);
   if (matches.length !== 1) throw new Error("More than one account uses that handle. Your friend needs a unique handle first.");
@@ -4414,6 +5162,7 @@ async function sendCloudFriendRequest(name, handle) {
   const ref = doc(cloudBackend.db, "friendRequests", requestId);
   await runTransaction(cloudBackend.db, async (transaction) => {
     const existing = await transaction.get(ref);
+    if (!currentCloudSession(session)) throw new Error("The active account changed.");
     const status = existing.exists() ? existing.data().status : "";
     if (status === "accepted") throw new Error("You're already connected with this friend.");
     if (status === "pending") throw new Error("A request is already pending. Check your Requests tab.");
@@ -4427,6 +5176,7 @@ async function sendCloudFriendRequest(name, handle) {
     updatedAt: new Date().toISOString()
     });
   });
+  if (!currentCloudSession(session)) throw new Error("The active account changed.");
   cloudBackend.error = "";
 }
 
@@ -4451,17 +5201,20 @@ function friendRequestStatus(action, request, uid) {
 }
 
 async function updateFriendRequest(action, requestId) {
+  const session = cloudSession();
   if (!cloudFriendsAvailable() || !requestId) throw new Error("Sign in to manage friend requests.");
   const { doc, runTransaction } = cloudBackend.modules.firestore;
   const ref = doc(cloudBackend.db, "friendRequests", requestId);
   const updated = await runTransaction(cloudBackend.db, async (transaction) => {
     const snapshot = await transaction.get(ref);
+    if (!currentCloudSession(session)) throw new Error("The active account changed.");
     if (!snapshot.exists()) throw new Error("That request is no longer available.");
     const request = snapshot.data();
     const status = friendRequestStatus(action, request, state.account.uid);
     transaction.update(ref, { status, updatedAt: new Date().toISOString() });
     return { ...request, id: requestId, status };
   });
+  if (!currentCloudSession(session)) throw new Error("The active account changed.");
   const key = updated.toUid === state.account.uid ? "incoming" : "outgoing";
   state.friendRequests[key] = [...state.friendRequests[key].filter((request) => request.id !== requestId), updated];
   applyAcceptedRequests();
@@ -4474,18 +5227,29 @@ async function refreshAcceptedFriends() {
 }
 
 async function loadFriendEntries(friend) {
-  const { doc, getDoc } = cloudBackend.modules.firestore;
-  const snap = await getDoc(doc(cloudBackend.db, "users", friend.uid));
-  if (!snap.exists()) { mergeFriendEntries(friend.id, {}); return; }
-  const remote = snap.data();
-  // A friend never silently adds games to your catalog; join their link first.
-  const approved = new Set((Array.isArray(remote.customGames) ? remote.customGames : []).filter((game) => {
-    const local = state.games.find((item) => item.id === game.id);
-    return local?.sharing === "friends" && game.sharing === "friends" && sameCustomGame(local, game);
-  }).map((game) => game.id));
-  const entries = Object.fromEntries(Object.entries(remote.entries || {}).map(([date, games]) => [date,
-    Object.fromEntries(Object.entries(games || {}).filter(([id]) => !id.startsWith("custom-") || approved.has(id)))
-  ]));
+  const session = cloudSession();
+  const { collection, getDocs, query, where } = cloudBackend.modules.firestore;
+  const entries = {};
+  const games = visibleGames().filter((game) => game.source !== "custom" || game.sharing === "friends");
+  await Promise.all(games.map(async (game) => {
+    let snapshot;
+    try {
+      snapshot = await getDocs(query(collection(cloudBackend.db, "sharedScores", friend.uid, "games", game.id, "results"), where("deleted", "==", false)));
+    } catch (error) {
+      if (error.code === "permission-denied") return;
+      throw error;
+    }
+    snapshot.docs.forEach((item) => {
+      const data = item.data();
+      if (data.schemaVersion !== 2 || data.deleted || data.ownerUid !== friend.uid || data.gameId !== game.id || data.date !== item.id || !/^\d{4}-\d{2}-\d{2}$/.test(data.date)) return;
+      const entry = { score: String(data.score), result: data.result, source: data.source, reveal: data.reveal === true };
+      if (entry.reveal && typeof data.answer === "string") entry.answer = data.answer;
+      if (data.dailyDate === data.date && game.id === "color") entry.dailyDate = data.date;
+      entries[data.date] ||= {};
+      entries[data.date][game.id] = { you: entry };
+    });
+  }));
+  if (!currentCloudSession(session) || !visibleFriends().some((item) => item.uid === friend.uid && item.status === "accepted")) return;
   mergeFriendEntries(friend.id, entries);
 }
 
@@ -4502,16 +5266,6 @@ function mergeFriendEntries(friendId, entries) {
   });
 }
 
-function mergeEntries(localEntries, remoteEntries) {
-  const merged = structuredClone(remoteEntries || {});
-  Object.entries(localEntries || {}).forEach(([dateKey, dayEntries]) => {
-    merged[dateKey] ||= {};
-    Object.entries(dayEntries || {}).forEach(([gameId, entries]) => {
-      merged[dateKey][gameId] = { ...(merged[dateKey][gameId] || {}), ...entries };
-    });
-  });
-  return merged;
-}
 
 function addOrUpdateFriend(friend) {
   const existingIndex = state.friends.findIndex((item) => (friend.id && item.id === friend.id) || (friend.uid && item.uid === friend.uid) || (!isDemoFriend(item) && !friend.uid && !item.uid && normalizeHandle(friend.handle) && normalizeHandle(item.handle) === normalizeHandle(friend.handle)));
@@ -4527,7 +5281,7 @@ function normalizeHandle(value) {
 }
 
 function cloudFriendsAvailable() {
-  return !!(cloudBackend.ready && state.account?.uid && cloudBackend.auth?.currentUser?.uid === state.account.uid);
+  return !!(!cloudBackend.deletionPending && cloudBackend.ready && cloudBackend.syncReady && state.account?.uid && cloudBackend.auth?.currentUser?.uid === state.account.uid);
 }
 
 function isDemoFriend(friend) {
@@ -4552,15 +5306,20 @@ function setFriendStatus(message, error = false) {
 }
 
 async function runFriendAction(action) {
+  const session = cloudSession();
   if (friendBusy) return;
   friendBusy = true;
   setFriendStatus("Working…");
   renderFriendSync();
-  try { await action(); } catch (error) {
+  try { await action(); if (typeof launchReporter !== 'undefined' && currentCloudSession(session)) launchReporter.count('friendAction'); } catch (error) {
+    if (session.uid !== storageOwner || session.generation !== cloudBackend.generation) return;
+    if (typeof launchReporter !== 'undefined') launchReporter.error('friends',error,currentView());
     setFriendStatus(error.code ? "Couldn't connect to your friends. Check your connection and try again." : error.message || "Couldn't complete that action. Try again.", true);
   } finally {
-    friendBusy = false;
-    refreshSocialViews();
+    if (session.uid === storageOwner && session.generation === cloudBackend.generation) {
+      friendBusy = false;
+      refreshSocialViews();
+    }
   }
 }
 
@@ -4582,14 +5341,16 @@ function renderFriendSync() {
   const outgoing = connected ? (state.friendRequests.outgoing || []).filter((request) => request.status === "pending") : [];
   elements.friendSync.innerHTML = `<article class="sync-card">
     <header><strong>${connected ? "Connected friends" : "Saved on this device"}</strong><span class="sync-pill">${connected ? "Online" : "Local only"}</span></header>
-    <small>${connected ? "Send requests using a friend's handle. Refresh to load their latest scores." : cloudBackend.ready ? "Sign in to send requests and compare scores across devices. Local friends don't receive invitations." : "Online friendships aren't enabled yet. Local friends stay on this device; their scores won't sync. Try sample friends to preview the rankings."}</small>
+    <small>${connected ? "Send requests using a friend's handle. Refresh friends to check requests and load their latest scores." : cloudBackend.ready ? "Sign in to send requests and compare scores across devices. Local friends don't receive invitations." : "Online friendships aren't enabled yet. Local friends stay on this device; their scores won't sync. Try sample friends to preview the rankings."}</small>
     ${cloudBackend.error ? '<small>Sync is unavailable right now. Your saved scores are still on this device.</small>' : ""}
   </article>`;
   elements.friendsCount.textContent = `${friends.filter((friend) => !isDemoFriend(friend)).length} friend${friends.filter((friend) => !isDemoFriend(friend)).length === 1 ? "" : "s"}`;
   elements.showDemoFriends.checked = !!state.showDemoFriends;
   elements.copyHandleButton.hidden = !connected;
-  elements.refreshFriendsButton.disabled = !connected || friendBusy;
-  elements.refreshFriendsButton.title = connected ? "Refresh friend scores" : "Available when online friends are connected";
+  elements.refreshFriendsButton.disabled = !connected || friendBusy || cloudBackend.requestsLoading;
+  elements.refreshFriendsButton.title = connected ? "Refresh friend requests and scores" : "Available when online friends are connected";
+  elements.friendRequestNotice.textContent = !connected ? "Sign in to receive online requests." : cloudBackend.requestsLoading ? "Checking requests…" : cloudBackend.requestsError ? `Couldn't refresh requests (${cloudBackend.requestsError}). Tap Refresh friends to retry.` : cloudBackend.requestsChecked ? `Requests for ${state.profile.handle} · ${incoming.length} received, ${outgoing.length} sent` : "Open Requests or tap Refresh friends to check for invitations.";
+  elements.friendRequestNotice.classList.toggle("error", !!cloudBackend.requestsError);
   elements.friendNameInput.closest("label").hidden = connected;
   elements.friendNameInput.required = !connected;
   elements.friendHandleInput.required = connected;
@@ -4600,31 +5361,27 @@ function renderFriendSync() {
   const search = elements.friendSearch.value.trim().toLowerCase();
   const matches = friends.filter((friend) => `${friend.name} ${friend.handle}`.toLowerCase().includes(search));
   elements.friendRoster.innerHTML = matches.length ? matches.map((friend) => `
-    <article class="friend-person"><span><strong>${escapeHtml(friend.name)}</strong><small>${escapeHtml(friend.handle)} · ${isDemoFriend(friend) ? "Sample" : friend.uid ? "Connected" : "Device only"}</small></span>
-    ${isDemoFriend(friend) ? '<span class="pill">Sample</span>' : `<button type="button" class="ghost-button" data-remove-friend="${escapeHtml(friend.id)}" aria-label="Remove ${escapeHtml(friend.name)}" ${friendBusy ? "disabled" : ""}>Remove</button>`}</article>
-  `).join("") : `<p class="social-empty">${search ? "No matching friends. Try a name or handle." : connected ? "No friends added yet. Send a request using a friend's handle below." : "No friends added yet. Add a local friend below, or enable sample friends to preview rankings."}</p>`;
+    <article class="friend-person"><div class="friend-card-head"><span class="friend-avatar" aria-hidden="true">${escapeHtml(String(friend.name || "?").trim().charAt(0).toUpperCase())}</span><span><strong>${escapeHtml(friend.name)}</strong><small>${escapeHtml(friend.handle)}</small></span></div>
+    <div class="friend-card-footer"><span class="friend-kind${friend.uid ? " is-connected" : ""}">${isDemoFriend(friend) ? "Sample player" : friend.uid ? "Connected" : "Device only"}</span>${isDemoFriend(friend) ? '<span class="sample-caption">Example friend</span>' : `<button type="button" class="text-link" data-remove-friend="${escapeHtml(friend.id)}" aria-label="Remove ${escapeHtml(friend.name)}" ${friendBusy ? "disabled" : ""}>Remove</button>`}</div></article>
+  `).join("") : `<div class="social-empty friend-empty-state"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="16" r="7"/><path d="M5 39v-4a13 13 0 0 1 26 0v4M33 9a7 7 0 0 1 0 14m3 5a12 12 0 0 1 7 11"/><path d="m33 38 3 3 7-8"/></svg><strong>${search ? "No matches this time." : "Good company starts here."}</strong><p>${search ? "Try another name or handle." : connected ? "Use a friend's handle in the form to send your first request." : "Add a friend using the form, or turn on sample friends to explore the rankings."}</p></div>`;
   elements.friendRequests.innerHTML = !connected ? '<p class="social-empty">Real requests need online sign-in. Local friends are saved only on this device.</p>' : [...incoming, ...outgoing].map((request) => {
     const received = request.toUid === state.account.uid;
     const profile = received ? request.fromProfile : request.toProfile;
     const action = (value, label) => `<button type="button" class="ghost-button" data-friend-action="${value}" data-request-id="${escapeHtml(request.id)}" ${friendBusy ? "disabled" : ""}>${label}</button>`;
     return `<article class="sync-card"><header><strong>${escapeHtml(profile?.name || "Friend")}</strong><span class="sync-pill">${received ? "Received" : "Sent"}</span></header><small>${escapeHtml(profile?.handle || "")}</small><div class="request-actions">${received ? action("accept", "Accept") + action("reject", "Decline") : action("cancel", "Cancel request")}</div></article>`;
-  }).join("") || '<p class="social-empty">No pending requests. Find a friend by handle below.</p>';
+  }).join("") || `<p class="social-empty">${cloudBackend.requestsLoading ? "Loading requests…" : cloudBackend.requestsError ? "Your saved request list may be out of date." : !cloudBackend.requestsChecked ? "Requests have not loaded yet." : "No pending requests. Find a friend by handle using the form."}</p>`;
 }
 
 function renderCurrentResult(game, entry) {
-  const summary = entry
-    ? `${entry.result} · ${entry.score || defaultScoreLabel(entry.result)}`
-    : "No result saved yet";
-  const detail = entry
-    ? entry.note || (entry.reveal ? "Answer reveal is on." : "Answer reveal is off.")
-    : `Example score: ${scoreStyleExample(game)}`;
+  const headline = entry ? entry.score || defaultScoreLabel(entry.result) : "Make your move.";
+  const detail = entry ? entry.note || "Your result is saved for this day." : "Play a round, then bring your result back to Solvry.";
   elements.currentResult.innerHTML = `
-    ${gameLogo(game)}
-    <span>
-      <strong>${escapeHtml(summary)}</strong>
-      <span>${escapeHtml(detail)}</span>
-    </span>
-    <span class="pill">${entry?.source === "manual" ? "Manual" : entry ? "Saved" : "Open"}</span>
+    <div class="result-status-row"><span class="result-status${entry?.result === "missed" ? " is-missed" : ""}">${entry ? escapeHtml(entry.result) : "Not played yet"}</span><span class="result-source">${entry?.source === "manual" ? "Manual entry" : entry ? "Saved result" : "A fresh start"}</span></div>
+    <strong class="result-headline">${escapeHtml(headline)}</strong>
+    <p class="result-description">${escapeHtml(detail)}</p>
+    ${entry?.grid?.length ? `<pre class="result-share-grid" aria-label="Shared result grid">${escapeHtml(entry.grid.join("\n"))}</pre>` : ""}
+    ${entry ? `<div class="score-management-actions"><button type="button" class="text-link" data-score-manage="move">Change date</button><button type="button" class="text-link danger-text" data-score-manage="delete">Delete score</button></div>` : ""}
+    <a class="primary-button add-score-button result-action" href="#import"><span class="add-score-icon" aria-hidden="true">${entry ? "↗" : "+"}</span><span>${entry ? "Update result" : "Add score"}</span></a>
   `;
 }
 
@@ -6329,7 +7086,7 @@ function renderQuickGames() {
       const mine = entries.you;
       const status = mine ? mine.score || defaultScoreLabel(mine.result) : "Add your result";
       return `
-        <button class="quick-game${game.id === state.activeGameId ? " active" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
+        <button class="quick-game${game.id === state.activeGameId ? " active" : ""}${mine ? " is-saved" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
           ${gameLogo(game)}
           <span>
             <strong>${escapeHtml(game.name)}</strong>
@@ -6672,6 +7429,7 @@ function saveManualScore() {
   }
   elements.playDate.value = date;
   elements.importDate.value = date;
+  if (typeof launchReporter !== 'undefined') launchReporter.count('scoreSave');
   manualFormDirty = false;
   render();
   elements.saveStatus.className = "save-status success";
@@ -6689,7 +7447,7 @@ function renderMetrics() {
     const mine = gameEntries.you;
     if (!mine) return;
     played += 1;
-    if (isCompletedResult(mine.result)) completed += 1;
+    if (isCompletedResult(mine.result, game)) completed += 1;
   });
 
   elements.playedMetric.textContent = played;
@@ -6746,7 +7504,12 @@ function renderScoreboards(activeGame) {
   const gameRows = buildGameLeaderboard(game);
   elements.overallLeaderboard.innerHTML = renderRankRows(overallRows, "No scores yet");
   elements.gameLeaderboard.innerHTML = renderRankRows(gameRows, `No ${game.name} scores yet`);
-  const mine = (overall ? overallRows : gameRows).find((person) => person.id === "you");
+  const activeRows = overall ? overallRows : gameRows;
+  const mine = activeRows.find((person) => person.id === "you");
+  elements.leaderboardCount.textContent = `${activeRows.length} player${activeRows.length === 1 ? "" : "s"}`;
+  const detailRows = buildGameLeaderboard(activeGame).filter((person) => person.rank);
+  document.querySelector("#gameStandings").innerHTML = detailRows.length ? renderRankRows(detailRows) : '<div class="game-standings-empty"><strong>The first score starts it.</strong><p>Save a result to see your place, then compare with friends.</p><a class="text-link" href="#friends">Find your friends →</a></div>';
+  document.querySelector("#gameStandingsNote").textContent = state.showDemoFriends ? "Includes sample friends." : `Saved results for ${state.selectedDate}.`;
   const sample = state.showDemoFriends ? " · Includes sample friends" : "";
   elements.leaderboardSummary.textContent = (mine?.rank ? `You're #${mine.rank} · ${mine.value}` : "Save a score to join these rankings.") + sample;
 }
@@ -6759,12 +7522,14 @@ function renderRankRows(rows, emptyText) {
   return rows
     .map(
       (person) => `
-      <article class="rank-row${person.id === "you" ? " is-you" : ""}">
+      <article class="rank-row${person.id === "you" ? " is-you" : ""}" data-rank="${escapeHtml(person.rank || "unranked")}">
         <span class="rank">${person.rank || "—"}</span>
-        <span>
-          <strong>${person.id === "you" ? "You" : escapeHtml(person.name)}${person.demo ? " · Sample" : ""}</strong>
-          <small>${escapeHtml(person.detail)}</small>
+        <span class="rank-person">
+          <span class="rank-avatar" aria-hidden="true">${escapeHtml((person.id === "you" ? "You" : person.name || "?").trim().charAt(0).toUpperCase())}</span>
+          <span><strong>${person.id === "you" ? "You" : escapeHtml(person.name)}${person.demo ? " · Sample" : ""}</strong>
+          <small class="rank-mobile-detail">${escapeHtml(person.detail)}</small></span>
         </span>
+        <span class="rank-performance">${escapeHtml(person.detail)}</span>
         <span class="points">${escapeHtml(person.value)}${person.subvalue ? `<small>${escapeHtml(person.subvalue)}</small>` : ""}</span>
       </article>
     `
@@ -6815,6 +7580,7 @@ function eligibleForDailyRanking(game, entry, date) {
   if (game.source === "custom") return false;
   if (game.dailyRanked !== false) return true;
   if (game.id !== "color" || entry?.source !== "official-share") return false;
+  if (entry.dailyDate === date) return true;
   const parsed = parseShareText(entry.shareText).parsed;
   return Boolean(parsed?.gameId === "color" && parsed.dailyMonthDay && parsed.score === entry.score && !importDateError(parsed, date));
 }
@@ -6843,6 +7609,7 @@ function buildGameLeaderboard(game, date = state.selectedDate, dailyOnly = false
 
 function scoreTier(row, game) {
   if (!row.hasEntry || !Number.isFinite(row.score.value) || !["solved", "played"].includes(row.entry?.result)) return 0;
+  if (game.id === "strands" && row.entry.result !== "solved") return 0;
   if (["guesses", "mistakes", "time", "complete"].includes(game.type)) return row.entry.result === "solved" ? 2 : 1;
   return 1;
 }
@@ -7047,6 +7814,7 @@ function previewImport(showEmptyError = false) {
   elements.shareTextInput.removeAttribute("aria-invalid");
   if (!text && !showEmptyError) { setImportStatus(""); return null; }
   if (!parsed) {
+    if (showEmptyError && typeof launchReporter !== 'undefined') launchReporter.count('importRejected');
     elements.shareTextInput.setAttribute("aria-invalid", "true");
     setImportStatus(error, "error");
     return null;
@@ -7238,11 +8006,10 @@ function parseAdditionalShare(lines) {
 }
 
 function parseWordleShare(lines) {
-  const wordleLine = lines.find((line) => /^Wordle\b/i.test(line));
-  if (!wordleLine) return { parsed: null };
-
-  const scoreMatch = wordleLine.match(/^Wordle\s+#?([\d,]+)?\s*([1-6X])\/6\*?/i)
-    || lines.join(" ").match(/\bWordle\b.*?\b#?([\d,]+)?\s*([1-6X])\/6\*?/i);
+  const headers = lines.filter((line) => /^Wordle\b/i.test(line));
+  if (!headers.length) return { parsed: null };
+  if (headers.length !== 1) return { parsed: null, error: "Paste one Wordle result at a time." };
+  const scoreMatch = headers[0].match(/^Wordle(?:\s+#?([\d,]+))?\s+([1-6X])\/6\*?$/i);
   if (!scoreMatch) {
     return {
       parsed: null,
@@ -7250,12 +8017,15 @@ function parseWordleShare(lines) {
     };
   }
 
-  const gridPattern = /^[\u{1F7E9}\u{1F7E8}\u{2B1B}\u{2B1C}\u{1F7E6}]+$/u;
-  const grid = lines
-    .map(compactEmojiLine)
-    .filter((line) => gridPattern.test(line));
+  const grid = lines.map(compactEmojiLine).filter((line) => /[🟩🟨⬛⬜🟦🟧🟥🟪]/u.test(line));
   const rawScore = scoreMatch[2].toUpperCase();
   const score = `${rawScore}/6`;
+  const solvedRow = (row) => /^(?:🟩{5}|🟧{5})$/u.test(row);
+  if (grid.length && (grid.some((row) => !/^[🟩🟨⬛⬜🟦🟧]{5}$/u.test(row))
+    || grid.length !== (rawScore === "X" ? 6 : Number(rawScore))
+    || (rawScore === "X" ? grid.some(solvedRow) : !solvedRow(grid.at(-1)) || grid.slice(0, -1).some(solvedRow)))) {
+    return { parsed: null, error: "The Wordle grid does not match its score. Copy one complete result with five squares per row." };
+  }
 
   return {
     parsed: {
@@ -7280,7 +8050,8 @@ function parseConnectionsShare(lines) {
   const grid = lines
     .map((line) => sports ? line.replace(/🟡/gu, "🟨").replace(/🟢/gu, "🟩").replace(/🔵/gu, "🟦").replace(/🟣/gu, "🟪") : line)
     .map(compactEmojiLine)
-    .filter((line) => gridPattern.test(line));
+    .filter((line) => /[🟨🟩🟦🟪🟥🟧⬜⬛🟡🟢🔵🟣]/u.test(line));
+  if (grid.some((line) => !gridPattern.test(line))) return { parsed: null, error: "A Connections row is incomplete or invalid. Copy every row with exactly four colored squares." };
   if (!grid.length) {
     return {
       parsed: null,
@@ -7293,6 +8064,11 @@ function parseConnectionsShare(lines) {
   const solvedRows = new Set(correctRows).size;
   const mistakes = grid.length - correctRows.length;
   if (grid.length > 7 || mistakes > 4 || solvedRows !== correctRows.length) return { parsed: null, error: "This Connections grid has repeated groups or too many rows. Paste one complete result." };
+  let groups = 0, errors = 0;
+  for (let index = 0; index < grid.length; index++) {
+    if (correctRows.includes(grid[index])) groups++; else errors++;
+    if (index < grid.length - 1 && (groups === 4 || errors === 4)) return { parsed: null, error: "This Connections grid continues after the game ended. Paste one result." };
+  }
 
   return {
     parsed: {
@@ -7309,10 +8085,11 @@ function parseStrandsShare(lines) {
   const text = lines.join(" ");
   const header = lines.find((line) => /^Strands\b/i.test(line)) || (/\bStrands\b/i.test(text) ? text : "");
   if (!header) return { parsed: null };
-
+  if (lines.filter(line => /^Strands\b/i.test(line)).length > 1) return { parsed: null, error: "Paste one Strands result at a time." };
   const grid = lines
     .map(compactEmojiLine)
-    .filter((line) => /^[\u{1F535}\u{1F7E1}\u{1F4A1}]+$/u.test(line));
+    .filter((line) => /[🔵🟡💡]/u.test(line));
+  if (grid.some(line => !/^[🔵🟡💡]+$/u.test(line)) || (grid.join("").match(/🟡/gu) || []).length > 1) return { parsed: null, error: "The Strands recap is malformed. Copy one full result." };
   if (!grid.length) {
     return {
       parsed: null,
@@ -7329,8 +8106,9 @@ function parseStrandsShare(lines) {
     parsed: {
       gameId: "strands",
       score,
-      result: foundSpangram ? "solved" : "played",
-      note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}`,
+      result: "played",
+      completionUnverified: true,
+      note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}; completion unverified`,
       grid
     }
   };
@@ -7444,11 +8222,10 @@ function normalizeTimeScore(score) {
 function renderSharePreview(parsed, game, date, existing, duplicate) {
   elements.sharePreview.hidden = false;
   elements.sharePreview.innerHTML = `
-    <div class="import-result-head">
-      ${gameLogo(game)}
-      <div><strong>${escapeHtml(game.name)} · ${escapeHtml(parsed.score)}</strong>
-      <small>${escapeHtml(parsed.result)} · ${escapeHtml(date)}${duplicate ? " · Saved" : " · Not saved yet"}</small></div>
-    </div>
+    <div class="import-result-head">${gameLogo(game)}<div><small>Detected game</small><strong>${escapeHtml(game.name)}</strong></div></div>
+    <strong class="preview-score">${escapeHtml(parsed.score)}</strong>
+    <div class="preview-meta"><span>${escapeHtml(parsed.result)}</span><span>${escapeHtml(date)}</span><span>${duplicate ? "Saved" : "Not saved yet"}</span></div>
+    ${parsed.completionUnverified ? '<p class="import-warning">This recap does not prove every theme word was found. It will be saved as Played without completion points. Use Enter manually and choose Solved after confirming you finished.</p>' : ""}
     ${game.dailyRanked === false && !parsed.dailyMonthDay ? `<p class="import-warning">Challenge result: compare the same challenge with friends. Excluded from the combined daily ranking.</p>` : ""}
     ${parsed.dailyMonthDay ? `<p class="field-help">Daily result · Counts toward the combined leaderboard.</p>` : ""}
     ${existing && !duplicate ? `<p class="import-warning">You already saved ${escapeHtml(existing.score)} for this day. Saving will replace that score and keep your answer, note, and sharing choice.</p>` : ""}
@@ -7502,8 +8279,8 @@ function calculateCompleted(personId) {
   return visibleGames().filter((game) => dayEntries[game.id]?.[personId]).length;
 }
 
-function isCompletedResult(result) {
-  return result === "solved" || result === "played";
+function isCompletedResult(result, game) {
+  return result === "solved" || result === "played" && ["points", "depth", "strokes", "grid"].includes(game?.type);
 }
 
 function hasUserPlayedDate(dateKey) {
@@ -7514,7 +8291,7 @@ function hasUserPlayedDate(dateKey) {
 function calculateTotalSolves() {
   return Object.values(state.entries).reduce((total, dayEntries) => {
     return total + visibleGames().filter((game) => {
-      return isCompletedResult(dayEntries[game.id]?.you?.result);
+      return isCompletedResult(dayEntries[game.id]?.you?.result, game);
     }).length;
   }, 0);
 }
@@ -7675,16 +8452,31 @@ function defaultScoreLabel(result) {
   return result === "missed" ? "Missed" : "Complete";
 }
 
-function loadState() {
+function loadState(uid = storageOwner) {
+  storageProblem = "";
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY));
-    const nextState = saved ? mergeState(starterState, saved) : structuredClone(starterState);
-    // Viewing an old date is a session choice, not the default for the next visit.
+    let fallback = structuredClone(starterState);
+    if (!uid && !localStorage.getItem(safety.storageKey(STORAGE_KEY))) {
+      const old = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || localStorage.getItem(ORIGINAL_STORAGE_KEY) || "null");
+      if (old && !old.account?.uid && !old.account?.signedIn) fallback = mergeState(starterState, old);
+    }
+    const saved = safety.readLocal(localStorage, safety.storageKey(STORAGE_KEY, uid), fallback);
+    if (uid && saved.account?.uid && saved.account.uid !== uid) throw new Error("Saved account ownership does not match.");
+    const nextState = mergeState(starterState, saved);
+    nextState.account = { signedIn: false, provider: "", email: "", uid: "", backend: "local" };
+    nextState.friendRequests = { incoming: [], outgoing: [] };
     nextState.selectedDate = today;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState)); } catch { /* Keep the loaded history in memory. */ }
+    nextState.cloudBase ||= {};
+    nextState.syncConflicts ||= [];
+    storageBaseline = safety.localRecords(nextState);
     return nextState;
   } catch {
-    return structuredClone(starterState);
+    storageProblem = "Saved data could not be read. Existing storage was preserved. Reload or recover the saved copy before editing.";
+    const fallback = structuredClone(starterState);
+    fallback.cloudBase = {};
+    fallback.syncConflicts = [];
+    storageBaseline = safety.localRecords(fallback);
+    return fallback;
   }
 }
 
@@ -7735,10 +8527,304 @@ function remapDayEntries(dayEntries, allowedIds) {
   }, {});
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  queueCloudSave();
+function saveState(queue = true) {
+  if (storageProblem) throw new Error(storageProblem);
+  if (cloudBackend.deletionPending) throw new Error("Account deletion is in progress. Changes are locked.");
+  if (queue && cloudBackend.scoreBusy) throw new Error("Wait for the current score operation to finish.");
+  const authenticatedUid = cloudBackend.auth?.currentUser?.uid || "";
+  if (authenticatedUid !== storageOwner) throw new Error("The active account changed. Wait for account storage to finish switching.");
+  state = safety.writeLocal(localStorage, safety.storageKey(STORAGE_KEY, storageOwner), storageWriter, storageBaseline, state, starterState);
+  storageBaseline = safety.localRecords(state);
+  if (queue) queueCloudSave();
+  updateSyncStatus();
 }
+
+async function importDeviceHistory() {
+  if (!cloudBackend.auth?.currentUser || !storageOwner) return;
+  const old = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || localStorage.getItem(ORIGINAL_STORAGE_KEY) || "null");
+  const guestFallback = old && !old.account?.uid && !old.account?.signedIn ? mergeState(starterState, old) : starterState;
+  let archive = mergeState(starterState, safety.readLocal(localStorage, safety.storageKey(STORAGE_KEY), guestFallback));
+  if (old?.account?.uid === storageOwner) archive = mergeState(starterState, old);
+  const count = Object.values(archive.entries).reduce((sum, games) => sum + Object.values(games).filter((entries) => entries.you).length, 0);
+  storageBaseline = safety.localRecords(state);
+  if (!count) { updateAccountStatus("No device scores are available to import."); return; }
+  if (!window.confirm(`Import up to ${count} device scores into ${state.account.email || state.profile.handle}? Only import scores that belong to you. Existing account scores are kept. Eligible scores will be shared with accepted friends; answers will stay hidden.`)) return;
+  const previous = structuredClone(state);
+  for (const game of archive.games.filter((item) => item.source === "custom")) {
+    if (!state.games.some((item) => item.id === game.id)) state.games.push({ ...game, sharing: "personal" });
+  }
+  Object.entries(archive.entries).forEach(([date, games]) => Object.entries(games).forEach(([gameId, entries]) => {
+    if (entries.you && !state.entries[date]?.[gameId]?.you) getGameEntries(date, gameId).you = { ...entries.you, reveal: false };
+  }));
+  try { saveState(); } catch (error) { state = previous; updateAccountStatus(error.message); return; }
+  render();
+  updateAccountStatus("Device history imported. Existing account scores were kept and answers remain hidden.");
+}
+
+function resolveSyncConflicts(keepLocal) {
+  const previous = structuredClone(state);
+  const conflicts = state.syncConflicts || [];
+  conflicts.forEach((conflict) => safety.applyRecord(state, (keepLocal ? conflict.local : conflict.remote) || safety.tombstone(conflict.local)));
+  state.resolvedConflicts = [...new Set([...(state.resolvedConflicts || []), ...conflicts.map(safety.conflictKey)])];
+  state.syncConflicts = [];
+  try { saveState(); } catch (error) { state = previous; updateAccountStatus(error.message); return; }
+  showAppNotice("");
+  render();
+  updateAccountStatus();
+}
+
+function accountSessionMatches(session) {
+  return !!session.uid && session.uid === storageOwner && session.generation === cloudBackend.generation && cloudBackend.auth?.currentUser?.uid === session.uid;
+}
+
+function recoverAccountConnection() {
+  // A second online event must join recovery even while syncReady is false.
+  if (cloudBackend.retryPromise) return cloudBackend.retryPromise;
+  if (cloudBackend.syncReady) return retryAccountSync();
+  return handleCloudAuthUser(cloudBackend.auth?.currentUser);
+}
+
+function retryAccountSync() {
+  if (cloudBackend.retryPromise) return cloudBackend.retryPromise;
+  const session = cloudSession();
+  if (!currentCloudSession(session) || navigator.onLine === false) { updateSyncStatus(); return Promise.resolve(false); }
+  const task = performAccountSyncRetry(session).finally(() => {
+    if (cloudBackend.retryPromise === task) cloudBackend.retryPromise = null;
+  });
+  cloudBackend.retryPromise = task;
+  return task;
+}
+
+async function performAccountSyncRetry(session) {
+  // A prior upload failure must not prevent a fresh, authoritative retry.
+  if (cloudBackend.savePromise) {
+    try { await cloudBackend.savePromise; } catch { /* Re-read before retrying. */ }
+  }
+  if (!currentCloudSession(session) || navigator.onLine === false) return false;
+  cloudBackend.loading = true;
+  cloudBackend.syncReady = false;
+  cloudBackend.error = '';
+  updateAccountStatus();
+  try {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await loadCloudState(session.uid, session);
+        break;
+      } catch (error) {
+        if (!currentCloudSession(session) || navigator.onLine === false) return false;
+        const code = String(error.code || '').replace(/^firestore\//, '');
+        if (!['unavailable', 'deadline-exceeded'].includes(code) || attempt >= 3) throw error;
+        // Network availability can precede Firebase's connection recovery.
+        await new Promise(resolve => window.setTimeout(resolve, 2000 * 2 ** attempt));
+        if (!currentCloudSession(session) || navigator.onLine === false) return false;
+      }
+    }
+    if (!currentCloudSession(session)) return false;
+    saveState(false);
+    cloudBackend.syncReady = true;
+    cloudBackend.error = '';
+    const saved = await persistCloudState();
+    if (!currentCloudSession(session)) return false;
+    render(); updateAccountStatus();
+    return saved;
+  } catch (error) {
+    if (!currentCloudSession(session)) return false;
+    cloudBackend.error = error.message || 'Could not reconnect. Your edits remain saved on this device.';
+    throw error;
+  } finally {
+    if (accountSessionMatches(session)) { cloudBackend.loading = false; updateAccountStatus(); }
+  }
+}
+
+function pendingCloudChanges() {
+  if (!storageOwner || cloudBackend.deletionPending) return 0;
+  try { return Object.entries(accountRecords()).filter(([id, record]) => !safety.equal(record, safety.payload(state.cloudBase?.[id]))).length; }
+  catch { return 1; }
+}
+
+function updateSyncStatus() {
+  const summary = management.syncSummary({ signedIn: !!storageOwner, online: navigator.onLine !== false, ready: cloudBackend.syncReady, loading: cloudBackend.loading, saving: cloudBackend.saving || cloudBackend.scoreBusy, pending: pendingCloudChanges(), conflicts: state.syncConflicts?.length || 0, error: cloudBackend.error, storageError: storageProblem, deleting: cloudBackend.deletionPending, lastSyncedAt: cloudBackend.lastSyncedAt });
+  const badge = document.querySelector('#syncSummary'), detail = document.querySelector('#accountSyncDetail');
+  if (badge) { badge.textContent = summary.label; badge.dataset.tone = summary.tone; badge.title = summary.detail; }
+  if (detail) detail.textContent = summary.detail;
+}
+
+function blockDeletedAccount(uid) {
+  if (uid !== storageOwner) return;
+  if (typeof launchReporter !== 'undefined') launchReporter.setAccount('');
+  cloudBackend.deletionPending = true;
+  cloudBackend.syncReady = false;
+  cloudBackend.loading = false;
+  window.clearTimeout(cloudBackend.saveTimer);
+  try { management.purgeAccountStorage(localStorage, STORAGE_KEY, uid, [LEGACY_STORAGE_KEY, ORIGINAL_STORAGE_KEY]); }
+  catch { cloudBackend.error = 'Account writes are locked. Browser storage could not be cleared; clear this account’s site data on this device after deletion.'; }
+  state.entries = {};
+  state.friends = [];
+  state.friendRequests = { incoming: [], outgoing: [] };
+  state.cloudBase = {};
+  state.syncConflicts = [];
+  state.games = structuredClone(starterState.games);
+  state.pinnedGameIds = [];
+  state.solvryPlays = {};
+  importDrafts.clear();
+  elements.shareTextInput.value = '';
+  elements.answerInput.value = '';
+  elements.noteInput.value = '';
+  render();
+  updateAccountStatus('Account deletion has started. Sync is locked. Resume deletion below if it was interrupted.');
+}
+
+async function exportAccountData(deviceOnly = false) {
+  const session = cloudSession(), owner = storageOwner;
+  if ((cloudBackend.auth?.currentUser?.uid || '') !== owner || (owner && !accountSessionMatches(session))) throw new Error('Wait for account switching to finish before exporting.');
+  let records = null, requests = null, diagnostics = null, coverage = 'device-copy';
+  const status = document.querySelector('#accountDataStatus');
+  status.textContent = 'Preparing your export…';
+  if (owner && !deviceOnly) {
+    if (navigator.onLine === false) throw new Error('Account export needs a connection. Use Export device copy for the data available here.');
+    const { collection, getDocsFromServer, query, where } = cloudBackend.modules.firestore;
+    const snapshot = await getDocsFromServer(collection(cloudBackend.db, 'privateUsers', owner, 'records'));
+    if (!accountSessionMatches(session)) throw new Error('The active account changed. Export again from the intended account.');
+    records = Object.fromEntries(snapshot.docs.map(item => [item.id, item.data()]));
+    const requestLists = await Promise.all(['fromUid', 'toUid'].map(field => getDocsFromServer(query(collection(cloudBackend.db, 'friendRequests'), where(field, '==', owner)))));
+    if (!accountSessionMatches(session)) throw new Error('The active account changed. Export again from the intended account.');
+    requests = Object.fromEntries(requestLists.flatMap(list => list.docs.map(item => [item.id, item.data()])));
+    const health = await cloudBackend.modules.firestore.getDocFromServer(cloudBackend.modules.firestore.doc(cloudBackend.db,'clientHealth',owner));
+    if (!accountSessionMatches(session)) throw new Error('The active account changed. Export again from the intended account.');
+    diagnostics = health.exists() ? health.data() : null;
+    coverage = cloudBackend.deletionPending ? 'remaining-account-data' : 'account-and-device';
+  }
+  if (owner !== storageOwner || (owner && !accountSessionMatches(session)) || (cloudBackend.auth?.currentUser?.uid || '') !== owner) throw new Error('The active account changed. Export again from the intended account.');
+  const archive = management.makeExport(state, { records, requests, diagnostics, coverage, identity: owner ? cloudBackend.auth?.currentUser : null });
+  const url = URL.createObjectURL(new Blob([JSON.stringify(archive, null, 2)], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url; link.download = `solvry-${owner ? 'account' : 'device'}-${localDateKey()}.json`;
+  document.body.append(link); link.click(); link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+  status.textContent = coverage === 'account-and-device' ? 'Export downloaded: fetched account data plus this device’s own scores and edits.' : coverage === 'remaining-account-data' ? 'Export downloaded: remaining cloud records during deletion. Previously removed records are not included.' : 'Device copy downloaded. Cloud records and scores saved only on other devices may be missing.';
+}
+
+function openDeleteAccount() {
+  if (!storageOwner || !cloudBackend.auth?.currentUser) return;
+  elements.accountDialog.close();
+  deletionTarget = cloudSession();
+  document.querySelector('#deleteAccountIdentity').textContent = `Account: ${state.account.email || state.profile.handle}`;
+  document.querySelector('#deleteAccountConfirmation').value = '';
+  document.querySelector('#deleteAccountStatus').textContent = cloudBackend.deletionPending ? 'Deletion is already locked. Reauthenticate to finish removing remaining data.' : '';
+  document.querySelector('#deleteAccountDialog').showModal();
+}
+
+async function deleteCurrentAccount(event) {
+  event.preventDefault();
+  if (accountDeletionBusy) return;
+  const status = document.querySelector('#deleteAccountStatus'), button = document.querySelector('#confirmDeleteAccount');
+  if (document.querySelector('#deleteAccountConfirmation').value !== 'DELETE') { status.textContent = 'Type DELETE to confirm.'; return; }
+  if (navigator.onLine === false) { status.textContent = 'Connect to the internet before deleting your account.'; return; }
+  const session = cloudSession(), user = cloudBackend.auth?.currentUser;
+  if (!user || !accountSessionMatches(session) || deletionTarget?.uid !== session.uid || deletionTarget?.generation !== session.generation) { status.textContent = 'The account changed. Close this dialog and open deletion from the intended account.'; return; }
+  accountDeletionBusy = true; button.disabled = true;
+  const check = () => { if (!accountSessionMatches(session)) throw new Error('The active account changed. Sign back in to resume deletion.'); };
+  try {
+    status.textContent = 'Confirm your Google account in the sign-in window…';
+    const { reauthenticateWithPopup, GoogleAuthProvider, deleteUser } = cloudBackend.modules.auth;
+    await reauthenticateWithPopup(user, new GoogleAuthProvider()); check();
+    const f = cloudBackend.modules.firestore, lifecycleRef = f.doc(cloudBackend.db, 'accountLifecycle', session.uid);
+    await f.runTransaction(cloudBackend.db, async tx => {
+      const snapshot = await tx.get(lifecycleRef); check();
+      if (!snapshot.exists()) tx.set(lifecycleRef, { schemaVersion: 1, state: 'deleting', startedAt: f.serverTimestamp() });
+    }); check();
+    blockDeletedAccount(session.uid);
+    await management.cleanupAccountData({ firestore: f, db: cloudBackend.db, uid: session.uid, isCurrent: () => accountSessionMatches(session), progress: message => { status.textContent = message; } }); check();
+    await f.runTransaction(cloudBackend.db, async tx => {
+      const snapshot = await tx.get(lifecycleRef); check();
+      if (snapshot.data()?.state !== 'deleted') tx.update(lifecycleRef, { state: 'deleted', completedAt: f.serverTimestamp() });
+    }); check();
+    status.textContent = 'Account data removed. Deleting sign-in identity…';
+    await deleteUser(user);
+    management.purgeAccountStorage(localStorage, STORAGE_KEY, session.uid, [LEGACY_STORAGE_KEY, ORIGINAL_STORAGE_KEY]);
+    document.querySelector('#deleteAccountDialog').close();
+    if (!cloudBackend.auth.currentUser) await handleCloudAuthUser(null);
+    showAppNotice('Your Solvry account was deleted. Guest history is separate and was kept.');
+  } catch (error) {
+    status.textContent = cloudBackend.deletionPending ? `Deletion is incomplete and the account stays locked. ${error.message || 'Reconnect and resume deletion.'}` : error.message || 'Deletion did not start. You can try again.';
+    updateSyncStatus();
+  } finally { accountDeletionBusy = false; button.disabled = false; }
+}
+
+function openScoreManagement(action) {
+  const game = getActiveGame(), fromDate = state.selectedDate;
+  const entry = state.entries[fromDate]?.[game.id]?.you;
+  if (!entry) return;
+  scoreManagement = { action, gameId: game.id, fromDate, owner: storageOwner, entry: structuredClone(entry) };
+  const deleting = action === 'delete';
+  document.querySelector('#scoreManagementTitle').textContent = deleting ? 'Delete this score?' : 'Change score date';
+  document.querySelector('#scoreManagementCopy').textContent = deleting ? `Remove your ${game.name} score for ${fromDate}? Cloud removal is confirmed by the sync indicator. Recovery copies may retain prior versions.` : `Move your ${game.name} score from ${fromDate}. An existing score on the destination date will be kept. Account moves need a connection.`;
+  document.querySelector('#scoreMoveDateLabel').hidden = deleting;
+  document.querySelector('#scoreMoveDate').required = !deleting;
+  document.querySelector('#scoreMoveDate').value = fromDate;
+  document.querySelector('#scoreMoveDate').max = localDateKey();
+  document.querySelector('#scoreManagementStatus').textContent = '';
+  document.querySelector('#confirmScoreManagement').textContent = deleting ? 'Delete score' : 'Change date';
+  document.querySelector('#scoreManagementDialog').showModal();
+}
+
+async function submitScoreManagement(event) {
+  event.preventDefault();
+  if (!scoreManagement || cloudBackend.scoreBusy) return;
+  const operation = scoreManagement, status = document.querySelector('#scoreManagementStatus'), button = document.querySelector('#confirmScoreManagement');
+  const session = cloudSession();
+  const current = () => operation.owner === storageOwner && (!storageOwner || currentCloudSession(session));
+  let cloudCommitted = false, previous;
+  try {
+    if (!current()) throw new Error('The active account changed. Open the score again.');
+    const toDate = operation.action === 'move' ? document.querySelector('#scoreMoveDate').value : '';
+    const entry = management.validateScoreChange(state, operation.gameId, operation.fromDate, toDate, localDateKey());
+    if (!safety.equal(entry, operation.entry)) throw new Error('This score changed since the dialog opened. Close it and review the latest copy.');
+    const ids = [safety.resultRecordId(operation.fromDate, operation.gameId), safety.resultRecordId(toDate, operation.gameId)];
+    if (state.syncConflicts.some(conflict => ids.includes(conflict.id))) throw new Error('Resolve this score’s competing edits in Account first.');
+    const game = state.games.find(item => item.id === operation.gameId);
+    if (toDate) {
+      const parsed = parseShareText(entry.shareText).parsed;
+      const dateError = parsed ? importDateError(parsed, toDate) : '';
+      if (dateError) throw new Error(dateError);
+    }
+    cloudBackend.scoreBusy = true; button.disabled = true; updateSyncStatus();
+    const cloudMove = !!toDate && !!storageOwner && (game.source !== 'custom' || game.sharing === 'friends');
+    if (cloudMove) {
+      if (navigator.onLine === false || !cloudFriendsAvailable()) throw new Error('Reconnect and finish account sync before changing this score’s date.');
+      status.textContent = 'Confirming your current cloud copy…';
+      await persistCloudState();
+      if (pendingCloudChanges()) await persistCloudState();
+      if (!current() || state.syncConflicts.some(conflict => ids.includes(conflict.id))) throw new Error('The score or account changed. Review Account before retrying.');
+      if (!safety.equal(safety.privateEntry(state.entries[operation.fromDate]?.[operation.gameId]?.you || {}), safety.privateEntry(entry))) throw new Error('This score changed. Review the latest copy before changing dates.');
+      status.textContent = 'Moving both dates together…';
+      const records = await management.moveCloudScore({ firestore: cloudBackend.modules.firestore, db: cloudBackend.db, uid: storageOwner, gameId: operation.gameId, fromDate: operation.fromDate, toDate, entry, base: state.cloudBase, isCurrent: current });
+      if (!current()) return;
+      cloudCommitted = true; Object.assign(state.cloudBase, records);
+    }
+    if (!current()) return;
+    previous = structuredClone(state);
+    delete state.entries[operation.fromDate][operation.gameId].you;
+    if (toDate) {
+      state.entries[toDate] ||= {}; state.entries[toDate][operation.gameId] ||= {};
+      state.entries[toDate][operation.gameId].you = { ...entry };
+      delete state.entries[toDate][operation.gameId].you.dailyDate;
+      state.selectedDate = toDate;
+      elements.playDate.value = toDate; elements.importDate.value = toDate; elements.manualDateInput.value = toDate;
+    }
+    try { saveState(false); } catch (error) {
+      if (!cloudCommitted) state = previous;
+      throw new Error(cloudCommitted ? 'The date was changed in the cloud, but this device’s cache could not update. Reload to fetch the confirmed copy.' : error.message);
+    }
+    manualFormDirty = false; manualFormKey = ''; importDrafts.clear(); elements.shareTextInput.value = '';
+    document.querySelector('#scoreManagementDialog').close(); scoreManagement = null;
+    render(); showAppNotice(toDate ? `Score moved to ${toDate}.${cloudCommitted ? ' Cloud change confirmed.' : ' Saved on this device.'}` : 'Score removed from this device. Check the sync indicator for cloud confirmation.');
+  } catch (error) { if (operation.owner === storageOwner) status.textContent = error.message || 'The score could not be changed. Your saved copy was kept.'; }
+  finally {
+    if (operation.owner === storageOwner) { cloudBackend.scoreBusy = false; button.disabled = false; queueCloudSave(); updateSyncStatus(); }
+  }
+}
+
 
 function slugify(value) {
   return value
@@ -7785,7 +8871,32 @@ function flashStatus(element, message) {
   saveStatusTimers.set(element, timer);
 }
 
+window.addEventListener("storage", (event) => {
+  const key = safety.storageKey(STORAGE_KEY, storageOwner);
+  if (event.key !== key && !event.key?.startsWith(key + ":draft:")) return;
+  try {
+    const remote = safety.readLocal(localStorage, key, starterState);
+    const merged = safety.mergeEdits(storageBaseline, safety.localRecords(state), safety.localRecords(remote));
+    safety.applyRecords(state, merged.records);
+    state.resolvedConflicts = [...new Set([...(state.resolvedConflicts || []), ...(remote.resolvedConflicts || [])])];
+    state.syncConflicts = safety.combineConflicts(state.syncConflicts, remote.syncConflicts || [], merged.conflicts.map((conflict) => ({ ...conflict, scope: "device" }))).filter((conflict) => !state.resolvedConflicts.includes(safety.conflictKey(conflict)));
+    storageBaseline = safety.localRecords(remote);
+    render();
+    if (merged.conflicts.length) showAppNotice("Another tab changed the same data. Open Account to review the competing edits.");
+  } catch { showAppNotice("Another tab's saved data could not be read. Existing data was preserved."); }
+});
+elements.currentResult.addEventListener("click", event => { const action = event.target.closest("[data-score-manage]")?.dataset.scoreManage; if (action) openScoreManagement(action); });
+document.querySelector("#scoreManagementForm").addEventListener("submit", submitScoreManagement);
+for (const id of ["closeScoreManagement", "cancelScoreManagement"]) document.querySelector("#" + id).addEventListener("click", () => { if (!cloudBackend.scoreBusy) document.querySelector("#scoreManagementDialog").close(); });
+document.querySelector("#scoreManagementDialog").addEventListener("cancel", event => { if (cloudBackend.scoreBusy) event.preventDefault(); });
+document.querySelector("#deleteAccountForm").addEventListener("submit", deleteCurrentAccount);
+document.querySelector("#closeDeleteAccount").addEventListener("click", () => { if (!accountDeletionBusy) document.querySelector("#deleteAccountDialog").close(); });
+document.querySelector("#deleteAccountDialog").addEventListener("cancel", event => { if (accountDeletionBusy) event.preventDefault(); });
+document.querySelector("#accountPrivacyLink").addEventListener("click", () => elements.accountDialog.close());
+window.addEventListener("offline", () => { updateSyncStatus(); if (accountDeletionBusy) document.querySelector("#deleteAccountStatus").textContent = "Connection lost. Deletion is not complete. Keep this page open to reconnect, or resume after signing in again."; });
+window.addEventListener("online", () => { updateSyncStatus(); if (storageOwner && !cloudBackend.deletionPending) recoverAccountConnection().catch(() => {}); });
 initCloudBackend();
 render();
+if (storageProblem) showAppNotice(storageProblem);
 handleCustomGameLink();
 """#

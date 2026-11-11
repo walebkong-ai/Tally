@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Solvry beta permission check</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f5eedb;
+        color: #373b35;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 820px;
+        margin: auto;
+        padding: 28px 20px 60px;
+      }
+      h1 {
+        font-family: Georgia, serif;
+        font-size: clamp(30px, 5vw, 46px);
+        line-height: 1.15;
+      }
+      h2 {
+        font-size: 20px;
+      }
+      a {
+        color: #276776;
+      }
+      fieldset {
+        border: 1px solid #d6ccb7;
+        background: #fffdf7;
+        border-radius: 16px;
+        padding: 20px;
+      }
+      label {
+        display: block;
+        font-weight: 650;
+        margin-bottom: 16px;
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+        max-width: 100%;
+        border-radius: 9px;
+      }
+      input,
+      select {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #bfb7a5;
+        background: white;
+        color: inherit;
+      }
+      button {
+        padding: 11px 17px;
+        border: 0;
+        background: #276776;
+        color: white;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .muted {
+        color: #686c62;
+        font-size: 14px;
+      }
+      .result {
+        padding: 12px 0;
+        border-bottom: 1px solid #d6ccb7;
+        overflow-wrap: anywhere;
+      }
+      .pass {
+        color: #236044;
+      }
+      .fail {
+        color: #9b342d;
+      }
+      #report {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .banner {
+        padding: 14px;
+        background: #e1ebe5;
+        border-radius: 10px;
+      }
+      summary {
+        cursor: pointer;
+      }
+      #status {
+        min-height: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/">← Back to Solvry</a>
+      <p class="muted">Invited beta · read-only checks</p>
+      <h1>Check live account permissions</h1>
+      <p>
+        This checker uses your current Firebase sign-in in this browser. It
+        reads from the live Solvry database and makes no database changes.
+        Results include pass/fail and field names; answer text, private notes,
+        raw results, and sign-in tokens are excluded.
+      </p>
+      <p id="identity" class="banner" role="status">
+        Loading this browser’s sign-in…
+      </p>
+      <p class="muted">
+        If you are signed out, return to Solvry, sign in with Google, then
+        reopen this page in the same browser.
+      </p>
+      <form id="checks">
+        <fieldset id="fields" disabled>
+          <legend>Choose the current beta stage</legend>
+          <label
+            >Other account’s Solvry handle<input
+              id="peer"
+              placeholder="@friend-handle"
+              autocomplete="off"
+              required /></label
+          ><label
+            >Wordle beta score date<input
+              id="date"
+              type="date"
+              value="2026-11-10"
+              required /></label
+          ><label
+            >Expected state<select id="phase">
+              <option value="unconnected">
+                Before accepting a friend request
+              </option>
+              <option value="hidden">Connected · answers hidden</option>
+              <option value="revealed">
+                Connected · answer intentionally revealed
+              </option>
+              <option value="removed">
+                After removing the friend connection
+              </option>
+            </select></label
+          ><label
+            >Expected other account’s score (optional)<input
+              id="expectedScore"
+              placeholder="3/6 or 5/6"
+              autocomplete="off" /></label
+          ><button id="run" type="submit">Run read-only checks</button>
+        </fieldset>
+      </form>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section id="results" aria-label="Check results"></section>
+      <div class="actions">
+        <button type="button" id="download" hidden>
+          Download sanitized report</button
+        ><button type="button" id="copy" hidden>Copy sanitized report</button>
+      </div>
+      <p id="copyStatus" class="muted" role="status"></p>
+      <details>
+        <summary>View sanitized report</summary>
+        <pre id="report"></pre>
+      </details>
+      <p class="muted">
+        A passing permission check is one part of the beta. It does not verify
+        offline persistence, account switching, or that another device has
+        received the newest score. A test phase is passed only after the
+        corresponding real actions were completed.
+      </p>
+    </main>
+    <script type="module" src="beta-check.mjs?v=1"></script>
+  </body>
+</html>

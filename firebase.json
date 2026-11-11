@@ -1,0 +1,29 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "northamerica-northeast2",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8089
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Solvry",
+        "supportEmail": "walebkong@gmail.com",
+        "authorizedRedirectUris": [
+          "https://solvry-walebkong.firebaseapp.com/__/auth/handler",
+          "https://solvry.walebkong.chatgpt.site"
+        ]
+      }
+    }
+  }
+}

@@ -2,9 +2,10 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
+const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(require('node:path').join(__dirname, '../dist/app.js'), 'utf8');
 function setup() {
-  const c = vm.createContext({ URL, SCORING_STYLES: {}, location: { href: 'https://solvry.example/?private=1#games' } });
+  const c = vm.createContext({ URL, safety, structuredClone, storageOwner: 'owner', SCORING_STYLES: {}, location: { href: 'https://solvry.example/?private=1#games' } });
   for (const name of ['scoringForType','customScoringForType','safeCustomGameUrl','validateCustomGame','sameCustomGame','mergeCustomGames','customGameShareLink','parseCustomGameLink']) {
     const tail = app.slice(app.indexOf(`function ${name}(`));
     const next = /\n(?:async )?function \w+\(/.exec(tail);
@@ -58,30 +59,47 @@ function addFunction(c, name) {
   const next=/\n(?:async )?function \w+\(/.exec(tail);
   vm.runInContext(tail.slice(0,next.index),c);
 }
-test('loading cloud state preserves personal game pins absent from shared data', async()=>{
+test('loading secure records preserves personal device pins and applies account pins', async()=>{
   const c=setup();
-  c.state={profile:{},friends:[],games:[{...game,sharing:'personal'}],pinnedGameIds:[game.id],entries:{}};
-  c.cloudBackend={modules:{firestore:{doc:()=>({}),getDoc:async()=>({exists:()=>true,data:()=>({pinnedGameIds:['wordle']})})}}};
-  c.mergeEntries=(local)=>local;
-  addFunction(c,'loadCloudState');
+  c.state={profile:{name:'You',handle:'@solvry'},friends:[],games:[{id:'wordle',source:'official'}, {...game,sharing:'personal'}],pinnedGameIds:[game.id],entries:{},cloudBase:{},syncConflicts:[]};
+  c.starterState={games:[{id:'wordle',source:'official'}]};
+  c.showAppNotice=()=>{};
+  c.parseShareText=()=>({});
+  c.cloudBackend={generation:0,auth:{currentUser:{uid:'owner'}},modules:{firestore:{doc:()=>({}),collection:()=>({}),getDocFromServer:async()=>({exists:()=>true,data:()=>({accountDataVersion:2})}),getDocsFromServer:async()=>({docs:[{id:'pin_wordle',data:()=>({schemaVersion:2,revision:1,kind:'pin',gameId:'wordle',value:true,deleted:false})}]})}}};
+  for(const name of ['cloudSession','currentCloudSession','accountRecords','loadCloudState'])addFunction(c,name);
   await c.loadCloudState('owner');
   assert.ok(c.state.pinnedGameIds.includes(game.id));
   assert.ok(c.state.pinnedGameIds.includes('wordle'));
 });
-test('friend refresh only accepts custom scores for matching games explicitly joined', async()=>{
+test('friend refresh reads only shared result records for explicitly joined games', async()=>{
   const c=setup();
   const shared={...game,sharing:'friends'};
-  c.state={games:[shared]};
-  const remote={customGames:[shared,{...game,id:'custom-unjoined',sharing:'friends'}],entries:{'2026-11-06':{[game.id]:{you:{score:'85'}},'custom-unjoined':{you:{score:'99'}},wordle:{you:{score:'3/6'}}}}};
-  c.cloudBackend={modules:{firestore:{doc:()=>({}),getDoc:async()=>({exists:()=>true,data:()=>remote})}}};
+  c.state={games:[shared],friends:[{id:'friend',uid:'friend',status:'accepted'}]};
+  const queries=[];
+  c.cloudBackend={generation:0,auth:{currentUser:{uid:'owner'}},modules:{firestore:{collection:(_, ...path)=>path,query:path=>path,where:()=>({}),getDocs:async(path)=>{queries.push(path);return {docs:[{id:'2026-11-06',data:()=>({schemaVersion:2,ownerUid:'friend',gameId:game.id,date:'2026-11-06',score:'85',result:'played',source:'manual',reveal:false,answer:'must not copy',shareText:'must not copy'})}]};}}}};
+  c.visibleGames=()=>c.state.games;
+  c.visibleFriends=()=>c.state.friends;
   let imported;
   c.mergeFriendEntries=(_,data)=>{imported=data;};
-  addFunction(c,'loadFriendEntries');
+  for(const name of ['cloudSession','currentCloudSession','loadFriendEntries'])addFunction(c,name);
   await c.loadFriendEntries({uid:'friend',id:'friend'});
   assert.equal(imported['2026-11-06'][game.id].you.score,'85');
-  assert.equal(imported['2026-11-06']['custom-unjoined'],undefined);
+  assert.equal(imported['2026-11-06'][game.id].you.answer,undefined);
+  assert.equal(imported['2026-11-06'][game.id].you.shareText,undefined);
+  assert.equal(queries[0][0],'sharedScores');
   assert.equal(c.state.games.length,1);
   shared.sharing='personal';
+  c.visibleGames=()=>c.state.games.filter(g=>g.sharing==='friends');
   await c.loadFriendEntries({uid:'friend',id:'friend'});
-  assert.equal(imported['2026-11-06'][game.id],undefined);
+  assert.equal(imported['2026-11-06'],undefined);
+});
+
+test('a previously shared personal score keeps its newer device edit on account reload',async()=>{
+ const c=setup(),personal={...game,sharing:'personal'};
+ const old={schemaVersion:2,revision:1,kind:'result',gameId:game.id,date:'2026-11-06',deleted:false,value:safety.privateEntry({score:'5',result:'played',source:'manual'})};
+ c.state={profile:{name:'You',handle:'@solvry'},friends:[],games:[personal],pinnedGameIds:[],entries:{'2026-11-06':{[game.id]:{you:{...old.value,score:'8'}}}},cloudBase:{['result_2026-11-06_'+game.id]:old},syncConflicts:[]};
+ c.starterState={games:[]};c.showAppNotice=()=>{};c.parseShareText=()=>({});
+ c.cloudBackend={generation:0,auth:{currentUser:{uid:'owner'}},modules:{firestore:{doc:()=>({}),collection:()=>({}),getDocFromServer:async()=>({exists:()=>true,data:()=>({accountDataVersion:2})}),getDocsFromServer:async()=>({docs:[{id:'result_2026-11-06_'+game.id,data:()=>old}]})}}};
+ for(const name of ['cloudSession','currentCloudSession','accountRecords','loadCloudState'])addFunction(c,name);
+ await c.loadCloudState('owner');assert.equal(c.state.entries['2026-11-06'][game.id].you.score,'8');
 });

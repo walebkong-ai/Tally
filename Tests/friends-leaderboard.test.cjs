@@ -3,25 +3,26 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 
 function setup() {
   const context = vm.createContext({
-    structuredClone, SHOW_SOLVRY_GAMES: false,
+    structuredClone, safety, storageOwner: 'owner', SHOW_SOLVRY_GAMES: false,
     state: {
       profile: { id: 'you', name: 'You', handle: '@you' },
       friends: [{ id: 'a', name: 'Alice', handle: '@alice', status: 'local' }, { id: 'b', name: 'Bob', handle: '@bob', status: 'local' }],
-      account: {}, friendRequests: { incoming: [], outgoing: [] },
+      cloudBase: {}, syncConflicts: [], account: {}, friendRequests: { incoming: [], outgoing: [] },
       selectedDate: '2026-11-02', entries: {}, games: [{ id: 'wordle', type: 'guesses' }], pinnedGameIds: []
     },
-    cloudBackend: { ready: false },
+    cloudBackend: { ready: false, syncReady: false, generation: 0 },
     scoreStyleLabel: () => 'Score', defaultScoreLabel: (result) => result,
-    saveState: () => {}
+    saveState: () => {}, renderFriendSync: () => {}, refreshSocialViews: () => {}
   });
   const names = ['visibleGames', 'gameSource', 'getActiveGame', 'normalizeHandle', 'addOrUpdateFriend', 'cloudFriendsAvailable', 'isDemoFriend', 'visibleFriends', 'getPeople',
     'eligibleForDailyRanking', 'importDateError', 'placementScore', 'gameScoreDirection', 'resultWeight', 'leaderboardDates', 'buildOverallLeaderboard', 'buildGameLeaderboard',
     'scoreTier', 'compareScoreValues', 'compareScoreRows', 'scoreEntryForGame', 'parseGuessScore', 'parseTimeScore', 'parseNumberScore', 'parseRankScore',
-    'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'serializeCloudState'];
+    'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'accountRecords', 'serializeCloudState', 'cloudSession', 'currentCloudSession', 'requestSnapshotToState', 'refreshCloudFriendRequests'];
   for (const name of names) {
     const match = new RegExp(`(?:async )?function ${name}\\(`).exec(app);
     assert.ok(match, name);
@@ -108,6 +109,7 @@ test('cached connected friends are excluded when signed out or owned by another 
   c.state.friends.push({ id: 'remote', uid: 'remote', status: 'accepted', ownerUid: 'owner' });
   assert.equal(c.visibleFriends().length, 2);
   c.cloudBackend.ready = true;
+  c.cloudBackend.syncReady = true;
   c.cloudBackend.auth = { currentUser: { uid: 'owner' } };
   c.state.account.uid = 'owner';
   assert.equal(c.visibleFriends().length, 3);
@@ -131,6 +133,7 @@ function mockCloud(c, initial) {
   let writes = 0;
   c.state.account.uid = 'owner';
   c.cloudBackend.ready = true;
+  c.cloudBackend.syncReady = true;
   c.cloudBackend.auth = { currentUser: { uid: 'owner' } };
   c.cloudBackend.modules = { firestore: {
     collection: () => ({}), doc: () => ({}), query: () => ({}), where: () => ({}),
@@ -153,20 +156,93 @@ test('sending never overwrites an existing pending or accepted connection', asyn
   }
 });
 
-test('send, accept, and remove update friend membership without touching score history', async () => {
+function mockRequestReads(c, read) {
+  mockCloud(c, null);
+  Object.assign(c.cloudBackend.modules.firestore, {
+    collection: (_, name) => name,
+    where: (field, op, uid) => ({ field, op, uid }),
+    query: (collection, filter) => ({ collection, ...filter }),
+    getDocsFromServer: read
+  });
+}
+
+test('fresh request reads recover a received invitation without any listener callback', async () => {
+  const c = setup(), queries = [];
+  const request = { fromUid: 'friend', toUid: 'owner', status: 'pending' };
+  mockRequestReads(c, async query => {
+    queries.push(query);
+    return { docs: query.field === 'toUid' ? [{ id: 'friend__owner', data: () => request }] : [] };
+  });
+  // Exercise the real save path: applyAcceptedRequests saves after receiving the list.
+  const cache = new Map(), fallback = structuredClone(c.state);
+  const storage = {
+    get length() { return cache.size; }, key: index => [...cache.keys()][index],
+    getItem: key => cache.get(key) ?? null, setItem: (key, value) => cache.set(key, value)
+  };
+  let baseline = safety.localRecords(fallback);
+  c.saveState = () => {
+    c.state = safety.writeLocal(storage, 'account:owner', 'tab', baseline, c.state, fallback);
+    baseline = safety.localRecords(c.state);
+  };
+  assert.equal(await c.refreshCloudFriendRequests(), true);
+  assert.deepEqual(plain(queries), [
+    { collection: 'friendRequests', field: 'toUid', op: '==', uid: 'owner' },
+    { collection: 'friendRequests', field: 'fromUid', op: '==', uid: 'owner' }
+  ]);
+  assert.equal(c.state.friendRequests.incoming[0].status, 'pending');
+  assert.equal(c.state.friendRequests.incoming[0].id, 'friend__owner');
+  assert.equal(c.cloudBackend.requestsChecked, true);
+  assert.equal(c.cloudBackend.requestsLoading, false);
+});
+
+test('request read failure retains both prior lists and exposes a retryable error', async () => {
+  const c = setup();
+  c.state.friendRequests = { incoming: [{ id: 'cached-in' }], outgoing: [{ id: 'cached-out' }] };
+  mockRequestReads(c, async query => {
+    if (query.field === 'fromUid') throw Object.assign(new Error('offline'), { code: 'unavailable' });
+    return { docs: [] };
+  });
+  await assert.rejects(c.refreshCloudFriendRequests(), { code: 'unavailable' });
+  assert.deepEqual(plain(c.state.friendRequests), { incoming: [{ id: 'cached-in' }], outgoing: [{ id: 'cached-out' }] });
+  assert.equal(c.cloudBackend.requestsError, 'unavailable');
+  assert.equal(c.cloudBackend.requestsLoading, false);
+});
+
+test('request read completing after account switching cannot populate the new account', async () => {
+  const c = setup();
+  let resolveReads;
+  const waiting = new Promise(resolve => { resolveReads = resolve; });
+  mockRequestReads(c, async () => waiting);
+  const refresh = c.refreshCloudFriendRequests();
+  c.storageOwner = 'other';
+  c.state.account.uid = 'other';
+  c.cloudBackend.auth.currentUser.uid = 'other';
+  c.cloudBackend.generation++;
+  c.cloudBackend.requestsLoading = false;
+  c.cloudBackend.requestsChecked = false;
+  resolveReads({ docs: [{ id: 'old-invitation', data: () => ({ fromUid: 'friend', toUid: 'owner', status: 'pending' }) }] });
+  assert.equal(await refresh, false);
+  assert.deepEqual(plain(c.state.friendRequests), { incoming: [], outgoing: [] });
+  assert.equal(c.cloudBackend.requestsChecked, false);
+  assert.equal(c.cloudBackend.requestsLoading, false);
+});
+
+test('send, accept, and remove preserve own history and purge the removed peer cache', async () => {
   const c = setup();
   const db = mockCloud(c, null);
   await c.sendCloudFriendRequest('', '@friend');
   assert.equal(db.record().status, 'pending');
   await assert.rejects(c.updateFriendRequest('accept', 'request'), /isn't yours/);
   c.state.account.uid = 'friend';
+  c.storageOwner = 'friend';
   c.cloudBackend.auth.currentUser.uid = 'friend';
   await c.updateFriendRequest('accept', 'request');
   assert.equal(c.state.friends.find((friend) => friend.uid === 'owner').status, 'accepted');
-  c.state.entries['2026-11-02'] = { wordle: { owner: entry('3/6') } };
+  c.state.entries['2026-11-02'] = { wordle: { owner: entry('3/6'), you: entry('4/6') } };
   await c.updateFriendRequest('remove', 'request');
   assert.ok(!c.state.friends.some((friend) => friend.uid === 'owner'));
-  assert.equal(c.state.entries['2026-11-02'].wordle.owner.score, '3/6');
+  assert.equal(c.state.entries['2026-11-02'].wordle.owner, undefined);
+  assert.equal(c.state.entries['2026-11-02'].wordle.you.score, '4/6');
 });
 
 test('refresh removes a deleted remote score but keeps other people’s scores', () => {
@@ -183,7 +259,7 @@ test('cloud payload excludes cached friend scores and sample people', () => {
   c.state.entries['2026-11-02'] = { wordle: { you: entry('3/6'), a: entry('2/6') } };
   const payload = c.serializeCloudState();
   assert.deepEqual(Object.keys(payload.entries['2026-11-02'].wordle), ['you']);
-  assert.ok(!payload.friends.some((friend) => friend.id === 'mira'));
+  assert.equal(payload.friends, undefined);
 });
 
 test('hidden Solvry games preserve saved state but do not appear or award daily points', () => {
@@ -233,7 +309,7 @@ test('personal custom games and their scores never enter friend-readable cloud p
   assert.equal(payload.entries['2026-11-02']['custom-private'],undefined);
   assert.equal(payload.entries['2026-11-02']['custom-shared'].you.score,'45');
   assert.deepEqual(plain(payload.customGames.map(g=>g.id)),['custom-shared']);
-  assert.ok(!payload.pinnedGameIds.includes('custom-private'));
+  assert.equal(payload.pinnedGameIds, undefined);
 });
 
 test('custom scores rank per game but never influence overall standings', () => {

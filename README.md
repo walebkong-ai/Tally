@@ -2,6 +2,42 @@
 
 Solvry is a Swift-generated universal leaderboard for daily games: paste a shared result, review it, and compare per-game and combined scores with friends.
 
+## Current release and launch status (2026-11-11)
+
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v67**. The published source checkpoint is `45bf30f4133344b7c86215ec618b755332d62b46` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+
+The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
+
+See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Launch operations (2026-11-10)
+
+See [the operations runbook](Operations/RUNBOOK.md) for owner quota-warning emails, the usage dashboard, private operational error summaries, encrypted daily local backups and the tested application rollback procedure. Firebase stays on Spark; managed backups/PITR and billing-budget alerts are not enabled. Diagnostics exclude result content and are included in account export/deletion. The remaining audited parser defects QA-02–05 now have regression coverage.
+
+## Reconnect recovery (2026-11-10)
+
+An iPhone Safari beta save uploaded after reconnecting but left an offline-read error visible. Online events and manual retries now join one account-scoped recovery task, which waits for any prior upload, fetches fresh cloud state, and retries temporary read failures up to four attempts (2, 4 and 8 second delays). Permission failures remain visible. Switching accounts discards old recovery results. Success status follows a completed cloud check/save. The subsequent real iPhone retry uploaded successfully, reached Changes synced, and was read back on the computer.
+
+## Friend request refresh (2026-11-10)
+
+The beta exposed a local-save bug: rebuilding own-score records from the recovery journal also restored stale social caches, discarding freshly received requests and friend scores. Local saves now retain the current tab's fetched request lists and peer score cache while preserving the independently merged own records. Regression tests exercise the real persistence path, cache-write failure, peer-score removal and concurrent own-score edits.
+
+Requests now load directly from the server at sign-in and when opening the Requests tab. Refresh friends reloads both scoped request lists before scores, alongside existing live listeners. The Requests panel shows the account handle, pending counts, loading state and retryable read errors. A failed refresh retains cached lists; reads completing after an account switch are discarded. The existing request appeared on the iPhone after the fix, was accepted, and the connected privacy and later removal checks passed.
+
+## Invited beta permission checker (2026-11-10)
+
+The direct `/assets/beta-check.html` page uses the browser’s existing Firebase sign-in to run read-only production permission probes. Enter the other beta account’s Solvry handle, the tagged Wordle score date, and the current relationship/answer-sharing stage. It checks own-profile/score reads, peer private-record denial, scoped request queries, and the peer score projection appropriate to that stage. Sanitized downloadable reports contain test names, pass/fail, errors, field names and identifier suffixes, with no answer/note/raw-result values or sign-in tokens. The checker makes no database changes and does not replace real phone, offline or account-switching tests.
+
+## Account and score management (2026-11-10)
+
+Account now includes JSON exports and a reauthenticated, resumable deletion flow. Saved game results offer Delete score and Change date; account date moves are atomic and reject occupied destinations. A persistent sync indicator distinguishes device saves, pending/offline work, errors, conflicts and cloud acknowledgments. The [privacy notice](PRIVACY_NOTICE.md) describes actual storage, sharing and retention, including recovery journals and minimal deletion markers. See [the implementation notes](ACCOUNT_DATA_SAFETY.md#account-and-score-controls-2026-11-10) for cleanup behavior and test coverage.
+
+## Account and data safety (2026-11-09)
+
+Account storage is isolated by verified Firebase UID; signing in does not import guest history. Private records and minimal friend-readable score projections replace the mixed account document. Revisioned transactions retain competing edits for explicit review. See [ACCOUNT_DATA_SAFETY.md](ACCOUNT_DATA_SAFETY.md) for the schema, recovery behavior, tests and required Firebase activation steps. Firebase was activated on 2026-11-10 in project `solvry-walebkong`, using the Toronto Standard Firestore database and Google sign-in. The tested rules are deployed and the admin activation marker is set. Apple sign-in is not configured.
+
+The dated entries below describe earlier releases and may reference superseded storage behavior.
+
 ## Personal and shared custom games (2026-11-06)
 
 Use **Games → Add a custom game**, or **Add score → Enter manually → Other game**. Set a name, optional HTTP(S) website, and scoring style (higher/lower score, time, guesses, mistakes, completion). The game starts personal and device-local. Personal definitions, scores, and pins are omitted from the friend-readable cloud document. All custom games are excluded from combined daily rankings; per-game rankings still follow their scoring rule.
@@ -78,11 +114,30 @@ Format references inspected: [Daily Tens](https://dailytens.com/), [Centumth](ht
 
 ## Build
 
+Run from the repository root with Swift 6 (macOS 14 or later):
+
 ```sh
 swift run solvry-site
 ```
 
-The build writes the deployable site to `dist/`.
+The build writes the deployable site to `dist/`. To preview it locally:
+
+```sh
+python3 -m http.server 8080 --directory dist
+```
+
+Open http://localhost:8080/. Guest/local features work without a cloud session. Firebase sign-in requires an authorized origin; local preview does not modify production configuration.
+
+Install the pinned Node dependencies and run the checks after building:
+
+```sh
+npm ci
+node --check dist/app.js
+npm test
+npm run test:rules
+```
+
+The Firestore rules suite requires a Java 21+ runtime for the emulator. It uses the disposable `demo-solvry-safety` project rather than production. Operational scripts in `Scripts/` can access the configured production Firebase project when run by an authenticated operator; follow [the runbook](Operations/RUNBOOK.md) before using them. Firebase browser configuration and project/resource IDs are public identifiers, not administrator credentials. No service-account key or saved CLI session is shipped.
 
 ## What is in this version
 
@@ -97,7 +152,7 @@ The build writes the deployable site to `dist/`.
 - Selected-day score count, current streak, and total saved results with a recent progress row
 - Friendlier UI states for saved results, score examples, imports, and navigation
 - Compact colorful overview and editorial headings with dedicated task-focused views
-- Firebase-ready login/sign-up flow with Google and Apple account options
+- Active Firebase Google sign-in; Apple sign-in remains unconfigured
 - Friend requests, friend leaderboards, and cloud-ready saved profiles/scores
 - Spoiler-safe answer sharing
 - Official game links
@@ -111,23 +166,15 @@ The build writes the deployable site to `dist/`.
 
 Solvry now includes a real-account adapter for Firebase Auth and Firestore. Without config, the site stays in local mode and labels friends as local-only. To enable production accounts, provide a Firebase web config as `window.SOLVRY_FIREBASE_CONFIG` before `app.js` loads, or save the same JSON in local storage under `solvry-firebase-config` while testing.
 
-Required Firebase products:
-
-- Authentication with Google and Apple providers enabled
-- Firestore collections for `users` and `friendRequests`
-- Security rules that let signed-in users read/write their own profile and scores, read accepted friends' public score data, and create/respond to their own friend requests
+Required Firebase products are Authentication and Firestore. Deploy the checked-in `firestore.rules` before creating the admin-only activation marker or enabling the browser configuration. Current collections are `privateUsers`, `profiles`, `sharedScores` and `friendRequests`; legacy `users` documents are denied to clients. Follow the full [activation and verification procedure](ACCOUNT_DATA_SAFETY.md#activate-a-new-firebase-backend).
 
 ## Current verification baseline
 
-Use this as the stable checkpoint for future Solvry work:
+The v67 release validation passed **139 app tests**, **20 Firestore emulator tests**, JavaScript/module syntax checks, and live/source rule comparison. User-assisted computer Chrome and iPhone Safari checks covered sign-in, account isolation, accepted friendships, answer reveal/hide, removal permission revocation, and offline recovery. Backup restoration into isolated emulators and a live v67 → v65 → v67 application rollback were tested.
 
-- Solvry Holes desktop browser flow visually verified
-- One 2-shot hole verified
-- One 3+ shot par 5 progression verified
-- `swift run solvry-site` passed
-- `node --check dist/app.js` passed
-- `git diff --check` passed
-- Targeted parser/import checks passed
+These checks do not establish readiness for unrestricted public traffic. Live competing edits, complete account-management flows on a disposable account, new-tester onboarding, Android/mobile Chrome coverage, anonymous public/custom-domain access, production diagnostics delivery, and an independent off-device backup remain follow-up work. See [the release verification summary](QA/RELEASE_READINESS.md).
+
+The dated sections below retain historical implementation and test notes; the hidden Solvry Holes engine is not part of the public launch scope.
 
 ## Score import checks (2026-10-26)
 

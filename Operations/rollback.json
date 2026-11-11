@@ -1,0 +1,10 @@
+{
+  "projectId": "appgprj_6abd6478c7a081918572401c942f954d",
+  "knownGoodVersion": 65,
+  "knownGoodVersionId": "appgprj_6abd6478c7a081918572401c942f954d~appgver_1dd3b3bb17988191bed56af3033990cb",
+  "knownGoodSource": "35fcbc35d09e283cafcda2d907bc6459a7267783",
+  "knownGoodArchiveHash": "sha256:11747480bf67065b190182f779f74fb8d104029362fc803f71e8d2688e936895",
+  "requiredDataSchema": 2,
+  "audience": "custom",
+  "dataRollback": "No automatic production data rollback; restore drills are restricted to loopback demo emulators."
+}
