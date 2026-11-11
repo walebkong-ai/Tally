@@ -336,7 +336,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=39" type="module"></script>
+    <script src="app.js?v=40" type="module"></script>
   </body>
 </html>
 """#
@@ -4006,7 +4006,7 @@ button:disabled { cursor:wait; }
 """#
 
 let appScript = #"""
-import * as safety from "./assets/sync-safety.mjs?v=35";
+import * as safety from "./assets/sync-safety.mjs?v=36";
 import * as management from "./assets/account-management.mjs?v=37";
 import * as operations from "./assets/launch-ops.mjs?v=2";
 const STORAGE_KEY = "solvry-state-v2";
@@ -4104,12 +4104,42 @@ const GOLF_SURFACES = {
 // Keep the game engines and saved rounds available for a future return.
 const SHOW_SOLVRY_GAMES = false;
 const ADDITIONAL_IMPORT_GAMES = [
+  // Verified daily editions with explicit manual entry; no guessed share parsers.
+  {"id": "contexto", "name": "Contexto", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily English puzzle on contexto.me only. Record total guesses from an unassisted solve; do not enter the best semantic rank, hints, archives or Unlimited results. Enter manually; paste import is not supported yet.", "example": "30 guesses"}, "logo": "wordle", "officialUrl": "https://contexto.me/en/daily", "aliases": ["contextle"]},
+  {"id": "fine-print", "name": "Fine Print Daily", "type": "mistakes", "manualOnly": true, "maxScore": 4, "scoreLabel": "Incorrect cuts", "scoreFieldHelp": "0–3 incorrect cuts for a solve; 4 is a miss.", "scoring": {"label": "Fewest incorrect cuts", "helper": "The solo Daily passage on playfineprint.com. Count incorrect cuts after finding all four impostors. Four strikes is a miss. Party, Remix and friends’ custom passages stay separate. Enter manually; paste import is not supported yet.", "example": "1 mistake"}, "logo": "mystery", "officialUrl": "https://playfineprint.com/", "aliases": ["fineprint", "playfineprint"]},
+  {"id": "minute-cryptic", "name": "Minute Cryptic", "type": "strokes", "manualOnly": true, "minScore": -1000, "scoreLabel": "Score vs par", "scoreFieldHelp": "Signed score relative to par: -1, 0 or +2. Lower is better.", "scoring": {"label": "Lowest score vs par", "helper": "Enter the signed score relative to par from your finished daily clue recap. Under par is negative; over par is positive. Exclude courses, Minis, archives and custom clues. Enter manually; paste import is not supported yet.", "example": "-1"}, "logo": "wordle", "officialUrl": "https://www.minutecryptic.com/", "aliases": ["minute", "likes cryptic"]},
+  {"id": "clevergoat-categories", "name": "Categories (CleverGoat)", "type": "mistakes", "manualOnly": true, "maxScore": 4, "scoreLabel": "Mistakes", "scoreFieldHelp": "0–3 mistakes for a solve; 4 is a miss.", "scoring": {"label": "Fewest mistakes", "helper": "Daily CleverGoat Categories only. Count failed groups; losing all four lives is a miss. This is a separate puzzle from NYT Connections. Enter manually; paste import is not supported yet.", "example": "1 mistake"}, "logo": "connections", "officialUrl": "https://categories.clevergoat.com/", "aliases": ["categories"]},
+  {"id": "rngdle", "name": "RNGdle", "type": "points", "manualOnly": true, "decimalScore": true, "dailyRanked": false, "scoreLabel": "Entropy points (EP)", "scoreFieldHelp": "Daily roll EP only. Luck-based; excluded from combined rankings.", "scoring": {"label": "Highest daily EP", "helper": "Daily roll’s entropy points, not the rolled number, badge count or lifetime total. This luck-based game has its own board and is excluded from the combined leaderboard. Enter manually; paste import is not supported yet.", "example": "25.5"}, "logo": "daily-tens", "officialUrl": "https://www.rngdle.com/"},
+  {"id": "dsmdle", "name": "DSMdle Classic", "type": "guesses", "manualOnly": true, "maxScore": 6, "scoring": {"label": "Fewest guesses", "helper": "The linked site’s Daily Classic fictional case, up to 6 guesses. Hard and archive cases stay separate. Record only the game result; use the publisher’s game-only guidance. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "mystery", "officialUrl": "https://www.dsmdle.com/", "aliases": ["dsmdle"]},
+  {"id": "quordle", "name": "Quordle (quordlewordle.io)", "type": "guesses", "manualOnly": true, "minScore": 4, "maxScore": 9, "scoring": {"label": "Fewest total guesses", "helper": "Daily mode on quordlewordle.io only. Enter the total guesses used when all four words are solved, from 4 to 9. Other publishers, Endless and partial solves stay separate. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "wordle", "officialUrl": "https://quordlewordle.io/", "aliases": ["quordle", "queen duried"]},
+  {"id": "poople", "name": "Poople", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily word ladder to POOP. Record the move count shown by the game; fewer moves win. Practice is separate. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://poople.io/"},
+  {"id": "flagle", "name": "Flagle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Teuteuf’s daily flag puzzle only. Record guesses for the main flag; exclude bonus rounds. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "flagcognito", "officialUrl": "https://www.flagle.io/"},
+  {"id": "terradle", "name": "Terradle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Guess the daily Terraria weapon. Record total guesses; do not mix other Terraria guessing games. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "crafting", "officialUrl": "https://www.terradle.com/"},
+  {"id": "spotle", "name": "Spotle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily music artist puzzle, up to 10 guesses. Exclude Movies, Rewind, Brackets and custom puzzles. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "music", "officialUrl": "https://spotle.io/", "maxScore": 10},
+  {"id": "daily-crossword", "name": "NYT Daily Crossword", "type": "time", "manualOnly": true, "scoring": {"label": "Fastest time", "helper": "Completion time for the full NYT daily crossword. The Mini has its own board. Use the same assistance rules when comparing. Enter manually; paste import is not supported yet.", "example": "12:03"}, "logo": "mini-crossword", "officialUrl": "https://www.nytimes.com/crosswords/game/daily", "aliases": ["crossword", "full crossword"]},
+  {"id": "brandle", "name": "Brandle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Capitalle’s daily brand-logo puzzle, up to 8 guesses. Exclude practice and other games named Brandle. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "price", "officialUrl": "https://capitalle.app/brandle", "maxScore": 8},
+  {"id": "pricepoint", "name": "PricePoint", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Final total for the same five-item Daily, up to 25,000 points. Exclude Blitz, Duels, Party and Sudden Death. Enter manually; paste import is not supported yet.", "example": "20000/25000"}, "logo": "price", "officialUrl": "https://pricepoint.gg/", "maxScore": 25000},
+  {"id": "metazooa", "name": "Metazooa", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Today’s mystery animal, up to 20 guesses. Record guesses used, not taxonomy rank or streak. Enter manually; paste import is not supported yet.", "example": "8 guesses"}, "logo": "animal", "officialUrl": "https://metazooa.com/", "maxScore": 20},
+  {"id": "travle", "name": "Travle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily World route only. Record total submitted country guesses on an unassisted run. Other maps, practice and weekly challenges are separate. Enter manually; paste import is not supported yet.", "example": "6 guesses"}, "logo": "globle", "officialUrl": "https://travle.earth/"},
+  {"id": "unwordle", "name": "Unwordle", "type": "complete", "manualOnly": true, "scoring": {"label": "Completion", "helper": "Track completion of the daily reverse-word puzzle. No invented timer or hint ranking; completed results tie. Enter manually; paste import is not supported yet.", "example": "Complete"}, "logo": "wordle", "officialUrl": "https://unwordle.org/?daily=1"},
+  {"id": "feetle", "name": "Feetle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily word ladder to FEET. Record the move count shown by the game. Unlimited rounds are separate. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "wordle", "officialUrl": "https://feetle.fun/"},
+  {"id": "loldle", "name": "LoLdle Classic", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily Classic champion puzzle only. Record guesses used; Quote, Ability, Emoji, Splash and Infinite stay separate. Enter manually; paste import is not supported yet.", "example": "6 guesses"}, "logo": "mystery", "officialUrl": "https://loldle.net/classic", "aliases": ["loldle", "lol dle"]},
+  {"id": "murdle", "name": "Murdle", "type": "complete", "manualOnly": true, "scoring": {"label": "Completion", "helper": "Track completion of the daily mystery. No invented timer or hint ranking; completed results tie. The Mini is a different puzzle. Enter manually; paste import is not supported yet.", "example": "Complete"}, "logo": "mystery", "officialUrl": "https://murdle.com/"},
+  {"id": "noillirk", "name": "Noillirk", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Daily Crowd mode’s final points out of 2,500. Exclude Rare, Unlimited, parties, people pulled and height scores. Enter manually; paste import is not supported yet.", "example": "1800/2500"}, "logo": "krillion", "officialUrl": "https://noillirk.com/", "maxScore": 2500},
+  {"id": "maptap", "name": "MapTap", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Record the total score displayed after completing the daily geography puzzle. Exclude archives, practice and percentile ranks. Enter manually; paste import is not supported yet.", "example": "750"}, "logo": "globle", "officialUrl": "https://maptap.gg/"},
+  {"id": "fibble", "name": "Fibble", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily puzzle only. Record the final guess count shown by Fibble, including its own starting-row convention. Exclude Unlimited. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://fibble.xyz/"},
+  {"id": "chainle", "name": "Chainle", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Final total from the same five daily rounds, up to 5,000 points. Exclude Unlimited and percentile ranks. Enter manually; paste import is not supported yet.", "example": "4200/5000"}, "logo": "connections", "officialUrl": "https://chainle.io/", "maxScore": 5000},
+  {"id": "costcodle", "name": "Costcodle Classic", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily Classic price puzzle, up to 6 guesses. Select CLASSIC on the official site. Checkout dollar error is a separate mode. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "price", "officialUrl": "https://costcodle.com/", "maxScore": 6, "aliases": ["costcodle", "costco dle"]},
+  {"id": "minecraftle", "name": "Minecraftle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily crafting-recipe puzzle, up to 10 guesses. Use the original game’s Daily mode; Random and other Craftle games are separate. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "crafting", "officialUrl": "https://minecraftle.zachmanson.com/", "maxScore": 10},
+  {"id": "enclose-horse", "name": "Enclose Horse", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "The score from your single submission on the shared daily puzzle, including tile bonuses and penalties. Exclude weekly and community levels. Enter manually; paste import is not supported yet.", "example": "85"}, "logo": "horse", "officialUrl": "https://enclose.horse/", "minScore": -1000000, "aliases": ["enclose.horse"]},
+  {"id": "genshindle", "name": "Genshindle Daily Normal", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Genshin Impact Daily Normal mode only, up to 5 guesses. Other character games and Quote, Ability, Emoji or Endless modes stay separate. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "mystery", "officialUrl": "https://us.genshindle.com/", "maxScore": 5, "aliases": ["genshidle", "genshindle normal"]},
+  {"id": "squirdle", "name": "Squirdle Daily", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "The daily Pokémon puzzle only. Record final guesses used. Random games, Stats Edition and restricted-generation settings are separate. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "animal", "officialUrl": "https://squirdle.fireblend.com/daily.html", "aliases": ["squirtle", "squirdle"]},
   { id: "connections-sports", name: "Connections: Sports Edition", type: "mistakes", maxScore: 4, scoring: { label: "Fewest mistakes", helper: "The Athletic's Sports Edition has its own scoreboard. Lower mistakes win; four is a miss.", example: "1 mistake" }, logo: "connections", officialUrl: "https://www.nytimes.com/athletic/connections-sports-edition" },
   { id: "daily-tens", name: "Daily Tens", type: "points", maxScore: 10, scoring: { label: "Most correct", helper: "One point per trophy in the shared top-10 grid. More correct answers win; percentile is not used.", example: "8/10" }, logo: "daily-tens", officialUrl: "https://dailytens.com/" },
   { id: "centumth", name: "Centumth", type: "points", maxScore: 490, scoring: { label: "Most points", helper: "Sum of the ranks from your five official guesses. Higher is better, up to 490. Arcade guesses do not count.", example: "350/490" }, logo: "centumth", officialUrl: "https://www.centumth.com/" },
   { id: "globle", name: "Globle", type: "guesses", scoring: { label: "Fewest guesses", helper: "Today's guess count after the equals sign. Lower wins; your streak and average are not the daily score.", example: "5 guesses" }, logo: "globle", officialUrl: "https://globle-game.com/" },
   { id: "flagcognito", name: "Flagcognito", type: "points", maxScore: 3000, scoring: { label: "Most points", helper: "The shared total across three rounds, up to 3,000 points. Higher wins.", example: "2400/3000" }, logo: "flagcognito", officialUrl: "https://guessdash.com/flagcognito" },
-  { id: "size-it-up", name: "Size It Up", type: "points", maxScore: 500, scoring: { label: "Most points", helper: "Magnitudle's original daily game: five rounds, up to 500 points. Higher wins. Other editions and practice runs need a separate game.", example: "425/500" }, logo: "size-it-up", officialUrl: "https://magnitudle.com/size-it-up" },
+  { id: "size-it-up", name: "Size It Up", aliases: ["magnitudle"], type: "points", maxScore: 500, scoring: { label: "Most points", helper: "Magnitudle's original daily game: five rounds, up to 500 points. Higher wins. Other editions and practice runs need a separate game.", example: "425/500" }, logo: "size-it-up", officialUrl: "https://magnitudle.com/size-it-up" },
   { id: "color", name: "Color (Dialed)", type: "points", maxScore: 50, decimalScore: true, dailyRanked: false, scoring: { label: "Best color memory", helper: "Share the score out of 50 and the Dialed Color link. Dated Color Daily results count in the combined leaderboard. Other challenge results stay on this game’s board.", example: "39.12/50" }, logo: "color", officialUrl: "https://dialed.gg/color" },
   { id: "buzzfeed-trivia", name: "BuzzFeed Daily Trivia", type: "points", maxScore: 5, scoring: { label: "Most correct", helper: "Correct answers out of five. More correct answers win.", example: "4/5" }, logo: "buzzfeed-trivia", officialUrl: "https://www.buzzfeed.com/daily-trivia" },
   ...[
@@ -4344,7 +4374,7 @@ document.querySelector("#homeScores").addEventListener("click", (event) => {
   const button = event.target.closest("[data-home-game]");
   if (button) openGame(button.dataset.homeGame);
 });
-elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
+elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.filter((game) => !game.manualOnly).map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
 
 function wireSocialTabs(tabs, select) {
   tabs.forEach((tab, index) => {
@@ -4695,7 +4725,7 @@ function render(focusGolf = true) {
   const activeGame = getActiveGame();
   state.activeGameId = activeGame.id;
   if (lastRenderedGameId && lastRenderedGameId !== activeGame.id) switchImportDraft(lastRenderedGameId, activeGame.id);
-  if (activeGame.source === "custom" && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
+  if ((activeGame.source === "custom" || activeGame.manualOnly) && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
   lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
   const myEntry = gameEntries.you;
@@ -4704,7 +4734,7 @@ function render(focusGolf = true) {
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
   document.querySelector("#gameHeroIcon").innerHTML = gameLogo(activeGame);
-  document.querySelector("#gameTypeLabel").textContent = activeGame.source === "custom" ? "Custom game" : activeGame.source === "solvry" ? "Solvry original" : "Supported game";
+  document.querySelector("#gameTypeLabel").textContent = activeGame.source === "custom" ? "Custom game" : activeGame.source === "solvry" ? "Solvry original" : activeGame.manualOnly ? "Manual entry" : "Supported game";
   document.querySelector("#gameScoreExample").textContent = scoreStyleExample(activeGame);
   document.querySelector("#gameDateLabel").textContent = state.selectedDate;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
@@ -7257,15 +7287,19 @@ function renderQuickGames() {
   });
 }
 
+function matchesGameSearch(game, search) {
+  return [game.name, ...(game.aliases || [])].some((name) => name.toLowerCase().includes(search));
+}
+
 function renderGameList() {
   elements.gameList.innerHTML = "";
   const search = document.querySelector("#gameSearch").value.trim().toLowerCase();
   [
-    { source: "official", title: "Supported games", detail: "Paste share results" },
+    { source: "official", title: "Official games", detail: "Paste supported shares or enter manually" },
     { source: "custom", title: "Your games", detail: "Manual scores" },
     { source: "solvry", title: "Solvry games", detail: "In-app versions" }
   ].forEach((section) => {
-    const games = getSortedGames().filter((game) => gameSource(game) === section.source && game.name.toLowerCase().includes(search) && (!pinnedOnly || state.pinnedGameIds.includes(game.id)));
+    const games = getSortedGames().filter((game) => gameSource(game) === section.source && matchesGameSearch(game, search) && (!pinnedOnly || state.pinnedGameIds.includes(game.id)));
     if (!games.length) return;
     const heading = document.createElement("div");
     heading.className = "game-section-label";
@@ -7289,7 +7323,7 @@ function renderGameCard(game) {
         ${gameLogo(game)}
         <span class="game-meta">
           <strong>${escapeHtml(game.name)}</strong>
-          <span>${scoreStyleLabel(game)}</span>
+          <span>${scoreStyleLabel(game)}${game.manualOnly ? " · Manual entry" : ""}</span>
         </span>
         <span class="game-score" aria-label="${entries.you ? "Result saved" : "No result yet"}">${entries.you ? "✓" : ""}</span>
       </button>
@@ -7343,6 +7377,12 @@ function togglePin(gameId) {
 // Keep names visible and use our own muted colors rather than recreating brand lockups.
 function gameLogo(game) {
   const icons = {
+    animal: ['leaf', '<path d="m6 13-2-9 9 5a13 13 0 0 1 6 0l9-5-2 9v8c0 10-20 10-20 0z"/><path d="M11 17h.01M21 17h.01m-7 5 2 2 2-2m-2 2v3"/>'],
+    music: ['plum', '<path d="M13 24V7l15-3v17M13 12l15-3"/><ellipse cx="8" cy="25" rx="5" ry="4"/><ellipse cx="23" cy="22" rx="5" ry="4"/>'],
+    crafting: ['slate', '<path d="m16 3 12 7v13l-12 7-12-7V10zm0 14 12-7M16 17 4 10m12 7v13M10 6l12 7v6"/>'],
+    price: ['honey', '<path d="M3 5h12l14 14-10 10L3 13z"/><circle cx="9" cy="10" r="2"/><path d="m15 17 5 5m-2-8 5 5"/>'],
+    horse: ['honey', '<path d="M8 5h6v13a2 2 0 0 0 4 0V5h6v13a8 8 0 0 1-16 0z"/><path d="M10 9h2m8 0h2M10 14h2m8 0h2M11 21l2-1m6 0 2 1M15 25h2"/>'],
+    mystery: ['slate', '<circle cx="13" cy="13" r="9"/><path d="m20 20 9 9M10 10a3 3 0 1 1 5 3c-2 1-2 2-2 3m0 3h.01"/>'],
     wordle: ['leaf', '<rect x="4" y="4" width="18" height="20" rx="3"/><path d="m9 18 4-9 4 9m-6-3h4"/><path d="m20 25 3 3 6-7"/>'],
     connections: ['plum', '<rect x="3" y="7" width="16" height="11" rx="5.5" transform="rotate(-30 11 12.5)"/><rect x="13" y="14" width="16" height="11" rx="5.5" transform="rotate(-30 21 19.5)"/><path d="m12 18 8-5"/>'],
     'connections-sports': ['clay', '<path d="M4 13h12v10H9a5 5 0 0 1-5-5zm12 0 12-4v8l-12 6M9 13V9m-4 0L3 7m12 2 2-2"/><circle cx="10" cy="18" r="2"/>'],
@@ -7473,7 +7513,13 @@ function updateManualScoreField() {
     mistakes: ["Mistakes", "0", "Total mistakes", 0, 1000000],
     complete: ["Completion", "", "", 0, 0]
   };
-  const [label, example, help, min, max] = fields[game.id] || (game.maxScore ? ["Score", String(game.maxScore), `Score out of ${game.maxScore}`, 0, game.maxScore] : customFields[game.type]);
+  const manualFields = game.manualOnly ? [
+    game.scoreLabel || (game.type === "guesses" ? "Guesses / moves" : game.type === "time" ? "Completion time" : "Score"),
+    game.type === "guesses" ? "4" : game.type === "time" ? "12:03" : "100",
+    game.scoreFieldHelp || (game.type === "time" ? "Minutes:seconds or hours:minutes:seconds" : game.type === "guesses" ? `Final count shown by the daily game${game.maxScore ? ` (1–${game.maxScore})` : ""}` : game.maxScore ? `Final daily total, up to ${game.maxScore} points` : "Final daily score shown by the game"),
+    game.minScore ?? (game.type === "guesses" ? 1 : 0), game.maxScore ?? 1000000
+  ] : null;
+  const [label, example, help, min, max] = fields[game.id] || manualFields || (game.maxScore ? ["Score", String(game.maxScore), `Score out of ${game.maxScore}`, 0, game.maxScore] : customFields[game.type]);
   const rarityInput = document.querySelector("#rarityInput");
   document.querySelector("#rarityField").hidden = game.type !== "grid";
   rarityInput.disabled = game.type !== "grid";
@@ -7482,15 +7528,16 @@ function updateManualScoreField() {
   elements.scoreHelp.textContent = help;
   const isRank = game.type === "rank";
   elements.manualScoreLabel.htmlFor = isRank ? "manualRankInput" : "scoreInput";
-  elements.resultInput.closest("label").hidden = isRank || (ADDITIONAL_IMPORT_GAMES.some((item) => item.id === game.id) && game.id !== "connections-sports");
+  elements.resultInput.closest("label").hidden = isRank || (ADDITIONAL_IMPORT_GAMES.some((item) => item.id === game.id) && !game.manualOnly && game.id !== "connections-sports");
   const missedWordle = game.id === "wordle" && elements.resultInput.value === "missed";
-  const completionOnly = game.source === "custom" && game.type === "complete";
-  elements.manualScoreLabel.closest(".manual-score-field").hidden = completionOnly;
-  elements.scoreInput.hidden = isRank || missedWordle || completionOnly;
-  elements.scoreInput.disabled = isRank || missedWordle || completionOnly;
-  elements.scoreInput.required = !isRank && !missedWordle && !completionOnly;
+  const completionOnly = (game.source === "custom" || game.manualOnly) && game.type === "complete";
+  const unscoredManual = game.manualOnly && (elements.resultInput.value === "missed" || ["guesses", "time", "strokes", "mistakes"].includes(game.type) && elements.resultInput.value !== "solved");
+  elements.manualScoreLabel.closest(".manual-score-field").hidden = completionOnly || unscoredManual;
+  elements.scoreInput.hidden = isRank || missedWordle || completionOnly || unscoredManual;
+  elements.scoreInput.disabled = isRank || missedWordle || completionOnly || unscoredManual;
+  elements.scoreInput.required = !isRank && !missedWordle && !completionOnly && !unscoredManual;
   elements.scoreInput.type = game.type === "time" ? "text" : "number";
-  elements.scoreInput.inputMode = game.type === "time" ? "text" : "numeric";
+  elements.scoreInput.inputMode = game.type === "time" ? "text" : game.decimalScore ? "decimal" : "numeric";
   elements.scoreInput.min = String(min);
   elements.scoreInput.max = String(max);
   elements.scoreInput.step = game.decimalScore ? "any" : game.source === "custom" && ["points", "strokes"].includes(game.type) ? "any" : "1";
@@ -7512,6 +7559,7 @@ function normalizeManualScore(gameId, result, raw, rank, rarity = "") {
     return { score: rank, result: rank === "Queen Bee" ? "solved" : "played" };
   }
   const added = ADDITIONAL_IMPORT_GAMES.find((game) => game.id === gameId);
+  if (added?.manualOnly) return normalizeCatalogScore(added, result, value);
   if (added && gameId !== "connections-sports") {
     const number = Number(value);
     if (added.type === "grid") {
@@ -7535,6 +7583,21 @@ function normalizeManualScore(gameId, result, raw, rank, rarity = "") {
   if (gameId === "connections") return { score: `${number} mistake${number === 1 ? "" : "s"}`, result: number === 4 ? "missed" : result };
   if (gameId === "strands") return { score: number ? `${number} hint${number === 1 ? "" : "s"}` : "No hints", result };
   return { score: String(number), result };
+}
+
+function normalizeCatalogScore(game, result, value) {
+  if (!["solved", "played", "missed"].includes(result)) return { error: "Choose a valid result." };
+  if (game.type === "complete" || result === "missed" || ["guesses", "time", "strokes", "mistakes"].includes(game.type) && result !== "solved") {
+    return { score: result === "solved" ? "Complete" : result === "missed" ? "Missed" : "Played", result };
+  }
+  if (game.type === "time") return normalizeCustomScore("time", result, value);
+  const number = Number(value), min = game.minScore ?? (game.type === "guesses" ? 1 : 0), max = game.maxScore ?? 1000000;
+  const valid = game.decimalScore ? /^\d+(?:\.\d{1,6})?$/.test(value) : game.type === "strokes" ? /^[+-]?\d+$/.test(value) : /^-?\d+$/.test(value);
+  if (!valid || !Number.isFinite(number) || !game.decimalScore && !Number.isSafeInteger(number) || number < min || number > max) {
+    return { error: `Enter ${game.decimalScore ? "a number" : "a whole number"} from ${min} to ${max}.` };
+  }
+  if (game.type === "mistakes") return { score: `${number} mistake${number === 1 ? "" : "s"}`, result: number === game.maxScore ? "missed" : result };
+  return { score: game.type === "guesses" ? `${number} guess${number === 1 ? "" : "es"}` : game.type === "points" && game.maxScore ? `${number}/${game.maxScore}` : String(number), result };
 }
 
 function normalizeCustomScore(type, result, raw) {
@@ -7763,6 +7826,7 @@ function buildGameLeaderboard(game, date = state.selectedDate, dailyOnly = false
 function scoreTier(row, game) {
   if (!row.hasEntry || !Number.isFinite(row.score.value) || !["solved", "played"].includes(row.entry?.result)) return 0;
   if (game.id === "strands" && row.entry.result !== "solved") return 0;
+  if (game.manualOnly && ["guesses", "time", "complete", "strokes", "mistakes"].includes(game.type) && row.entry.result !== "solved") return 0;
   if (["guesses", "mistakes", "time", "complete"].includes(game.type)) return row.entry.result === "solved" ? 2 : 1;
   return 1;
 }

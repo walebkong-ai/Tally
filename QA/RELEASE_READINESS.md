@@ -4,12 +4,20 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v68**, through OpenAI Sites.
-- Sites source checkpoint: `770fa029d929f2a79305fa71057d48e5d9f2dc74` (a separate source history from this repository).
+- Published application: **v69**, through OpenAI Sites.
+- Sites source checkpoint: `bcba297d077c1f9711510caa469a9b2c5ab6c7ed` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Catalog expansion verification (v69)
+
+Added 29 explicitly scoped daily editions, bringing the official catalog to 48 without duplicating existing IDs. New games use manual scoring, with publisher bounds where verified, signed par scores, completion-only records where appropriate, and an isolated RNGdle luck board. Search aliases normalize clarified names. The [eligibility review](../Operations/GAME_CATALOG_REVIEW.md) lists every addition, publisher link and exclusion. No publisher API integration or new paste-parser support is claimed.
+
+All **148 application tests** passed after rebuilding, including nine catalog/scoring/upgrade cases. Generated JavaScript and the storage module passed syntax checks. New-ID projection tests retain private answers/notes outside shared records. A reproduced browser upgrade defect was corrected: saving must preserve current official definitions while keeping concurrent custom-definition edits and existing result history. The complete existing account/privacy suite also passed. Firestore rules were unchanged; this release does not claim a new rules deployment or physical-device account beta.
+
+Local guest browser tests covered negative Minute Cryptic par, decimal RNGdle EP and its absence from overall standings, alias lookup, Fine Print’s fourth strike becoming a miss, and catalog persistence after save/reload. Live guest read-back confirmed 48 game cards and 49 manual dropdown options including Other, with Contexto selection retained after saving/reload. No production score fixtures or authentication changes were made. Invite-only access remains in place. The built app.js SHA-256 is `53c2990aae45bbb5455ee0dc879f564262774c08123044d7efd87b5df273403e`; sync-safety.mjs is `f67449c51d546470eba3acc2cc7c118dafb521a8ae3c7e46c86a5f41430a7af5`.
 
 ## Compact layout verification (v68)
 

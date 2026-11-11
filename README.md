@@ -4,11 +4,15 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v68**. The published source checkpoint is `770fa029d929f2a79305fa71057d48e5d9f2dc74` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v69**. The published source checkpoint is `bcba297d077c1f9711510caa469a9b2c5ab6c7ed` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Expanded daily game catalog (2026-11-11)
+
+The catalog now has **48 official game entries**, including **29 new daily editions** from the requested list. New editions use explicit manual scoring; paste support is not claimed without verified share fixtures. Game IDs remain unique, aliases find the canonical game, and modes/publishers are kept separate. RNGdle has a per-game luck board and is excluded from combined rankings. See [the full game eligibility review](Operations/GAME_CATALOG_REVIEW.md) for additions, links, scoring scope and exclusions. All 148 app tests pass. A cache-upgrade fix preserves the current official catalog during saves while retaining merged custom definitions and historical scores.
 
 ## Compact responsive layout (2026-11-11)
 

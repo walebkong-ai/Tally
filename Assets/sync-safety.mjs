@@ -432,6 +432,18 @@ export function writeLocal(storage, key, writer, baseline, state, fallback) {
   recovered.account = next.account;
   recovered.selectedDate = next.selectedDate;
   recovered.activeGameId = next.activeGameId;
+  // Official definitions come from the current release, not the older cache.
+  // Custom definitions remain merged editable records, including other tabs' edits.
+  if (Array.isArray(next.games)) {
+    const builtins = next.games.filter((game) => game.source !== "custom");
+    const builtinIds = new Set(builtins.map((game) => game.id));
+    recovered.games = [
+      ...structuredClone(builtins),
+      ...(recovered.games || []).filter(
+        (game) => game.source === "custom" && !builtinIds.has(game.id),
+      ),
+    ];
+  }
   // Server-derived social caches are not editable records in the journal.
   // Keep this tab's fetched view while retaining the merged own-score records.
   recovered.friendRequests = structuredClone(
