@@ -1,12 +1,12 @@
 # Requested game catalog review
 
-Reviewed November 11, 2026. Added **29** verified game editions to the existing **19**, for **48 official catalog entries**. The two hidden Solvry prototypes remain hidden and are not included in that count. The linked games run on their publishers’ websites; Solvry records self-reported results, not verified publisher API scores. No publisher logos or puzzle content were copied.
+Reviewed November 11, 2026. Added **29** verified game editions to the existing **19**, for **48 official catalog entries** at v69. The subsequent organization update retires all five Immaculate Grid editions, leaving **43 active official games**. The two hidden Solvry prototypes remain hidden and are not included in that count. The linked games run on their publishers’ websites; Solvry records self-reported results, not verified publisher API scores. No publisher logos or puzzle content were copied.
 
 ## Eligibility and entry
 
 A game fits when it has a named daily edition and a clear result that people can compare for the same puzzle/date. Different publishers, languages, challenge modes and archives should not be mixed. Completion-only games can be tracked without inventing a numeric score. RNGdle is a limited-fit exception: a shared daily ritual with a per-game luck board, excluded from combined rankings.
 
-All additions use **Enter manually** and are marked **Manual entry** in Games. Their share-text formats have not been verified; they are deliberately excluded from paste samples. Existing 19 games retain their current import/manual behavior. Selecting a new game opens manual entry automatically. Their public game links and the rules below were checked through official pages and visible game instructions.
+All additions use **Enter manually** and are marked **Manual entry** in Games. Their share-text formats have not been verified; they are deliberately excluded from paste samples. The 14 remaining existing games retain their current import/manual behavior. Selecting a new game opens manual entry automatically. Their public game links and the rules below were checked through official pages and visible game instructions.
 
 ## Added editions
 
@@ -82,3 +82,13 @@ Numeric safety bounds for games without a verified publisher maximum are input l
 ## Validation
 
 The release adds behavior tests for catalog identity/aliases, every new manual scorer, publisher limits, signed scores, decimals, unfinished results, RNGdle’s exclusion from combined rankings, and private/shared projection filtering for all new IDs. A cache-upgrade regression also checks that saving preserves the current built-in catalog, historical scores and a concurrently edited custom game. Local guest browser checks verified negative-par saves, decimal EP saves and exclusion, aliases, and Fine Print’s fourth strike becoming a miss. Live account data was not used for these test saves.
+
+## Organization and retirement update
+
+The Games page opens on **For you**: pinned games first, then games with active streaks, then the remaining catalog grouped into six categories. Cards appear once; a pinned game with a streak stays in Pinned games and keeps its streak badge. Categories are Words & connections, Crosswords & cryptics, Geography, Trivia & culture, Gaming & fandom, and Logic & variety. Custom games have their own category when present. Category selection combines with search aliases and Pinned only. Desktop category buttons retain keyboard focus; phones use a compact category dropdown. Today’s game shortcuts use the same pinned-first, streak-next order.
+
+Per-game streaks use the account’s own results and local calendar dates. A streak can run through today or yesterday while today is still unplayed. A miss today resets it; incomplete guessing/time/completion puzzles do not add a day. Scored point/depth games and Spelling Bee rank results count. Future entries and the historical Viewing date do not affect the current streak. No streak is inferred from publisher history that has not been recorded in Solvry.
+
+All five Immaculate editions are retired from the active catalog, new-entry selectors, import examples, paste saving, visible stats and rankings. Their definitions, legacy parsers and stored historical records remain available internally for non-destructive storage/export compatibility. Cached definitions cannot undo retirement, and a retired active-game selection falls back to Wordle. No cloud score records were deleted.
+
+Validation: **156 application tests** pass, including eight organization/streak/retirement cases. Local browser checks verified pinned-first ordering, active streaks without duplicate cards, Today’s shortcut order, category/alias/pinned filtering, stable desktop keyboard focus, the phone dropdown, 44 manual options including Other, no Immaculate samples, rejected Immaculate pastes, and no horizontal overflow at 375 and 1366 pixels. Header Add score/Account buttons remained equal in size. Test pins and existing score fixtures were used only on localhost; production user scores were not changed.

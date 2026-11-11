@@ -4,12 +4,22 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v69**, through OpenAI Sites.
-- Sites source checkpoint: `bcba297d077c1f9711510caa469a9b2c5ab6c7ed` (a separate source history from this repository).
+- Published application: **v70**, through OpenAI Sites.
+- Sites source checkpoint: `d5e14b5e7a8412d4d2f2acd55d0c70d879755b9e` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Games organization verification (v70)
+
+The default For you catalog prioritizes pinned games, then active per-game streaks, then remaining games in six categories without duplicate cards. Category filters combine with aliases and Pinned only. Phones use a compact dropdown; desktop category buttons retain keyboard focus. Today’s shortcuts use the same pinned/streak priority. Streaks are computed from own recorded results using local calendar dates, including month/year/DST boundaries; future records, friends’ records and historical Viewing date do not create streaks. A miss today breaks a streak.
+
+All five Immaculate editions are retired from browsing, new score selectors, paste samples/saves, visible stats and rankings. Existing history remains intact internally and in exports. Cached flags cannot reactivate these definitions; retired active-game selections fall back to Wordle. There are 43 active official games and 44 manual options including Other.
+
+All **156 app tests** pass after rebuilding, including eight new organization/streak/retirement cases; JavaScript syntax and diff checks pass. Local guest browser checks verified pinned-first ordering, active streaks, no duplicate cards, category + alias + pinned filtering, Today shortcuts, the compact phone category dropdown, stable desktop focus, retired manual/sample exclusion and blocked retired pastes. Responsive checks at 375 and 1366 pixels found no horizontal overflow; Add score and Account remained equal in size. Test pins and score fixtures were confined to localhost. No production scores, auth settings, rules, billing or audience were changed. This is not a new physical-device beta or rules test run.
+
+The built app.js SHA-256 is `4579d523e5febc2a9155cb6a5c28512b63bdcefa8af38855b76d0425657693c6`. Invite-only access remains in place.
 
 ## Catalog expansion verification (v69)
 

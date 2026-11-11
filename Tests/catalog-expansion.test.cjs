@@ -14,13 +14,13 @@ function setup() {
     const next = /\n(?:async )?function \w+\(/.exec(tail);
     vm.runInContext(tail.slice(0, next?.index), c);
   }
-  return { c, games: vm.runInContext('starterState.games.filter(g => g.source === "official")', c) };
+  return { c, games: vm.runInContext('starterState.games.filter(g => g.source === "official" && !g.retired)', c) };
 }
 const newIds = ['poople','flagle','terradle','spotle','daily-crossword','brandle','pricepoint','metazooa','travle','unwordle','feetle','loldle','murdle','noillirk','maptap','fibble','chainle','costcodle','minecraftle','enclose-horse','genshindle','squirdle','minute-cryptic','clevergoat-categories','rngdle','dsmdle','quordle','contexto','fine-print'];
 
 test('the actual starter catalog contains each requested verified daily once, preserving existing IDs', () => {
   const { games } = setup();
-  assert.equal(games.length, 48);
+  assert.equal(games.length, 43);
   assert.equal(new Set(games.map(g => g.id)).size, games.length);
   assert.equal(new Set(games.map(g => g.name.toLowerCase())).size, games.length);
   for (const id of newIds) assert.equal(games.filter(g => g.id === id && g.manualOnly).length, 1, id);
@@ -126,9 +126,9 @@ test('saving after a catalog upgrade preserves new official games, old scores an
   const current = {...structuredClone(old),games:[...JSON.parse(JSON.stringify(games)),custom],activeGameId:'fine-print',selectedDate:'2026-11-11'};
   const saved = safety.writeLocal(storage,'catalog','new-release',baseline,current,current);
   assert.equal(saved.activeGameId,'fine-print');
-  assert.equal(saved.games.filter(g=>g.source==='official').length,48);
+  assert.equal(saved.games.filter(g=>g.source==='official').length,43);
   assert.ok(saved.games.find(g=>g.id==='fine-print')?.manualOnly);
   assert.equal(saved.games.find(g=>g.id===custom.id).name,'Edited in another tab');
   assert.equal(saved.entries['2026-11-10'].wordle.you.score,'3/6');
-  assert.equal(JSON.parse(values.get('catalog')).games.length,49);
+  assert.equal(JSON.parse(values.get('catalog')).games.length,44);
 });

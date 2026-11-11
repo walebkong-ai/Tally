@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=34" />
+    <link rel="stylesheet" href="styles.css?v=35" />
   </head>
   <body>
     <div class="app" id="app">
@@ -89,8 +89,11 @@ let html = #"""
         </section>
 
         <section class="app-view catalog-view" id="games" data-view="games" aria-label="Games" hidden>
-          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Play on the official site. Bring your result back here.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div></div>
+          <div class="view-head"><div><h1>Games</h1><p class="view-copy">Your favorites first. Find your next daily ritual.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div></div>
           <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
+          <div class="catalog-categories" id="gameCategories" role="group" aria-label="Game categories"></div>
+          <label class="catalog-category-select">Category<select id="gameCategorySelect" aria-label="Game category"></select></label>
+          <p class="catalog-summary" id="catalogSummary" role="status"></p>
           <div class="game-list" id="gameList"></div>
           <p class="catalog-attribution">Game names belong to their respective owners. Icons are Solvry illustrations; no affiliation or endorsement is implied.</p>
         </section>
@@ -336,7 +339,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=40" type="module"></script>
+    <script src="app.js?v=41" type="module"></script>
   </body>
 </html>
 """#
@@ -3414,6 +3417,28 @@ input, select, textarea, .date-control input { border-radius: 10px; }
 .progress-day.today { border: 1px solid var(--petrol); background: #e8efec; }
 .progress-day.done { border-color: #cadac4; background: #e8efdf; color: #3e6344; }
 .progress-day span { font-size: 10px; }
+.catalog-controls { margin-bottom: 12px; }
+.catalog-categories { display: flex; flex-wrap: wrap; gap: 8px; }
+.catalog-category-select { display: none; }
+@media (max-width: 760px) {
+  .catalog-categories { display: none; }
+  .catalog-category-select { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 13px; }
+  .catalog-category-select select { min-width: 0; flex: 1; min-height: 44px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); color-scheme: light; font-size: 13px; font-weight: 600; }
+  .catalog-category-select option { background: var(--surface); color: var(--ink); }
+}
+.category-chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 13px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; box-shadow: none; }
+.category-chip > span { display: grid; place-items: center; min-width: 21px; height: 21px; padding-inline: 4px; border-radius: 7px; background: #ede7d8; color: var(--muted); font-size: 11px; }
+.category-chip:hover { background: #e8efec; border-color: #86a69d; }
+.category-chip[aria-pressed="true"] { background: var(--petrol); color: white; border-color: var(--petrol); }
+.category-chip[aria-pressed="true"] > span { background: #ffffff26; color: white; }
+.category-chip:focus-visible { outline: 2px solid var(--petrol); outline-offset: 3px; }
+.catalog-summary { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
+.catalog-view .game-section-label { margin: 10px 0 0; padding: 10px 0 8px; gap: 8px; text-transform: none; color: var(--ink); }
+.catalog-view .game-section-label strong { font-size: 16px; }
+.catalog-view .game-section-label .section-count { display: inline-grid; place-items: center; min-width: 23px; height: 23px; border-radius: 7px; background: #e8e1cf; color: #52584d; font-size: 11px; }
+.catalog-view .priority-section { border-bottom-color: #a8bdb2; }
+.catalog-view .section-detail { margin-left: auto; color: var(--muted); }
+.game-meta > .game-streak { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: 6px; background: #f7e9c8; color: #775212; font-size: 11px; font-weight: 650; }
 .catalog-view .game-list { gap: 12px; }
 .catalog-view .game-card { padding: 14px; background: var(--surface); border: 1px solid #d8cfbc; border-radius: 16px; box-shadow: var(--soft-shadow); transition: transform 160ms ease, border-color 160ms ease; }
 .catalog-view .game-card:hover { transform: translateY(-2px); border-color: #8fa89d; }
@@ -4145,8 +4170,20 @@ const ADDITIONAL_IMPORT_GAMES = [
   ...[
     ["baseball", "Baseball", ""], ["football", "Football", "football/"],
     ["basketball-men", "Men’s Basketball", "basketball/mens/"], ["basketball-women", "Women’s Basketball", "basketball/womens/"], ["hockey", "Hockey", "hockey/"]
-  ].map(([sport, name, path]) => ({ id: `immaculate-${sport}`, name: `Immaculate Grid: ${name}`, type: "grid", scoring: { label: "Correct + rarity", helper: "More correct answers out of nine rank first. Lower rarity score breaks ties. Rarity is a score, not a percentage; sports stay separate.", example: "9/9 · rarity 75" }, logo: "immaculate", officialUrl: `https://www.sports-reference.com/immaculate-grid/${path}` }))
+  ].map(([sport, name, path]) => ({ id: `immaculate-${sport}`, retired: true, name: `Immaculate Grid: ${name}`, type: "grid", scoring: { label: "Correct + rarity", helper: "More correct answers out of nine rank first. Lower rarity score breaks ties. Rarity is a score, not a percentage; sports stay separate.", example: "9/9 · rarity 75" }, logo: "immaculate", officialUrl: `https://www.sports-reference.com/immaculate-grid/${path}` }))
 ].map((game) => ({ ...game, source: "official" }));
+
+// Each official game belongs to one browsing category. Retired definitions only retain history.
+const GAME_CATEGORIES = [
+  { id: "words", title: "Words & connections", games: ["wordle", "connections", "strands", "spelling-bee", "connections-sports", "poople", "unwordle", "feetle", "fibble", "chainle", "contexto", "fine-print", "clevergoat-categories", "quordle"] },
+  { id: "crosswords", title: "Crosswords & cryptics", games: ["mini-crossword", "daily-crossword", "minute-cryptic"] },
+  { id: "geography", title: "Geography", games: ["globle", "flagle", "flagcognito", "size-it-up", "travle", "maptap"] },
+  { id: "trivia", title: "Trivia & culture", games: ["krillion", "daily-tens", "centumth", "buzzfeed-trivia", "brandle", "pricepoint", "metazooa", "noillirk", "costcodle", "spotle"] },
+  { id: "fandom", title: "Gaming & fandom", games: ["terradle", "loldle", "minecraftle", "genshindle", "squirdle"] },
+  { id: "variety", title: "Logic & variety", games: ["murdle", "enclose-horse", "color", "rngdle", "dsmdle"] },
+  { id: "custom", title: "Your games", games: [] },
+  { id: "solvry", title: "Solvry games", games: [] }
+];
 
 const starterState = {
   activeGameId: "wordle",
@@ -4354,11 +4391,22 @@ let leaderboardDays = 1;
 let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
 let pinnedOnly = false;
+let catalogCategory = "for-you";
 const roomyOverview = window.matchMedia("(min-width: 1400px) and (min-height: 850px)");
 roomyOverview.addEventListener("change", () => renderQuickGames());
 const wideOverview = window.matchMedia("(min-width: 1700px) and (min-height: 850px)");
 wideOverview.addEventListener("change", () => renderQuickGames());
 document.querySelector("#gameSearch").addEventListener("input", renderGameList);
+document.querySelector("#gameCategorySelect").addEventListener("change", (event) => {
+  catalogCategory = event.target.value;
+  renderGameList();
+});
+document.querySelector("#gameCategories").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  catalogCategory = button.dataset.category;
+  renderGameList();
+});
 document.querySelector("#pinnedFilter").addEventListener("click", (event) => {
   pinnedOnly = !pinnedOnly;
   event.currentTarget.setAttribute("aria-pressed", String(pinnedOnly));
@@ -4374,7 +4422,7 @@ document.querySelector("#homeScores").addEventListener("click", (event) => {
   const button = event.target.closest("[data-home-game]");
   if (button) openGame(button.dataset.homeGame);
 });
-elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.filter((game) => !game.manualOnly).map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
+elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.filter((game) => !game.manualOnly && !game.retired).map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
 
 function wireSocialTabs(tabs, select) {
   tabs.forEach((tab, index) => {
@@ -7260,9 +7308,10 @@ function clamp(value, minimum, maximum) {
 }
 
 function renderQuickGames() {
-  const pinned = visibleGames().filter((game) => state.pinnedGameIds.includes(game.id));
-  const games = (pinned.length ? pinned : visibleGames()).slice(0, wideOverview.matches ? 12 : roomyOverview.matches ? 10 : 6);
-  document.querySelector("#quickGamesHint").textContent = pinned.length ? "Your pinned favorites." : "Pin favorites in Games.";
+  const sorted = getSortedGames();
+  const games = sorted.slice(0, wideOverview.matches ? 12 : roomyOverview.matches ? 10 : 6);
+  const hasPriority = sorted.some((game) => state.pinnedGameIds.includes(game.id) || gameStreak(game));
+  document.querySelector("#quickGamesHint").textContent = hasPriority ? "Pinned favorites and active streaks first." : "Pin favorites in Games.";
   elements.quickGames.innerHTML = games
     .map((game) => {
       const entries = getGameEntries(state.selectedDate, game.id);
@@ -7291,30 +7340,80 @@ function matchesGameSearch(game, search) {
   return [game.name, ...(game.aliases || [])].some((name) => name.toLowerCase().includes(search));
 }
 
+function gameCategory(game) {
+  if (gameSource(game) !== "official") return gameSource(game);
+  return GAME_CATEGORIES.find((category) => category.games.includes(game.id))?.id || "variety";
+}
+
+function gameStreak(game) {
+  // Local calendar arithmetic survives DST and ignores the date currently being viewed.
+  const cursor = new Date(`${today}T12:00:00`);
+  const completed = () => {
+    const entry = state.entries[localDateKey(cursor)]?.[game.id]?.you;
+    return !!entry && (isCompletedResult(entry.result, game) || game.type === "rank" && entry.result === "played");
+  };
+  if (state.entries[today]?.[game.id]?.you?.result === "missed") return 0;
+  if (!completed()) cursor.setDate(cursor.getDate() - 1);
+  let days = 0;
+  while (completed()) {
+    days += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return days;
+}
+
+function catalogSections(search = "", category = "for-you", onlyPinned = false) {
+  const games = getSortedGames().filter((game) => matchesGameSearch(game, search)
+    && (!onlyPinned || state.pinnedGameIds.includes(game.id))
+    && (category === "for-you" || gameCategory(game) === category));
+  if (category !== "for-you") return [{ title: GAME_CATEGORIES.find((item) => item.id === category)?.title || "Games", games }];
+  const pinned = games.filter((game) => state.pinnedGameIds.includes(game.id));
+  const streaks = games.filter((game) => !state.pinnedGameIds.includes(game.id) && gameStreak(game) > 0);
+  const priorityIds = new Set([...pinned, ...streaks].map((game) => game.id));
+  return [
+    { title: "Pinned games", detail: "Your everyday favorites", games: pinned, priority: true },
+    { title: "Keep your streak going", detail: "Consecutive days with a completed or scored result", games: streaks, priority: true },
+    ...GAME_CATEGORIES.map((item) => ({ title: item.title, games: games.filter((game) => !priorityIds.has(game.id) && gameCategory(game) === item.id) }))
+  ].filter((section) => section.games.length);
+}
+
 function renderGameList() {
   elements.gameList.innerHTML = "";
+  const available = visibleGames();
+  const categories = GAME_CATEGORIES.filter((category) => available.some((game) => gameCategory(game) === category.id));
+  if (catalogCategory !== "for-you" && !categories.some((category) => category.id === catalogCategory)) catalogCategory = "for-you";
+  const menu = [{ id: "for-you", title: "For you" }, ...categories].map((category) => ({
+    ...category, count: category.id === "for-you" ? available.length : available.filter((game) => gameCategory(game) === category.id).length
+  }));
+  const controls = document.querySelector("#gameCategories");
+  const select = document.querySelector("#gameCategorySelect");
+  const signature = JSON.stringify(menu);
+  // Keep focused filter buttons in place when only selection or search changes.
+  if (controls.dataset.menu !== signature) {
+    controls.innerHTML = menu.map((category) => `<button type="button" class="category-chip" data-category="${category.id}" aria-pressed="false">${escapeHtml(category.title)}<span aria-hidden="true">${category.count}</span></button>`).join("");
+    select.innerHTML = menu.map((category) => `<option value="${category.id}">${escapeHtml(category.title)} · ${category.count}</option>`).join("");
+    controls.dataset.menu = signature;
+  }
+  controls.querySelectorAll("[data-category]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.category === catalogCategory)));
+  select.value = catalogCategory;
   const search = document.querySelector("#gameSearch").value.trim().toLowerCase();
-  [
-    { source: "official", title: "Official games", detail: "Paste supported shares or enter manually" },
-    { source: "custom", title: "Your games", detail: "Manual scores" },
-    { source: "solvry", title: "Solvry games", detail: "In-app versions" }
-  ].forEach((section) => {
-    const games = getSortedGames().filter((game) => gameSource(game) === section.source && matchesGameSearch(game, search) && (!pinnedOnly || state.pinnedGameIds.includes(game.id)));
-    if (!games.length) return;
-    const heading = document.createElement("div");
-    heading.className = "game-section-label";
-    heading.innerHTML = `<strong>${escapeHtml(section.title)}</strong><span>${escapeHtml(section.detail)}</span>`;
+  const sections = catalogSections(search, catalogCategory, pinnedOnly);
+  const count = sections.reduce((total, section) => total + section.games.length, 0);
+  document.querySelector("#catalogSummary").textContent = `${count} game${count === 1 ? "" : "s"}${catalogCategory === "for-you" ? " · Pinned games and active streaks first" : " · Pinned first, then active streaks"}`;
+  sections.forEach((section) => {
+    if (!section.games.length) return;
+    const heading = document.createElement("h2");
+    heading.className = `game-section-label${section.priority ? " priority-section" : ""}`;
+    heading.innerHTML = `<strong>${escapeHtml(section.title)}</strong><span class="section-count">${section.games.length}</span>${section.detail ? `<span class="section-detail">${escapeHtml(section.detail)}</span>` : ""}`;
     elements.gameList.append(heading);
-    games.forEach((game) => {
-      elements.gameList.append(renderGameCard(game));
-    });
+    section.games.forEach((game) => elements.gameList.append(renderGameCard(game)));
   });
-  if (!elements.gameList.children.length) elements.gameList.innerHTML = `<p class="social-empty">${pinnedOnly ? "No pinned games match. Turn off Pinned only to browse the catalog." : "No matching games. Try another name, or add a custom game under Enter manually."}</p>`;
+  if (!elements.gameList.children.length) elements.gameList.innerHTML = `<p class="social-empty">${pinnedOnly ? "No pinned games match. Turn off Pinned only or choose another category." : "No matching games. Try another name or category."}</p>`;
 }
 
 function renderGameCard(game) {
     const entries = getGameEntries(state.selectedDate, game.id);
-    const playedCount = getPeople().filter((person) => entries[person.id]).length;
+    const streak = gameStreak(game);
     const isPinned = state.pinnedGameIds.includes(game.id);
     const card = document.createElement("article");
     card.className = `game-card ${gameSource(game)}${game.id === state.activeGameId ? " active" : ""}${isPinned ? " pinned" : ""}`;
@@ -7324,6 +7423,7 @@ function renderGameCard(game) {
         <span class="game-meta">
           <strong>${escapeHtml(game.name)}</strong>
           <span>${scoreStyleLabel(game)}${game.manualOnly ? " · Manual entry" : ""}</span>
+          ${streak ? `<span class="game-streak"><span aria-hidden="true">🔥</span> ${streak}-day streak</span>` : ""}
         </span>
         <span class="game-score" aria-label="${entries.you ? "Result saved" : "No result yet"}">${entries.you ? "✓" : ""}</span>
       </button>
@@ -7342,12 +7442,15 @@ function renderGameCard(game) {
 
 function getSortedGames() {
   const pinned = new Set(state.pinnedGameIds);
-  return visibleGames().sort((a, b) => {
-    const sourceDelta = sourceOrder(gameSource(a)) - sourceOrder(gameSource(b));
-    if (sourceDelta) return sourceDelta;
+  const games = visibleGames();
+  const streaks = new Map(games.map((game) => [game.id, gameStreak(game)]));
+  const order = new Map(state.games.map((game, index) => [game.id, index]));
+  return games.sort((a, b) => {
     const pinDelta = Number(pinned.has(b.id)) - Number(pinned.has(a.id));
     if (pinDelta) return pinDelta;
-    return state.games.findIndex((game) => game.id === a.id) - state.games.findIndex((game) => game.id === b.id);
+    const streakDelta = streaks.get(b.id) - streaks.get(a.id);
+    if (streakDelta) return streakDelta;
+    return order.get(a.id) - order.get(b.id);
   });
 }
 
@@ -7466,7 +7569,7 @@ function renderForm() {
     return;
   }
   elements.entryForm.hidden = false;
-  elements.manualGameInput.innerHTML = state.games.filter((game) => gameSource(game) !== "solvry")
+  elements.manualGameInput.innerHTML = visibleGames().filter((game) => gameSource(game) !== "solvry")
     .map((game) => `<option value="${escapeHtml(game.id)}">${escapeHtml(game.name)}</option>`).join("")
     + '<option value="__other__">Other game…</option>';
   elements.manualGameInput.value = activeGame.id;
@@ -8037,7 +8140,7 @@ function previewImport(showEmptyError = false) {
     return null;
   }
   const game = state.games.find((item) => item.id === parsed.gameId);
-  if (!game) { setImportStatus("This game isn't available in your game list.", "error"); return null; }
+  if (!game || game.retired || game.id.startsWith("immaculate-")) { setImportStatus("This game is no longer available for new scores.", "error"); return null; }
   const date = elements.importDate.value;
   if (!date || !elements.importDate.validity.valid) {
     setImportStatus("Choose the day you played, up to today.", "error");
@@ -8456,7 +8559,7 @@ function setImportStatus(message, tone = "") {
 }
 
 function visibleGames() {
-  return state.games.filter((game) => SHOW_SOLVRY_GAMES || gameSource(game) !== "solvry");
+  return state.games.filter((game) => !game.retired && !game.id.startsWith("immaculate-") && (SHOW_SOLVRY_GAMES || gameSource(game) !== "solvry"));
 }
 
 function getActiveGame() {
@@ -8704,6 +8807,7 @@ function mergeState(base, saved) {
     return {
       ...game,
       ...savedGame,
+      retired: game.retired === true,
       scoring: { ...scoringForType(game.type), ...savedGame.scoring, ...game.scoring },
       logo: savedGame.logo || game.logo,
       officialUrl: savedGame.officialUrl || game.officialUrl
@@ -8711,6 +8815,7 @@ function mergeState(base, saved) {
   });
   const mergedGames = mergeCustomGames(mergedDefaults, saved.games);
   const mergedGameIds = new Set(mergedGames.map((game) => game.id));
+  const activeIds = new Set(mergedGames.filter((game) => !game.retired && !game.id.startsWith("immaculate-")).map((game) => game.id));
   const entries = Object.fromEntries(
     Object.entries({ ...base.entries, ...saved.entries }).map(([date, dayEntries]) => [
       date,
@@ -8725,7 +8830,7 @@ function mergeState(base, saved) {
     profile: { ...base.profile, ...saved.profile },
     account: { ...base.account, ...saved.account },
     friendRequests: { ...base.friendRequests, ...saved.friendRequests },
-    activeGameId: mergedGameIds.has(activeGameId) ? activeGameId : base.activeGameId,
+    activeGameId: activeIds.has(activeGameId) ? activeGameId : base.activeGameId,
     games: mergedGames,
     pinnedGameIds: (saved.pinnedGameIds || base.pinnedGameIds)
       .map((id) => LEGACY_GAME_ID_MAP[id] || id)

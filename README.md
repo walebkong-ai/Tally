@@ -4,15 +4,21 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v69**. The published source checkpoint is `bcba297d077c1f9711510caa469a9b2c5ab6c7ed` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v70**. The published source checkpoint is `d5e14b5e7a8412d4d2f2acd55d0c70d879755b9e` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
 
-## Expanded daily game catalog (2026-11-11)
+## Organized Games page (2026-11-11)
 
-The catalog now has **48 official game entries**, including **29 new daily editions** from the requested list. New editions use explicit manual scoring; paste support is not claimed without verified share fixtures. Game IDs remain unique, aliases find the canonical game, and modes/publishers are kept separate. RNGdle has a per-game luck board and is excluded from combined rankings. See [the full game eligibility review](Operations/GAME_CATALOG_REVIEW.md) for additions, links, scoring scope and exclusions. All 148 app tests pass. A cache-upgrade fix preserves the current official catalog during saves while retaining merged custom definitions and historical scores.
+Games opens on **For you**, showing pinned games first, active streaks next, and remaining games grouped into six categories. Each game appears once. Category selection combines with alias search and Pinned only; desktop buttons retain keyboard focus and phones use a compact dropdown. Today’s shortcuts use the same priority. Streak badges use your own recorded results on consecutive local dates through today or yesterday; a miss breaks the streak. Unrecorded publisher history is not imported.
+
+All five Immaculate Grid editions have been removed from active browsing, score entry, paste saving and rankings. Their old records remain intact for storage/export compatibility. There are **43 active official games**. All **156 application tests** pass; local browser checks verified categories, ordering, filters, retirement and layouts at 375 and 1366 pixels without horizontal overflow. No Firebase rules, authentication or access policy changed.
+
+## Expanded daily game catalog (v69, 2026-11-11)
+
+The v69 catalog added up to **48 official game entries** before the five Immaculate retirements in v70, including **29 new daily editions** from the requested list. New editions use explicit manual scoring; paste support is not claimed without verified share fixtures. Game IDs remain unique, aliases find the canonical game, and modes/publishers are kept separate. RNGdle has a per-game luck board and is excluded from combined rankings. See [the full game eligibility review](Operations/GAME_CATALOG_REVIEW.md) for additions, links, scoring scope and exclusions. All 148 app tests pass. A cache-upgrade fix preserves the current official catalog during saves while retaining merged custom definitions and historical scores.
 
 ## Compact responsive layout (2026-11-11)
 
@@ -58,7 +64,7 @@ Validation: custom-game link, data-minimization and ranking regression tests plu
 
 ## Original game illustrations (2026-11-05)
 
-The Games catalog uses locally drawn SVG pictograms, visible game names, and muted subject-based colors rather than publisher logo files. Each supported game has a distinct subject cue; Immaculate Grid editions use sport-specific illustrations. Basketball editions share the ball illustration and keep their full names visible. Other views reuse the compact pictograms for consistency.
+The Games catalog uses locally drawn SVG pictograms, visible game names, and muted subject-based colors rather than publisher logo files. Each active game has a distinct subject cue; older sport-specific Immaculate illustrations remain only in the source for historical compatibility. Other views reuse the compact pictograms for consistency.
 
 The catalog labels these as “Supported games” and includes a short independence notice. These design choices are not a claim of trademark clearance or publisher permission. No scoring, import, pinning, or saved-data logic changed.
 
@@ -149,7 +155,7 @@ The Firestore rules suite requires a Java 21+ runtime for the emulator. It uses 
 
 ## What is in this version
 
-- Daily leaderboard for 19 paste-supported entries, including Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion (full catalog above)
+- Daily leaderboard for 43 active official games, with 14 paste-supported entries including Wordle, Connections, Strands, Mini Crossword, Spelling Bee, and Krillion (full catalog above)
 - Solvry Holes and Hoops are hidden from the website. Their engines, definitions, and saved rounds are retained; hidden games do not contribute to visible rankings or stats. `SHOW_SOLVRY_GAMES` controls the catalog gate.
 - Deterministic Daily Holes course generation with nine holes, wind, hazards, club choice, two-tap shot execution, lie effects, water penalties, abstract putting, scorecard results, and locked local progress
 - Simplified Daily Holes two-tap swing flow: lock the moving aim line, then lock the contextual colour power bar
