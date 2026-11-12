@@ -6,7 +6,7 @@ const path = require('node:path');
 const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 function setup() {
-  const c = vm.createContext({ today: '2026-11-11' });
+  const c = vm.createContext({ today: '2026-11-11', gameScoring: require('../Assets/game-scoring.mjs') });
   vm.runInContext(app.slice(app.indexOf('const ADDITIONAL_IMPORT_GAMES'), app.indexOf('let state = loadState()')), c);
   vm.runInContext(app.slice(app.indexOf('function normalizeManualScore('), app.indexOf('function saveManualScore(')), c);
   for (const name of ['matchesGameSearch', 'scoreTier', 'scoreEntryForGame', 'parseGuessScore', 'parseTimeScore', 'parseNumberScore', 'resultWeight', 'eligibleForDailyRanking']) {

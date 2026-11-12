@@ -4,11 +4,17 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v71**. The published source checkpoint is `1b9fe4f2c65eb0c4d0db922081f74f6ab08302dd` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v72**. The published source checkpoint is `e29fc2fb60c6e2be1a13d8724824a04847d27249` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Placement and performance scoring (v72, 2026-11-11)
+
+The overall leaderboard now offers **Placement points** (the unchanged default 10/7/5/3/2/1 scheme) and **Performance points** (0–100 per eligible result, independent of opponents). All 29 newly added games have specific fields, validation, a live point preview and visible rules. Performance profiles cover all 43 active official games. The [complete rules](Assets/scoring-rules.html) publish each exact formula and Solvry benchmark; these are product conventions rather than publisher ratings or equal-difficulty claims. RNGdle/custom games remain outside combined totals, and Color still requires a matching dated Daily share.
+
+Original game scores are preserved; switching mode only recalculates derived points. Moves and par use appropriate units, zero crossword times and malformed stored values are rejected, and cached built-in metadata cannot override current score definitions. All **175 application tests** pass. Local browser checks covered every new game’s fields/rules, both totals, preview/save behavior, special result types, the public guide, and responsive layouts. No Firebase rules, authentication, audience or production score data was changed.
 
 ## Organized Games page (2026-11-11)
 

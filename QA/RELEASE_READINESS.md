@@ -4,12 +4,22 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v71**, through OpenAI Sites.
-- Sites source checkpoint: `1b9fe4f2c65eb0c4d0db922081f74f6ab08302dd` (a separate source history from this repository).
+- Published application: **v72**, through OpenAI Sites.
+- Sites source checkpoint: `e29fc2fb60c6e2be1a13d8724824a04847d27249` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Dual scoring verification (v72)
+
+Both overall scoring views are available for a day or seven days: Placement preserves the existing scheme and remains the default; Performance uses a published 0–100 formula per eligible raw result. All 29 new games have specific fields, validation, live performance previews and score explanations, with performance profiles for all 43 active official games. RNGdle/custom games are excluded from both combined totals, and Color requires a matching dated Daily share. Original records are never rewritten to select a mode. These are Solvry conventions and disclosed benchmarks, not publisher ratings or normalized puzzle difficulty.
+
+All **175 application tests** pass, including 19 dual-scoring cases covering all profiles, formulas/bounds, malformed records, misses/unfinished puzzles, ties, opponent-independent performance, per-result rounding, seven-day totals, valid zero-point ranking, exclusions, moves compatibility, cached metadata and the complete public guide. Generated JavaScript/module syntax and whitespace checks pass. Rules/auth were unchanged; the last rules test remains the previously documented run.
+
+Local guest browser checks inspected all 29 new game field configurations and explanations, switched scoring modes, and saved one test score locally: its preview and resulting performance/placement totals matched. Special previews covered signed par, moves, bounded points, four strikes, time, completion and the Color exception. The 43-row public guide loaded, desktop/mobile layouts had no horizontal overflow, and no browser console errors appeared. No production fixtures or account operations were used. This does not constitute a new physical-device beta, Firebase rules test or public launch verification.
+
+Built app.js SHA-256: `6ae75870b321b0330750dc72e53efd1c0bf16ee38145e9421810c4ffa31871ae`. Scoring module SHA-256: `daff5bc2a505cc431cc8b98db2d1cb6edd22b8131a818511e7c600b71be32297`.
 
 ## Single category dropdown verification (v71)
 

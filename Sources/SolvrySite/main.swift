@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=36" />
+    <link rel="stylesheet" href="styles.css?v=37" />
   </head>
   <body>
     <div class="app" id="app">
@@ -119,7 +119,7 @@ let html = #"""
               </details>
             </div>
             <aside class="game-side-column" aria-label="Scoring and standings">
-              <details class="scoring-details game-scoring-card" open><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p><div class="score-example"><span>Example result</span><strong id="gameScoreExample"></strong></div></details>
+              <details class="scoring-details game-scoring-card" open><summary>How scoring works</summary><p class="score-hint" id="scoreHint"></p><div class="score-example"><span>Example result</span><strong id="gameScoreExample"></strong></div><div id="gamePointsGuide" class="points-guide"></div></details>
               <section class="game-standings"><div class="section-head compact"><h2>This game’s standings</h2><button type="button" class="text-link" id="viewGameLeaderboard">View all →</button></div><p id="gameStandingsNote" class="field-help"></p><div id="gameStandings" class="leaderboard"></div></section>
               <div class="game-flow-note"><span aria-hidden="true">✳</span><p>Play a little. Keep your progress.<br />Come back for the next round.</p></div>
             </aside>
@@ -169,6 +169,8 @@ let html = #"""
                   <small class="field-help" id="scoreHelp">Example: 4/6</small>
                 </div>
               </div>
+              <p class="performance-preview" id="manualPointsPreview" role="status"></p>
+              <details class="manual-scoring-guide"><summary>How this score earns points</summary><div id="manualPointsGuide" class="points-guide"></div></details>
               <label id="rarityField" hidden>Rarity score<input id="rarityInput" type="number" min="0" max="900" step="any" disabled /><small>Lower is better. Use the score, not a percentage.</small></label>
               <details class="manual-extras">
                 <summary>Answer &amp; note (optional)</summary>
@@ -209,6 +211,7 @@ let html = #"""
           <div class="leaderboard-controls">
             <label>Date<input id="leaderboardDate" type="date" /></label>
             <label id="leaderboardRangeLabel">Period<select id="leaderboardRange"><option value="1">Selected day</option><option value="7">Last 7 days</option></select></label>
+            <label id="leaderboardScoringLabel">Scoring<select id="leaderboardScoring"><option value="placement">Placement points</option><option value="performance">Performance points</option></select></label>
             <label id="leaderboardGameLabel" hidden>Game<select id="leaderboardGameInput"></select></label>
             <p class="scoreboard-note" id="leaderboardDates"></p>
           </div>
@@ -218,9 +221,9 @@ let html = #"""
             <section class="scoreboard-block" id="overallBoard" role="tabpanel" aria-labelledby="overallTab">
               <div class="scoreboard-head">
                 <h3 id="overallScoreboardTitle">Solvry overall</h3>
-                <span>Combined points</span>
+                <span id="overallPointsLabel">Placement points</span>
               </div>
-              <details class="ranking-rules"><summary>Points &amp; ties</summary><p>Daily places earn 10, 7, 5, 3, 2, then 1 point. Tied scores share the same place and points. Missed or invalid results earn no points. Overall totals reward playing more games.</p></details>
+              <details class="ranking-rules"><summary>Points &amp; ties</summary><p id="rankingRulesText">Daily places earn 10, 7, 5, 3, 2, then 1 point. Tied scores share the same place and points. Missed or invalid results earn no points. Overall totals reward playing more games.</p></details>
               <div class="standings-labels" aria-hidden="true"><span>Place</span><span>Player</span><span>Performance</span><span>Score</span></div>
               <div class="leaderboard" id="overallLeaderboard"></div>
             </section>
@@ -337,7 +340,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=42" type="module"></script>
+    <script src="app.js?v=43" type="module"></script>
   </body>
 </html>
 """#
@@ -4020,12 +4023,25 @@ button:disabled { cursor:wait; }
   .score-view #importClipboardButton { width: 100%; }
 }
 
+.points-guide { font-size: 12px; line-height: 1.6; }
+.points-guide p { margin: 10px 0; }
+.points-guide strong { display: block; color: var(--petrol); }
+.points-guide a { color: var(--petrol); text-decoration: underline; }
+.performance-preview { margin: 0; padding: 10px 12px; border-radius: 10px; background: #e8efec; color: #245965; font-size: 12px; line-height: 1.5; }
+.manual-scoring-guide { padding: 8px 0; border-block: 1px solid var(--line); }
+.manual-scoring-guide > summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+.leaderboard-controls:has(#leaderboardScoringLabel:not([hidden])) { grid-template-columns: repeat(3,minmax(0,1fr)); }
+@media (max-width: 760px) {
+  .leaderboard-controls:has(#leaderboardScoringLabel:not([hidden])) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #leaderboardScoringLabel { grid-column: 1 / -1; }
+}
 """#
 
 let appScript = #"""
 import * as safety from "./assets/sync-safety.mjs?v=36";
 import * as management from "./assets/account-management.mjs?v=37";
 import * as operations from "./assets/launch-ops.mjs?v=2";
+import * as gameScoring from "./assets/game-scoring.mjs?v=1";
 const STORAGE_KEY = "solvry-state-v2";
 const LEGACY_STORAGE_KEY = "solvry-state-v1";
 const ORIGINAL_STORAGE_KEY = "tallyo-state-v1";
@@ -4130,7 +4146,7 @@ const ADDITIONAL_IMPORT_GAMES = [
   {"id": "dsmdle", "name": "DSMdle Classic", "type": "guesses", "manualOnly": true, "maxScore": 6, "scoring": {"label": "Fewest guesses", "helper": "The linked site’s Daily Classic fictional case, up to 6 guesses. Hard and archive cases stay separate. Record only the game result; use the publisher’s game-only guidance. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "mystery", "officialUrl": "https://www.dsmdle.com/", "aliases": ["dsmdle"]},
   {"id": "quordle", "name": "Quordle (quordlewordle.io)", "type": "guesses", "manualOnly": true, "minScore": 4, "maxScore": 9, "scoring": {"label": "Fewest total guesses", "helper": "Daily mode on quordlewordle.io only. Enter the total guesses used when all four words are solved, from 4 to 9. Other publishers, Endless and partial solves stay separate. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "wordle", "officialUrl": "https://quordlewordle.io/", "aliases": ["quordle", "queen duried"]},
   {"id": "poople", "name": "Poople", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily word ladder to POOP. Record the move count shown by the game; fewer moves win. Practice is separate. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://poople.io/"},
-  {"id": "flagle", "name": "Flagle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Teuteuf’s daily flag puzzle only. Record guesses for the main flag; exclude bonus rounds. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "flagcognito", "officialUrl": "https://www.flagle.io/"},
+  {"id": "flagle", "name": "Flagle", "type": "guesses", "maxScore": 6, "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Teuteuf’s daily flag puzzle only. Record guesses for the main flag; exclude bonus rounds. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "flagcognito", "officialUrl": "https://www.flagle.io/"},
   {"id": "terradle", "name": "Terradle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Guess the daily Terraria weapon. Record total guesses; do not mix other Terraria guessing games. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "crafting", "officialUrl": "https://www.terradle.com/"},
   {"id": "spotle", "name": "Spotle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily music artist puzzle, up to 10 guesses. Exclude Movies, Rewind, Brackets and custom puzzles. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "music", "officialUrl": "https://spotle.io/", "maxScore": 10},
   {"id": "daily-crossword", "name": "NYT Daily Crossword", "type": "time", "manualOnly": true, "scoring": {"label": "Fastest time", "helper": "Completion time for the full NYT daily crossword. The Mini has its own board. Use the same assistance rules when comparing. Enter manually; paste import is not supported yet.", "example": "12:03"}, "logo": "mini-crossword", "officialUrl": "https://www.nytimes.com/crosswords/game/daily", "aliases": ["crossword", "full crossword"]},
@@ -4380,6 +4396,7 @@ const importDrafts = new Map();
 let importDraftRevision = 0;
 let leaderboardView = "overall";
 let leaderboardDays = 1;
+let leaderboardScoring = "placement";
 let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
 let pinnedOnly = false;
@@ -4434,6 +4451,11 @@ wireSocialTabs([elements.friendsTab, elements.requestsTab], (index) => {
   elements.friendsPanel.hidden = index === 1;
   elements.requestsPanel.hidden = index === 0;
   if (index === 1 && cloudFriendsAvailable()) runFriendAction(refreshCloudFriends);
+});
+document.querySelector("#leaderboardScoring").addEventListener("change", (event) => {
+  leaderboardScoring = event.target.value === "performance" ? "performance" : "placement";
+  renderScoreboards(getActiveGame());
+  renderHome();
 });
 elements.leaderboardRange.addEventListener("change", () => {
   leaderboardDays = Number(elements.leaderboardRange.value) === 7 ? 7 : 1;
@@ -4514,6 +4536,7 @@ elements.entryForm.addEventListener("input", () => {
   manualFormDirty = true;
   elements.scoreInput.setCustomValidity("");
   elements.saveStatus.textContent = "";
+  updateManualPointsPreview();
 });
 elements.resultInput.addEventListener("change", updateManualScoreField);
 elements.manualGameInput.addEventListener("change", () => {
@@ -4772,6 +4795,7 @@ function render(focusGolf = true) {
   document.querySelector("#gameScoreExample").textContent = scoreStyleExample(activeGame);
   document.querySelector("#gameDateLabel").textContent = state.selectedDate;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
+  document.querySelector("#gamePointsGuide").innerHTML = pointsGuide(activeGame);
   elements.friendCompletion.textContent = `${friendEntries.length} friend${friendEntries.length === 1 ? "" : "s"} done`;
   elements.privacyState.textContent = myEntry?.reveal ? "Answer shown" : "Answers hidden";
   elements.importSurface.hidden = gameSource(activeGame) === "solvry";
@@ -4869,10 +4893,10 @@ function renderHome() {
   document.querySelector("#homeScores").innerHTML = scoreRows.length
     ? scoreRows.slice(0, 3).join("") + (scoreRows.length > 3 ? `<details class="more-home-scores"><summary>Show ${scoreRows.length - 3} more ${scoreRows.length === 4 ? "score" : "scores"}</summary>${scoreRows.slice(3).join("")}</details>` : "")
     : '<div class="home-empty"><div><h3>No scores yet.</h3><p>Copy a game’s result and paste it here.</p></div><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
-  const rows = buildOverallLeaderboard();
+  const rows = buildOverallLeaderboard(1, leaderboardScoring);
   const ranked = rows.filter((row) => row.rank);
   document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><strong>No ranked results yet.</strong><p>Save a result to see your place. Compare scores with friends when they’re available.</p><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
-  document.querySelector("#homeRankingDate").textContent = `${state.selectedDate} · Daily combined points`;
+  document.querySelector("#homeRankingDate").textContent = `${state.selectedDate} · ${leaderboardScoring === "performance" ? "Performance" : "Placement"} points`;
 }
 
 function openAccountDialog(mode) {
@@ -7578,6 +7602,7 @@ function renderForm() {
   elements.answerInput.value = entry?.answer || "";
   elements.noteInput.value = entry?.note || "";
   elements.revealInput.checked = Boolean(entry?.reveal);
+  updateManualPointsPreview();
 }
 
 function updateManualScoreField() {
@@ -7599,12 +7624,8 @@ function updateManualScoreField() {
     mistakes: ["Mistakes", "0", "Total mistakes", 0, 1000000],
     complete: ["Completion", "", "", 0, 0]
   };
-  const manualFields = game.manualOnly ? [
-    game.scoreLabel || (game.type === "guesses" ? "Guesses / moves" : game.type === "time" ? "Completion time" : "Score"),
-    game.type === "guesses" ? "4" : game.type === "time" ? "12:03" : "100",
-    game.scoreFieldHelp || (game.type === "time" ? "Minutes:seconds or hours:minutes:seconds" : game.type === "guesses" ? `Final count shown by the daily game${game.maxScore ? ` (1–${game.maxScore})` : ""}` : game.maxScore ? `Final daily total, up to ${game.maxScore} points` : "Final daily score shown by the game"),
-    game.minScore ?? (game.type === "guesses" ? 1 : 0), game.maxScore ?? 1000000
-  ] : null;
+  const config = game.manualOnly ? gameScoring.field(game) : null;
+  const manualFields = config ? [config.label, config.example, config.help, config.min, config.max] : null;
   const [label, example, help, min, max] = fields[game.id] || manualFields || (game.maxScore ? ["Score", String(game.maxScore), `Score out of ${game.maxScore}`, 0, game.maxScore] : customFields[game.type]);
   const rarityInput = document.querySelector("#rarityInput");
   document.querySelector("#rarityField").hidden = game.type !== "grid";
@@ -7623,7 +7644,7 @@ function updateManualScoreField() {
   elements.scoreInput.disabled = isRank || missedWordle || completionOnly || unscoredManual;
   elements.scoreInput.required = !isRank && !missedWordle && !completionOnly && !unscoredManual;
   elements.scoreInput.type = game.type === "time" ? "text" : "number";
-  elements.scoreInput.inputMode = game.type === "time" ? "text" : game.decimalScore ? "decimal" : "numeric";
+  elements.scoreInput.inputMode = game.type === "time" ? "text" : min < 0 ? "text" : game.decimalScore ? "decimal" : "numeric";
   elements.scoreInput.min = String(min);
   elements.scoreInput.max = String(max);
   elements.scoreInput.step = game.decimalScore ? "any" : game.source === "custom" && ["points", "strokes"].includes(game.type) ? "any" : "1";
@@ -7631,6 +7652,32 @@ function updateManualScoreField() {
   elements.manualRankInput.hidden = !isRank;
   elements.manualRankInput.disabled = !isRank;
   if (missedWordle) elements.scoreHelp.textContent = "X/6";
+  document.querySelector("#manualPointsGuide").innerHTML = pointsGuide(game);
+  updateManualPointsPreview();
+}
+
+function pointsGuide(game) {
+  const profile = gameScoring.profile(game);
+  if (!profile || profile.method === "excluded") return `<p>${escapeHtml(gameScoring.ruleDescription(game))}</p>`;
+  return `<p><strong>Placement points</strong> Your place earns 10, 7, 5, 3, 2, then 1 point. Ties share points and skip the next place.</p>
+    <p><strong>Performance points · 0–100</strong> ${escapeHtml(gameScoring.ruleDescription(game))}</p>
+    <p class="field-help">Rounded per game. Missed or invalid results earn 0. These are Solvry formulas; your original game result stays unchanged. Compare the same daily edition. <a href="assets/scoring-rules.html" target="_blank" rel="noopener">All scoring rules ↗</a></p>`;
+}
+
+function updateManualPointsPreview() {
+  const game = getActiveGame();
+  const preview = document.querySelector("#manualPointsPreview");
+  const profile = gameScoring.profile(game);
+  if (!profile || profile.method === "excluded") {
+    preview.textContent = profile?.method === "excluded" ? "Daily EP compares on this game’s board only." : "Custom scores compare on this game’s board only.";
+    return;
+  }
+  if (game.dailyRanked === false) { preview.textContent = "This challenge compares on its own board. Only dated Color Daily pasted shares earn combined points."; return; }
+  const normalized = game.source === "custom" ? null : normalizeManualScore(game.id, elements.resultInput.value, elements.scoreInput.value, elements.manualRankInput.value, document.querySelector("#rarityInput").value);
+  if (!normalized || normalized.error) { preview.textContent = "Enter your result to preview performance points."; return; }
+  const score = scoreEntryForGame(normalized, game);
+  const points = scoreTier({ hasEntry: true, entry: normalized, score }, game) ? gameScoring.performancePoints(game, normalized, score) : null;
+  preview.textContent = points === null ? "Preview · 0 performance points · No ranked result" : `Preview · ${points} performance points · Placement points depend on your place`;
 }
 
 function normalizeManualScore(gameId, result, raw, rank, rarity = "") {
@@ -7676,14 +7723,17 @@ function normalizeCatalogScore(game, result, value) {
   if (game.type === "complete" || result === "missed" || ["guesses", "time", "strokes", "mistakes"].includes(game.type) && result !== "solved") {
     return { score: result === "solved" ? "Complete" : result === "missed" ? "Missed" : "Played", result };
   }
-  if (game.type === "time") return normalizeCustomScore("time", result, value);
-  const number = Number(value), min = game.minScore ?? (game.type === "guesses" ? 1 : 0), max = game.maxScore ?? 1000000;
+  if (game.type === "time") {
+    const time = normalizeCustomScore("time", result, value);
+    return !time.error && value.split(":").every((part) => Number(part) === 0) ? { error: "Enter a completion time greater than 00:00." } : time;
+  }
+  const number = Number(value), { min, max } = gameScoring.field(game);
   const valid = game.decimalScore ? /^\d+(?:\.\d{1,6})?$/.test(value) : game.type === "strokes" ? /^[+-]?\d+$/.test(value) : /^-?\d+$/.test(value);
   if (!valid || !Number.isFinite(number) || !game.decimalScore && !Number.isSafeInteger(number) || number < min || number > max) {
     return { error: `Enter ${game.decimalScore ? "a number" : "a whole number"} from ${min} to ${max}.` };
   }
   if (game.type === "mistakes") return { score: `${number} mistake${number === 1 ? "" : "s"}`, result: number === game.maxScore ? "missed" : result };
-  return { score: game.type === "guesses" ? `${number} guess${number === 1 ? "" : "es"}` : game.type === "points" && game.maxScore ? `${number}/${game.maxScore}` : String(number), result };
+  return { score: game.type === "guesses" ? `${number} ${["poople", "feetle"].includes(game.id) ? number === 1 ? "move" : "moves" : number === 1 ? "guess" : "guesses"}` : game.type === "points" && game.maxScore ? `${number}/${game.maxScore}` : String(number), result };
 }
 
 function normalizeCustomScore(type, result, raw) {
@@ -7791,6 +7841,12 @@ function renderScoreboards(activeGame) {
   elements.gameScoreboardMeta.textContent = scoreStyleLabel(game);
   elements.gameScoreboardNote.textContent = scoreStyleHelp(game) + (game.source === "custom" ? " Custom game: scores count here only, not in the overall leaderboard." : "");
   const overall = leaderboardView === "overall";
+  document.querySelector("#leaderboardScoringLabel").hidden = !overall;
+  document.querySelector("#leaderboardScoring").value = leaderboardScoring;
+  document.querySelector("#overallPointsLabel").textContent = leaderboardScoring === "performance" ? "Performance points" : "Placement points";
+  document.querySelector("#rankingRulesText").textContent = leaderboardScoring === "performance"
+    ? "Each eligible daily result earns 0–100 performance points using the game’s published Solvry formula. Points are rounded per result before adding daily or seven-day totals. Missed, invalid and unfinished solve puzzles earn no points. Equal totals tie. RNGdle and custom games stay outside combined totals. Playing more games increases totals. These are Solvry points, not publisher ratings."
+    : "Daily places earn 10, 7, 5, 3, 2, then 1 point. Equal scores share a place and points; the following place is skipped. Missed or invalid results earn no points. RNGdle and custom games stay outside combined totals. Overall totals reward playing more games.";
   [elements.overallTab, elements.gameBoardTab].forEach((tab, index) => {
     const selected = overall === (index === 0);
     tab.setAttribute("aria-selected", String(selected));
@@ -7802,7 +7858,7 @@ function renderScoreboards(activeGame) {
   elements.leaderboardGameLabel.hidden = overall;
   const dates = leaderboardDates(overall ? leaderboardDays : 1);
   elements.leaderboardDates.textContent = dates.length > 1 ? `${dates[dates.length - 1]} – ${dates[0]}` : dates[0];
-  const overallRows = buildOverallLeaderboard(leaderboardDays);
+  const overallRows = buildOverallLeaderboard(leaderboardDays, leaderboardScoring);
   const gameRows = buildGameLeaderboard(game);
   elements.overallLeaderboard.innerHTML = renderRankRows(overallRows, "No scores yet");
   elements.gameLeaderboard.innerHTML = renderRankRows(gameRows, `No ${game.name} scores yet`);
@@ -7848,7 +7904,7 @@ function leaderboardDates(days = 1) {
   });
 }
 
-function buildOverallLeaderboard(days = 1) {
+function buildOverallLeaderboard(days = 1, scoringMode = "placement") {
   const totals = new Map(
     getPeople().map((person) => [
       person.id,
@@ -7861,20 +7917,21 @@ function buildOverallLeaderboard(days = 1) {
     rows.forEach((row) => {
       const total = totals.get(row.id);
       if (!total) return;
-      const placementPoints = placementScore(row.rank - 1);
-      total.solvryPoints += placementPoints;
+      const points = scoringMode === "performance" ? gameScoring.performancePoints(game, row.entry, row.score) : placementScore(row.rank - 1);
+      if (points === null) return;
+      total.solvryPoints += points;
       total.completed += 1;
       if (row.entry.source === "manual") total.manual += 1;
       if (row.rank === 1) total.wins += 1;
     });
   }));
-  const rows = [...totals.values()].sort((a, b) => b.solvryPoints - a.solvryPoints || a.name.localeCompare(b.name));
+  const rows = [...totals.values()].sort((a, b) => Number(b.completed > 0) - Number(a.completed > 0) || b.solvryPoints - a.solvryPoints || a.name.localeCompare(b.name));
   return rows.map((person) => ({
       ...person,
-      rank: person.completed ? rows.findIndex((row) => row.solvryPoints === person.solvryPoints) + 1 : null,
+      rank: person.completed ? rows.findIndex((row) => row.completed && row.solvryPoints === person.solvryPoints) + 1 : null,
       detail: person.completed ? `${person.completed} game${person.completed === 1 ? "" : "s"} scored · ${person.wins} first${person.wins === 1 ? "" : "s"}${person.manual ? ` · ${person.manual} Manual` : ""}` : "No ranked scores yet",
       value: person.completed ? `${person.solvryPoints} pts` : "—",
-      subvalue: person.completed ? "Solvry" : ""
+      subvalue: person.completed ? scoringMode === "performance" ? "Performance" : "Placement" : ""
     }));
 }
 
@@ -7937,6 +7994,7 @@ function scoreEntryForGame(entry, game) {
     return { value: Number.POSITIVE_INFINITY, label: "-", detail: "Not played" };
   }
 
+  if (game.manualOnly) return gameScoring.catalogScore(game, entry);
   const score = String(entry.score || "").trim();
   const type = game.type;
   if (type === "grid") {
@@ -8791,6 +8849,8 @@ function mergeState(base, saved) {
       ...game,
       ...savedGame,
       retired: game.retired === true,
+      type: game.type, source: game.source, manualOnly: game.manualOnly,
+      minScore: game.minScore, maxScore: game.maxScore, decimalScore: game.decimalScore, dailyRanked: game.dailyRanked,
       scoring: { ...scoringForType(game.type), ...savedGame.scoring, ...game.scoring },
       logo: savedGame.logo || game.logo,
       officialUrl: savedGame.officialUrl || game.officialUrl
