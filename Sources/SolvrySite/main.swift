@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=37" />
+    <link rel="stylesheet" href="styles.css?v=38" />
   </head>
   <body>
     <div class="app" id="app">
@@ -3421,8 +3421,10 @@ input, select, textarea, .date-control input { border-radius: 10px; }
 .progress-day span { font-size: 10px; }
 .catalog-controls { margin-bottom: 12px; }
 .catalog-category-select { display: grid; gap: 4px; width: 260px; max-width: 100%; margin: 0; font-size: 13px; }
-.catalog-category-select select { min-width: 0; width: 100%; min-height: 44px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); color-scheme: light; font-size: 13px; font-weight: 600; }
-.catalog-category-select option { background: var(--surface); color: var(--ink); }
+.catalog-category-select select { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--petrol); border-radius: 12px; background: var(--petrol); color: #fff; color-scheme: dark; font-size: 14px; line-height: 1.3; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 #173f49; transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.catalog-category-select select:hover { background: #1d505c; border-color: #1d505c; }
+.catalog-category-select select:active { box-shadow: 0 1px 0 #173f49; }
+.catalog-category-select option { background: var(--petrol); color: #fff; }
 @media (max-width: 760px) {
   .catalog-category-select { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; width: 100%; }
   .catalog-category-select select { flex: 1; width: 0; }

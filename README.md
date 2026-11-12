@@ -4,11 +4,15 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v72**. The published source checkpoint is `e29fc2fb60c6e2be1a13d8724824a04847d27249` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v73**. The published source checkpoint is `5edead483060757c1a78106a219699503d98de5b` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Category control styling (v73, 2026-11-11)
+
+The category dropdown now matches Solvry’s blue buttons: petrol fill, white text/menu arrow, 12px corners, 44px height, dark lower shadow and darker hover state. Desktop and phone checks confirmed filtering still works and no horizontal overflow. Swift build, JavaScript syntax, all 175 app tests and diff checks pass. This release changes styling only.
 
 ## Placement and performance scoring (v72, 2026-11-11)
 

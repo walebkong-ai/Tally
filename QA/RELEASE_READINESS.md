@@ -4,12 +4,16 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v72**, through OpenAI Sites.
-- Sites source checkpoint: `e29fc2fb60c6e2be1a13d8724824a04847d27249` (a separate source history from this repository).
+- Published application: **v73**, through OpenAI Sites.
+- Sites source checkpoint: `5edead483060757c1a78106a219699503d98de5b` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Blue category control verification (v73)
+
+CSS-only refinement: the category dropdown uses the same blue fill, white text, 12px corners, 44px minimum height and dark lower shadow as the button system, plus a darker hover color. Native category selection remains accessible. Local desktop/phone checks confirmed category filtering and no horizontal overflow at 1366 and 375 pixels. Swift build, JavaScript syntax, all 175 app tests and diff checks pass. No new tests were added for this styling-only change; game logic, Firebase rules and data are unchanged.
 
 ## Dual scoring verification (v72)
 
