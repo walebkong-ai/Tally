@@ -4,7 +4,7 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v70**. The published source checkpoint is `d5e14b5e7a8412d4d2f2acd55d0c70d879755b9e` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v71**. The published source checkpoint is `1b9fe4f2c65eb0c4d0db922081f74f6ab08302dd` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
@@ -12,7 +12,7 @@ See [the release verification summary](QA/RELEASE_READINESS.md) for the complete
 
 ## Organized Games page (2026-11-11)
 
-Games opens on **For you**, showing pinned games first, active streaks next, and remaining games grouped into six categories. Each game appears once. Category selection combines with alias search and Pinned only; desktop buttons retain keyboard focus and phones use a compact dropdown. Today’s shortcuts use the same priority. Streak badges use your own recorded results on consecutive local dates through today or yesterday; a miss breaks the streak. Unrecorded publisher history is not imported.
+Games opens on **For you**, showing pinned games first, active streaks next, and remaining games grouped into six categories. Each game appears once. One category dropdown is used on desktop and phones, alongside alias search and Pinned only. The category-chip row and its obsolete event/render dependencies are removed. The default remains For you; selection and filtering preserve pinned/streak priority. Today’s shortcuts use the same priority. Streak badges use your own recorded results on consecutive local dates through today or yesterday; a miss breaks the streak. Unrecorded publisher history is not imported.
 
 All five Immaculate Grid editions have been removed from active browsing, score entry, paste saving and rankings. Their old records remain intact for storage/export compatibility. There are **43 active official games**. All **156 application tests** pass; local browser checks verified categories, ordering, filters, retirement and layouts at 375 and 1366 pixels without horizontal overflow. No Firebase rules, authentication or access policy changed.
 

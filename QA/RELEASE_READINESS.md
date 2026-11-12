@@ -4,12 +4,18 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v70**, through OpenAI Sites.
-- Sites source checkpoint: `d5e14b5e7a8412d4d2f2acd55d0c70d879755b9e` (a separate source history from this repository).
+- Published application: **v71**, through OpenAI Sites.
+- Sites source checkpoint: `1b9fe4f2c65eb0c4d0db922081f74f6ab08302dd` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Single category dropdown verification (v71)
+
+A single native category dropdown replaces the desktop category chips and remains compact on phones. It sits alongside search and Pinned only on desktop and below them on narrow screens. All removed-button DOM/event/render dependencies are deleted so startup does not reference a missing element. Includes the proportional Games action-button adjustment already on GitHub. For you remains the default and pinned/streak priority, six categories, aliases and retirement rules are unchanged.
+
+All **156 application tests** pass, generated JavaScript syntax and diff checks pass, and local browser checks verified startup/reload, the default 43-game view, category selection, alias search, category + Pinned only, priority order, one dropdown with zero category chips, equal header action sizes, and no horizontal overflow at 320, 375 and 1366 pixels. No new automated tests were added for this UI refinement. Firebase rules, auth, scores and audience were not changed. The built app.js SHA-256 is `d0c1558a535887e0206dea59494c2be066d318d4a593743bc6c69cd7295dfc71`.
 
 ## Games organization verification (v70)
 

@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=35" />
+    <link rel="stylesheet" href="styles.css?v=36" />
   </head>
   <body>
     <div class="app" id="app">
@@ -90,9 +90,7 @@ let html = #"""
 
         <section class="app-view catalog-view" id="games" data-view="games" aria-label="Games" hidden>
           <div class="view-head"><div><h1>Games</h1><p class="view-copy">Your favorites first. Find your next daily ritual.</p></div><div class="view-actions"><button class="ghost-button" id="addGameButton" type="button">Add a custom game</button><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div></div>
-          <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button></div>
-          <div class="catalog-categories" id="gameCategories" role="group" aria-label="Game categories"></div>
-          <label class="catalog-category-select">Category<select id="gameCategorySelect" aria-label="Game category"></select></label>
+          <div class="catalog-controls"><label class="catalog-search">Find a game<input id="gameSearch" type="search" placeholder="Search games…" /></label><button id="pinnedFilter" class="ghost-button" type="button" aria-pressed="false">Pinned only</button><label class="catalog-category-select">Category<select id="gameCategorySelect" aria-label="Game category"></select></label></div>
           <p class="catalog-summary" id="catalogSummary" role="status"></p>
           <div class="game-list" id="gameList"></div>
           <p class="catalog-attribution">Game names belong to their respective owners. Icons are Solvry illustrations; no affiliation or endorsement is implied.</p>
@@ -339,7 +337,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=41" type="module"></script>
+    <script src="app.js?v=42" type="module"></script>
   </body>
 </html>
 """#
@@ -3419,20 +3417,13 @@ input, select, textarea, .date-control input { border-radius: 10px; }
 .progress-day.done { border-color: #cadac4; background: #e8efdf; color: #3e6344; }
 .progress-day span { font-size: 10px; }
 .catalog-controls { margin-bottom: 12px; }
-.catalog-categories { display: flex; flex-wrap: wrap; gap: 8px; }
-.catalog-category-select { display: none; }
+.catalog-category-select { display: grid; gap: 4px; width: 260px; max-width: 100%; margin: 0; font-size: 13px; }
+.catalog-category-select select { min-width: 0; width: 100%; min-height: 44px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); color-scheme: light; font-size: 13px; font-weight: 600; }
+.catalog-category-select option { background: var(--surface); color: var(--ink); }
 @media (max-width: 760px) {
-  .catalog-categories { display: none; }
-  .catalog-category-select { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 13px; }
-  .catalog-category-select select { min-width: 0; flex: 1; min-height: 44px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); color-scheme: light; font-size: 13px; font-weight: 600; }
-  .catalog-category-select option { background: var(--surface); color: var(--ink); }
+  .catalog-category-select { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; width: 100%; }
+  .catalog-category-select select { flex: 1; width: 0; }
 }
-.category-chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 13px; border: 1px solid #d8cfbc; border-radius: 12px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; box-shadow: none; }
-.category-chip > span { display: grid; place-items: center; min-width: 21px; height: 21px; padding-inline: 4px; border-radius: 7px; background: #ede7d8; color: var(--muted); font-size: 11px; }
-.category-chip:hover { background: #e8efec; border-color: #86a69d; }
-.category-chip[aria-pressed="true"] { background: var(--petrol); color: white; border-color: var(--petrol); }
-.category-chip[aria-pressed="true"] > span { background: #ffffff26; color: white; }
-.category-chip:focus-visible { outline: 2px solid var(--petrol); outline-offset: 3px; }
 .catalog-summary { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
 .catalog-view .game-section-label { margin: 10px 0 0; padding: 10px 0 8px; gap: 8px; text-transform: none; color: var(--ink); }
 .catalog-view .game-section-label strong { font-size: 16px; }
@@ -4400,12 +4391,6 @@ wideOverview.addEventListener("change", () => renderQuickGames());
 document.querySelector("#gameSearch").addEventListener("input", renderGameList);
 document.querySelector("#gameCategorySelect").addEventListener("change", (event) => {
   catalogCategory = event.target.value;
-  renderGameList();
-});
-document.querySelector("#gameCategories").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
-  catalogCategory = button.dataset.category;
   renderGameList();
 });
 document.querySelector("#pinnedFilter").addEventListener("click", (event) => {
@@ -7386,16 +7371,13 @@ function renderGameList() {
   const menu = [{ id: "for-you", title: "For you" }, ...categories].map((category) => ({
     ...category, count: category.id === "for-you" ? available.length : available.filter((game) => gameCategory(game) === category.id).length
   }));
-  const controls = document.querySelector("#gameCategories");
   const select = document.querySelector("#gameCategorySelect");
   const signature = JSON.stringify(menu);
-  // Keep focused filter buttons in place when only selection or search changes.
-  if (controls.dataset.menu !== signature) {
-    controls.innerHTML = menu.map((category) => `<button type="button" class="category-chip" data-category="${category.id}" aria-pressed="false">${escapeHtml(category.title)}<span aria-hidden="true">${category.count}</span></button>`).join("");
+  // Preserve focus while filtering; rebuild options only when the available catalog changes.
+  if (select.dataset.menu !== signature) {
     select.innerHTML = menu.map((category) => `<option value="${category.id}">${escapeHtml(category.title)} · ${category.count}</option>`).join("");
-    controls.dataset.menu = signature;
+    select.dataset.menu = signature;
   }
-  controls.querySelectorAll("[data-category]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.category === catalogCategory)));
   select.value = catalogCategory;
   const search = document.querySelector("#gameSearch").value.trim().toLowerCase();
   const sections = catalogSections(search, catalogCategory, pinnedOnly);
