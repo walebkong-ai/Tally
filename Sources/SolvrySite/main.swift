@@ -3224,6 +3224,7 @@ body { background: var(--paper); color: var(--ink); }
 .pin-button.active { color: var(--green); }
 .game-view { max-width: 900px; }
 .view-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.catalog-view .view-actions > * { flex: 1; }
 .game-detail-card { padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .game-detail-card .current-result { padding: 0; border: 0; background: none; border-radius: 0; grid-template-columns: 30px minmax(0,1fr) auto; }
 .current-result strong { font-size: 16px; }
