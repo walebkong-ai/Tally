@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=39" />
+    <link rel="stylesheet" href="styles.css?v=40" />
   </head>
   <body>
     <div class="app" id="app">
@@ -4038,6 +4038,76 @@ button:disabled { cursor:wait; }
   .leaderboard-controls:has(#leaderboardScoringLabel:not([hidden])) { grid-template-columns: repeat(2,minmax(0,1fr)); }
   #leaderboardScoringLabel { grid-column: 1 / -1; }
 }
+
+/* One proportion system for every blue action and form control. */
+:root {
+  --control-height: 44px;
+  --control-radius: 12px;
+  --control-padding-x: 14px;
+  --control-font-size: 14px;
+  --control-field-font-size: 14px;
+  --control-compact-font-size: 14px;
+  --control-shadow: 0 3px 0 #173f49;
+  --control-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='m2 2 6 6 6-6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+#app :is(.primary-button, .ghost-button, .official-link, .provider-button, .icon-button) {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--control-height); min-block-size: var(--control-height); max-width: 100%;
+  padding: 10px var(--control-padding-x); border: 1px solid var(--petrol); border-radius: var(--control-radius);
+  background-color: var(--petrol); color: #fff; font-family: inherit; font-size: var(--control-font-size);
+  font-weight: 600; line-height: 20px; text-align: center; box-shadow: var(--control-shadow);
+  transform: none; text-decoration: none;
+}
+#app :is(.primary-button, .ghost-button, .official-link, .provider-button, .icon-button):hover {
+  background-color: #1d505c; border-color: #1d505c; box-shadow: var(--control-shadow); transform: none;
+}
+#app :is(.primary-button, .ghost-button, .official-link, .provider-button, .icon-button):active:not(:disabled) {
+  box-shadow: 0 1px 0 #173f49; transform: translateY(1px);
+}
+#app :is(.primary-button, .ghost-button, .official-link, .provider-button, .icon-button):disabled {
+  cursor: not-allowed; transform: none;
+}
+#app :where(input:not([type="checkbox"]):not([type="range"]):not([type="hidden"]):not([type="file"]):not([type="color"]), select, textarea) {
+  box-sizing: border-box; min-width: 0; max-width: 100%; height: var(--control-height); min-height: var(--control-height);
+  padding: 10px var(--control-padding-x); border: 1px solid var(--petrol); border-radius: var(--control-radius);
+  background-color: var(--petrol); color: #fff; color-scheme: dark; font-family: inherit;
+  font-size: var(--control-field-font-size); line-height: 20px; font-weight: 500; box-shadow: var(--control-shadow);
+}
+#app select {
+  appearance: none; -webkit-appearance: none; padding-right: 42px; cursor: pointer;
+  background-image: var(--control-chevron); background-repeat: no-repeat;
+  background-position: right 14px center; background-size: 14px 9px;
+}
+#app select:hover { background-color: #1d505c; }
+#app select :is(option, optgroup) { background: var(--petrol); color: #fff; }
+#app textarea {
+  height: auto; min-height: 130px; padding: 12px var(--control-padding-x); line-height: 1.5; font-weight: 400;
+}
+#app :is(.primary-button, .ghost-button, .official-link, .provider-button, .icon-button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--gold); outline-offset: -5px;
+}
+#app [aria-invalid="true"] { border-color: #a04e36; }
+#app #pinnedFilter[aria-pressed="true"] {
+  background-color: #1d505c; box-shadow: inset 0 -3px var(--gold), var(--control-shadow);
+}
+#app .icon-button { width: var(--control-height); height: var(--control-height); flex: 0 0 var(--control-height); padding: 0; font-size: 20px; }
+#app .provider-mark { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 6px; font-size: 14px; line-height: 20px; }
+#app .provider-button { grid-template-columns: none; }
+#app :is(.add-score-button, .top-actions .header-action-button) {
+  height: var(--control-height); block-size: var(--control-height); min-height: var(--control-height);
+  padding: 8px; gap: 6px; font-size: var(--control-compact-font-size); line-height: 20px;
+}
+#app .top-actions .header-action-button { width: var(--action-width); min-width: var(--action-width); }
+#app #importClearButton { background: transparent; color: var(--petrol); border-color: #a6bba1; box-shadow: none; }
+#app #importClearButton:hover { background: #dde6d4; }
+#app .catalog-controls { align-items: end; }
+#app .catalog-controls > label { gap: 4px; }
+@media (max-width: 760px) {
+  :root { --control-field-font-size: 16px; --control-compact-font-size: 12px; }
+  #app .catalog-category-select { align-items: center; gap: 12px; }
+  #app .catalog-category-select select { width: 0; }
+}
+
 """#
 
 let appScript = #"""

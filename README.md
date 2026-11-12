@@ -4,11 +4,15 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v74**. The published source checkpoint is `f486fe5eafbf775f77cf43b01bad80dd7997e32c` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v75**. The published source checkpoint is `b9cd7c8c7e614922cbdb2917c5456f6df98bdb42` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Shared control proportions (v75, 2026-11-11)
+
+Blue actions and form controls now use shared sizing tokens: 44px single-line height, 12px corners, a common border/shadow, proportional padding and consistent dropdown chevrons/focus indicators. This applies to Today, Games, game details, Leaderboard, Friends, score entry and dialogs. Header Add score/Account stay equal-sized. Widths follow their labels/layouts; multiline textareas remain larger. Mobile fields use 16px text for legibility/zoom behavior and compact header actions keep their established sizing. All 175 app tests pass; browser checks verified desktop and narrow layouts without horizontal overflow. Styling only.
 
 ## Category dropdown focus fix (v74, 2026-11-11)
 

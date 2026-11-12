@@ -4,12 +4,18 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v74**, through OpenAI Sites.
-- Sites source checkpoint: `f486fe5eafbf775f77cf43b01bad80dd7997e32c` (a separate source history from this repository).
+- Published application: **v75**, through OpenAI Sites.
+- Sites source checkpoint: `b9cd7c8c7e614922cbdb2917c5456f6df98bdb42` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Shared control proportions verification (v75)
+
+CSS-only shared component tokens replace inconsistent sizing across blue actions, inputs, selects, date pickers and icon buttons: 44px single-line control height, 12px corners, shared padding/typography, matching lower shadows and inset keyboard focus. Selects use a consistently padded chevron that persists on hover. Add score and Account remain equal-sized; multiline textareas retain enough rows. Mobile inputs use 16px text, with the existing compact action variant for header/Add score buttons. Checkbox/switch and tab styles retain their separate semantics.
+
+Swift build, JavaScript syntax, all 175 existing app tests and diff checks pass; no tests were added for styling-only changes. Local browser dimension checks covered all six main views, both score-entry methods, account and custom-game dialogs. Visible single-line blue controls measured 44px with 12px radii; textarea height remained multiline. Responsive checks at 1366, 375 and 320 pixels found no horizontal overflow, including compact game/account screens. Dropdown selection and dialog open/close were exercised. No production score records, auth or Firebase rules were changed.
 
 ## Category dropdown focus/spacing fix (v74)
 
