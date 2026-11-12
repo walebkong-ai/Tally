@@ -4,12 +4,16 @@ Updated November 11, 2026. This is the public summary of local release and beta 
 
 ## Release and scope
 
-- Published application: **v73**, through OpenAI Sites.
-- Sites source checkpoint: `5edead483060757c1a78106a219699503d98de5b` (a separate source history from this repository).
+- Published application: **v74**, through OpenAI Sites.
+- Sites source checkpoint: `f486fe5eafbf775f77cf43b01bad80dd7997e32c` (a separate source history from this repository).
 - Website: https://solvry.walebkong.chatgpt.site/.
 - Access: custom/invite-only; no custom domain attached at this checkpoint.
 - Backend: Firebase Google Authentication and Toronto Firestore, Spark with billing disabled.
 - Assessment: core invited-beta scenarios passed; additional checks remain before a small public beta and broader promotion.
+
+## Category dropdown focus/spacing fix (v74)
+
+CSS-only: a custom white chevron has dedicated right padding and keeps its image on hover; keyboard focus uses an inset gold indicator instead of the external oval. The control remains a native select. Local browser checks confirmed appearance, 42px text padding, 16px arrow inset, visible keyboard focus with a negative outline offset, normal unfocused styling, category filtering, and no horizontal overflow on desktop/mobile. Swift build, JavaScript syntax, all 175 existing app tests and diff checks pass. No tests were added for this styling-only correction; scoring and backend data are unchanged.
 
 ## Blue category control verification (v73)
 

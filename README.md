@@ -4,11 +4,15 @@ Solvry is a Swift-generated universal leaderboard for daily games: paste a share
 
 ## Current release and launch status (2026-11-11)
 
-This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v73**. The published source checkpoint is `5edead483060757c1a78106a219699503d98de5b` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
+This repository contains the application source, Firebase rules/configuration, tests, and operations tooling for live **Solvry v74**. The published source checkpoint is `f486fe5eafbf775f77cf43b01bad80dd7997e32c` in the separate Sites source history; it is provenance, not a commit in this GitHub repository. GitHub stores the project source; publication remains through OpenAI Sites.
 
 The site is still **invite-only** at https://solvry.walebkong.chatgpt.site/. No custom domain has been connected. Firebase Google sign-in and Toronto Firestore are active on Spark with billing disabled. Apple sign-in is not configured. Uploading this repository does not publish the website, widen access, deploy Firebase rules, or change billing.
 
 See [the release verification summary](QA/RELEASE_READINESS.md) for the completed two-account beta, test results, rollback/restore drills, and remaining public-launch checks. Raw participant reports, screenshots, account exports, credentials, and encrypted backups are intentionally kept out of this public repository. Generated `dist/` files and installed dependencies are rebuilt locally.
+
+## Category dropdown focus fix (v74, 2026-11-11)
+
+Replaced the inconsistent native dropdown arrow with a padded white chevron and moved the category focus indicator inside the button. This removes the oversized external oval while retaining visible keyboard focus. Desktop/mobile checks confirm spacing, focus visibility and filtering; all 175 app tests pass. Styling only.
 
 ## Category control styling (v73, 2026-11-11)
 

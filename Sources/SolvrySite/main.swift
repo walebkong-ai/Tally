@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=38" />
+    <link rel="stylesheet" href="styles.css?v=39" />
   </head>
   <body>
     <div class="app" id="app">
@@ -3421,8 +3421,9 @@ input, select, textarea, .date-control input { border-radius: 10px; }
 .progress-day span { font-size: 10px; }
 .catalog-controls { margin-bottom: 12px; }
 .catalog-category-select { display: grid; gap: 4px; width: 260px; max-width: 100%; margin: 0; font-size: 13px; }
-.catalog-category-select select { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--petrol); border-radius: 12px; background: var(--petrol); color: #fff; color-scheme: dark; font-size: 14px; line-height: 1.3; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 #173f49; transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
-.catalog-category-select select:hover { background: #1d505c; border-color: #1d505c; }
+.catalog-category-select select { appearance: none; -webkit-appearance: none; min-width: 0; width: 100%; min-height: 44px; padding: 10px 42px 10px 16px; border: 1px solid var(--petrol); border-radius: 12px; background: var(--petrol); color: #fff; color-scheme: dark; font-size: 14px; line-height: 1.3; font-weight: 600; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='m2 2 6 6 6-6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 14px 9px; box-shadow: 0 3px 0 #173f49; transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.catalog-category-select select:hover { background-color: #1d505c; border-color: #1d505c; }
+.catalog-category-select select:focus-visible { outline: 2px solid var(--gold); outline-offset: -5px; }
 .catalog-category-select select:active { box-shadow: 0 1px 0 #173f49; }
 .catalog-category-select option { background: var(--petrol); color: #fff; }
 @media (max-width: 760px) {
