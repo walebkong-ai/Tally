@@ -172,3 +172,71 @@ test('the public scoring guide covers exactly the active catalog, with no duplic
   assert.equal(ids.length,43);assert.equal(new Set(ids).size,43);
   assert.deepEqual(ids.sort(),Array.from(c.visibleGames(),g=>g.id).sort());
 });
+
+test('zero completion times are rejected by manual entry, paste and shared time validation', () => {
+  const c = setup();
+  vm.runInContext(app.slice(app.indexOf('function parseShareText('), app.indexOf('function renderSharePreview(')), c);
+  for (const raw of ['0:00', '00:00', '000:00', '00:00:00']) {
+    assert.ok(normalized(c, 'mini-crossword', raw).error, raw);
+    assert.equal(scoring.timeSeconds(raw), Infinity);
+    assert.equal(c.scoreEntryForGame({score:raw,result:'solved'}, game(c, 'mini-crossword')).value, Infinity);
+  }
+  assert.equal(c.parseShareText('I solved the Mini Crossword in 0:00!').parsed, null);
+  assert.ok(c.normalizeCustomScore('time', 'solved', '00:00').error);
+});
+
+test('invalid legacy history never earns either type of points and is not rewritten', () => {
+  for (const [id, score] of [
+    ['mini-crossword', '00:00'], ['mini-crossword', '00:00:00'], ['mini-crossword', '1:99'], ['mini-crossword', '1:30junk'],
+    ['wordle', '0/6'], ['wordle', '7/6'], ['wordle', '3/60'], ['wordle', 'junk 1/6'],
+    ['connections', '-1 mistakes'], ['connections', '4 mistakes'], ['connections', '0 mistakes junk'],
+    ['krillion', '-1'], ['krillion', '10000'], ['krillion', '1.5'], ['krillion', 'junk 9999'],
+    ['daily-tens', '11/10'], ['daily-tens', '5/100'], ['centumth', '490/499'],
+    ['spelling-bee', 'Super Genius junk']
+  ]) {
+    const c=setup(); c.state.games=[game(c,id)];
+    c.state.entries={'2026-11-11':{[id]:{you:{score,result:'solved',source:'manual',note:'keep history'}}}};
+    const before=JSON.stringify(c.state.entries);
+    assert.equal(c.buildGameLeaderboard(c.state.games[0]).find(row=>row.id==='you').rank,null,`${id}: ${score}`);
+    for(const mode of ['placement','performance']) assert.equal(c.buildOverallLeaderboard(1,mode).find(row=>row.id==='you').rank,null,`${mode}: ${score}`);
+    assert.equal(JSON.stringify(c.state.entries),before);
+  }
+});
+
+test('valid historical times, bounded scores and real zero-point rounds remain ranked in both modes', () => {
+  for (const [id, score, result] of [
+    ['mini-crossword','00:01','solved'], ['mini-crossword','999:59','solved'], ['mini-crossword','1:02:30','solved'],
+    ['wordle','1/6','solved'], ['wordle','6/6','solved'], ['globle','1 guess','solved'],
+    ['connections','0 mistakes','solved'], ['connections','3 mistakes','solved'],
+    ['strands','No hints','solved'], ['strands','999 hints','solved'],
+    ['krillion','0','played'], ['krillion','9999','played'], ['daily-tens','0/10','played'], ['daily-tens','10/10','solved'],
+    ['centumth','490/490','played'], ['spelling-bee','Moving Up · 10 pts','played'], ['spelling-bee','Queen Bee','solved']
+  ]) {
+    const c=setup(); c.state.games=[game(c,id)];
+    c.state.entries={'2026-11-11':{[id]:{you:{score,result,source:'official-share'}}}};
+    const before=JSON.stringify(c.state.entries);
+    for(const mode of ['placement','performance']) assert.equal(c.buildOverallLeaderboard(1,mode).find(row=>row.id==='you').rank,1,`${mode} ${id}: ${score}`);
+    assert.equal(JSON.stringify(c.state.entries),before);
+  }
+});
+
+test('unfinished legacy solve puzzles and misses cannot receive placement points', () => {
+  for(const [id,score] of [['wordle','3/6'],['connections','0 mistakes'],['mini-crossword','00:54'],['strands','No hints']]) {
+    for(const result of ['played','missed']) {
+      const c=setup(); c.state.games=[game(c,id)];c.state.entries={'2026-11-11':{[id]:{you:{score,result}}}};
+      for(const mode of ['placement','performance']) assert.equal(c.buildOverallLeaderboard(1,mode).find(row=>row.id==='you').rank,null,`${mode} ${id} ${result}`);
+    }
+  }
+});
+
+test('custom boards reject malformed numeric denominators without losing valid signed or decimal scores', () => {
+  const c=setup(), g={id:'custom-strokes',source:'custom',type:'strokes',sharing:'personal'};
+  for(const score of ['-2.5/10','junk 1','1e3','Infinity']) {
+    c.state.entries={'2026-11-11':{[g.id]:{you:{score,result:'solved'}}}};
+    assert.equal(c.buildGameLeaderboard(g).find(row=>row.id==='you').rank,null,score);
+  }
+  for(const score of ['-2.5','0','1000000000']) {
+    c.state.entries={'2026-11-11':{[g.id]:{you:{score,result:'played'}}}};
+    assert.equal(c.buildGameLeaderboard(g).find(row=>row.id==='you').rank,1,score);
+  }
+});

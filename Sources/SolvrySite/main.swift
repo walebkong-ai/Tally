@@ -72,7 +72,7 @@ let html = #"""
           </div>
           <div class="metrics home-metrics" aria-label="Your progress">
             <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="6" width="22" height="23" rx="5"/><path d="M10 3v6m12-6v6M5 13h22m-16 7 4 4 7-7"/></svg><strong id="playedMetric">0</strong><span>results this day</span></div>
-            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3c2 8 8 10 8 17a10 10 0 0 1-20 0c0-4 2-7 6-10-1 5 1 7 3 8 3-4 4-9 3-15Z"/><path d="M17 20c0 3 3 4 3 6a4 4 0 0 1-8 0c0-2 2-4 5-6Z"/></svg><strong id="streakMetric">0</strong><span>day streak</span></div>
+            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3c2 8 8 10 8 17a10 10 0 0 1-20 0c0-4 2-7 6-10-1 5 1 7 3 8 3-4 4-9 3-15Z"/><path d="M17 20c0 3 3 4 3 6a4 4 0 0 1-8 0c0-2 2-4 5-6Z"/></svg><strong id="streakMetric">0</strong><span>activity streak</span></div>
             <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 3.7 7.5 8.3 1.2-6 5.9 1.4 8.3-7.4-3.9-7.4 3.9 1.4-8.3-6-5.9 8.3-1.2Z"/></svg><strong id="totalSolvesMetric">0</strong><span>total results</span></div>
             <span id="solvedMetric" hidden>0</span>
           </div>
@@ -340,7 +340,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=43" type="module"></script>
+    <script src="app.js?v=44" type="module"></script>
   </body>
 </html>
 """#
@@ -4114,7 +4114,7 @@ let appScript = #"""
 import * as safety from "./assets/sync-safety.mjs?v=36";
 import * as management from "./assets/account-management.mjs?v=37";
 import * as operations from "./assets/launch-ops.mjs?v=2";
-import * as gameScoring from "./assets/game-scoring.mjs?v=1";
+import * as gameScoring from "./assets/game-scoring.mjs?v=2";
 const STORAGE_KEY = "solvry-state-v2";
 const LEGACY_STORAGE_KEY = "solvry-state-v1";
 const ORIGINAL_STORAGE_KEY = "tallyo-state-v1";
@@ -4122,7 +4122,7 @@ const storageWriter = crypto.randomUUID();
 let storageOwner = "";
 let storageBaseline = {};
 let storageProblem = "";
-const today = localDateKey();
+let today = localDateKey();
 
 function localDateKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -4851,6 +4851,34 @@ document.querySelector("#customShareConfirm").addEventListener("click", async ()
   catch { status.textContent = "Select and copy the game link above."; document.querySelector("#customShareLink").select(); }
 });
 
+function refreshCurrentDate(now = new Date()) {
+  const next = localDateKey(now);
+  if (next === today) return false;
+  const previous = today;
+  today = next;
+  document.querySelectorAll('input[type="date"]').forEach((input) => { input.max = today; });
+  // Never silently re-date a draft or move someone away from a historical date.
+  const hasDraft = manualFormDirty || !!elements.shareTextInput.value.trim() || [...importDrafts.values()].some((draft) => draft.text.trim())
+    || elements.manualDateInput.value !== previous || elements.importDate.value !== previous;
+  if (state.selectedDate === previous && !hasDraft) {
+    importDraftRevision += 1; // Discard a clipboard read started for the previous day.
+    state.selectedDate = today;
+    elements.playDate.value = today;
+    elements.importDate.value = today;
+    elements.manualDateInput.value = today;
+  }
+  render(false);
+  return true;
+}
+
+function watchDateRollover() {
+  const check = () => { if (document.visibilityState !== "hidden") refreshCurrentDate(); };
+  document.addEventListener("visibilitychange", check);
+  window.addEventListener("focus", check);
+  window.addEventListener("pageshow", check);
+  window.setInterval(check, 30000);
+}
+
 function render(focusGolf = true) {
   const activeGame = getActiveGame();
   state.activeGameId = activeGame.id;
@@ -5409,16 +5437,37 @@ function requestSnapshotToState(snapshot) {
   return { id: snapshot.id, ...snapshot.data() };
 }
 
+function friendPairIds(a, b) {
+  const [first, second] = [a, b].sort();
+  return [first + "__" + second, second + "__" + first];
+}
+
+function friendRequestPeer(request, uid) {
+  if (!uid || !request.fromUid || !request.toUid || request.fromUid === request.toUid
+    || ![request.fromUid, request.toUid].includes(uid)
+    || !friendPairIds(request.fromUid, request.toUid).includes(request.id)) return "";
+  return request.fromUid === uid ? request.toUid : request.fromUid;
+}
+
+function cacheFriendRequests(updates) {
+  const ids = new Set(updates.map((request) => request.id));
+  for (const key of ["incoming", "outgoing"]) {
+    state.friendRequests[key] = (state.friendRequests[key] || []).filter((request) => !ids.has(request.id));
+    state.friendRequests[key].push(...updates.filter((request) => request[key === "incoming" ? "toUid" : "fromUid"] === state.account.uid));
+  }
+}
+
 function applyAcceptedRequests() {
   const requests = [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])];
-  requests.filter((request) => ["rejected", "cancelled", "removed"].includes(request.status)).forEach((request) => {
-    const uid = request.fromUid === state.account.uid ? request.toUid : request.fromUid;
-    state.friends = state.friends.filter((friend) => friend.uid !== uid);
-    mergeFriendEntries(uid, {});
-  });
-  [...(state.friendRequests.incoming || []), ...(state.friendRequests.outgoing || [])]
-    .filter((request) => request.status === "accepted")
-    .forEach((request) => {
+  const peers = new Set(requests.map((request) => friendRequestPeer(request, state.account.uid)).filter(Boolean));
+  peers.forEach((uid) => {
+    const pair = requests.filter((request) => friendRequestPeer(request, state.account.uid) === uid);
+    // Match the server: a removal always wins over a leftover accepted duplicate.
+    const request = pair.some((item) => item.status === "removed") ? null : pair.find((item) => item.status === "accepted");
+    if (!request) {
+      state.friends = state.friends.filter((friend) => friend.uid !== uid);
+      mergeFriendEntries(uid, {});
+    } else {
       const friend = request.fromUid === state.account.uid
         ? { uid: request.toUid, ...(request.toProfile || {}) }
         : { uid: request.fromUid, ...(request.fromProfile || {}) };
@@ -5430,7 +5479,8 @@ function applyAcceptedRequests() {
         ownerUid: state.account.uid,
         status: "accepted"
       });
-    });
+    }
+  });
   try { saveState(); } catch { setFriendStatus("Friend updates could not be cached on this device. Your account connection is still saved online.", true); }
 }
 
@@ -5471,16 +5521,21 @@ async function sendCloudFriendRequest(name, handle) {
   if (matches.length !== 1) throw new Error("More than one account uses that handle. Your friend needs a unique handle first.");
   const target = matches[0];
 
-  const requestId = [state.account.uid, target.id].sort().join("__");
   const targetProfile = target.data().profile || {};
-  const ref = doc(cloudBackend.db, "friendRequests", requestId);
-  await runTransaction(cloudBackend.db, async (transaction) => {
-    const existing = await transaction.get(ref);
+  const refs = friendPairIds(session.uid, target.id).map((id) => doc(cloudBackend.db, "friendRequests", id));
+  const updates = await runTransaction(cloudBackend.db, async (transaction) => {
+    const snapshots = await Promise.all(refs.map((ref) => transaction.get(ref)));
     if (!currentCloudSession(session)) throw new Error("The active account changed.");
-    const status = existing.exists() ? existing.data().status : "";
-    if (status === "accepted") throw new Error("You're already connected with this friend.");
-    if (status === "pending") throw new Error("A request is already pending. Check your Requests tab.");
-    transaction.set(ref, {
+    const records = snapshots.map((snapshot, index) => snapshot.exists() ? { id: refs[index].id, ...snapshot.data() } : null);
+    if (records.some((record) => record && friendRequestPeer(record, session.uid) !== target.id)) throw new Error("This connection needs review. Refresh friends and try again.");
+    const revoked = records.some((record) => record?.status === "removed");
+    if (!revoked && records.some((record) => record?.status === "accepted")) throw new Error("You're already connected with this friend.");
+    if (!revoked && records.some((record) => record?.status === "pending")) throw new Error("A request is already pending. Check your Requests tab.");
+    // Reuse a lone legacy orientation. With duplicates, restart a closed record;
+    // atomically retire the other copy, preserving its participant/history fields.
+    const index = revoked ? records.findIndex((record) => record?.status === "removed") : records.findIndex(Boolean);
+    const selected = index < 0 ? 0 : index;
+    const next = {
     fromUid: state.account.uid,
     toUid: target.id,
     fromProfile: { name: state.profile.name, handle: state.profile.handle },
@@ -5488,9 +5543,20 @@ async function sendCloudFriendRequest(name, handle) {
     status: "pending",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
+    };
+    transaction.set(refs[selected], next);
+    const changes = [{ id: refs[selected].id, ...next }];
+    records.forEach((record, i) => {
+      if (i !== selected && record && record.status !== "superseded") {
+        transaction.update(refs[i], { status: "superseded", updatedAt: next.updatedAt });
+        changes.push({ ...record, status: "superseded", updatedAt: next.updatedAt });
+      }
     });
+    return changes;
   });
   if (!currentCloudSession(session)) throw new Error("The active account changed.");
+  cacheFriendRequests(updates);
+  applyAcceptedRequests();
   cloudBackend.error = "";
 }
 
@@ -5523,14 +5589,28 @@ async function updateFriendRequest(action, requestId) {
     const snapshot = await transaction.get(ref);
     if (!currentCloudSession(session)) throw new Error("The active account changed.");
     if (!snapshot.exists()) throw new Error("That request is no longer available.");
-    const request = snapshot.data();
+    const request = { id: requestId, ...snapshot.data() };
+    const peer = friendRequestPeer(request, session.uid);
+    if (!peer) throw new Error("That request isn't yours to update.");
+    const oppositeId = friendPairIds(session.uid, peer).find((id) => id !== requestId);
+    const oppositeRef = doc(cloudBackend.db, "friendRequests", oppositeId);
+    const oppositeSnapshot = await transaction.get(oppositeRef);
+    if (!currentCloudSession(session)) throw new Error("The active account changed.");
+    const opposite = oppositeSnapshot.exists() ? { id: oppositeId, ...oppositeSnapshot.data() } : null;
+    if (opposite && friendRequestPeer(opposite, session.uid) !== peer) throw new Error("This connection needs review.");
+    if (action === "accept" && opposite && ["accepted", "removed"].includes(opposite.status)) throw new Error("This connection changed. Refresh friends; a removed connection needs a new invitation.");
     const status = friendRequestStatus(action, request, state.account.uid);
-    transaction.update(ref, { status, updatedAt: new Date().toISOString() });
-    return { ...request, id: requestId, status };
+    const updatedAt = new Date().toISOString();
+    transaction.update(ref, { status, updatedAt });
+    const changes = [{ ...request, status, updatedAt }];
+    if (action === "remove" && opposite?.status === "accepted") {
+      transaction.update(oppositeRef, { status: "removed", updatedAt });
+      changes.push({ ...opposite, status: "removed", updatedAt });
+    }
+    return changes;
   });
   if (!currentCloudSession(session)) throw new Error("The active account changed.");
-  const key = updated.toUid === state.account.uid ? "incoming" : "outgoing";
-  state.friendRequests[key] = [...state.friendRequests[key].filter((request) => request.id !== requestId), updated];
+  cacheFriendRequests(updated);
   applyAcceptedRequests();
 }
 
@@ -7433,7 +7513,7 @@ function gameStreak(game) {
   const cursor = new Date(`${today}T12:00:00`);
   const completed = () => {
     const entry = state.entries[localDateKey(cursor)]?.[game.id]?.you;
-    return !!entry && (isCompletedResult(entry.result, game) || game.type === "rank" && entry.result === "played");
+    return !!entry && gameScoring.isRankable(game, entry, scoreEntryForGame(entry, game));
   };
   if (state.entries[today]?.[game.id]?.you?.result === "missed") return 0;
   if (!completed()) cursor.setDate(cursor.getDate() - 1);
@@ -7455,7 +7535,7 @@ function catalogSections(search = "", category = "for-you", onlyPinned = false) 
   const priorityIds = new Set([...pinned, ...streaks].map((game) => game.id));
   return [
     { title: "Pinned games", detail: "Your everyday favorites", games: pinned, priority: true },
-    { title: "Keep your streak going", detail: "Consecutive days with a completed or scored result", games: streaks, priority: true },
+    { title: "Keep your streak going", detail: "Consecutive days with a completed puzzle or valid scored round; failed attempts do not count", games: streaks, priority: true },
     ...GAME_CATEGORIES.map((item) => ({ title: item.title, games: games.filter((game) => !priorityIds.has(game.id) && gameCategory(game) === item.id) }))
   ].filter((section) => section.games.length);
 }
@@ -7503,7 +7583,7 @@ function renderGameCard(game) {
         <span class="game-meta">
           <strong>${escapeHtml(game.name)}</strong>
           <span>${scoreStyleLabel(game)}${game.manualOnly ? " · Manual entry" : ""}</span>
-          ${streak ? `<span class="game-streak"><span aria-hidden="true">🔥</span> ${streak}-day streak</span>` : ""}
+          ${streak ? `<span class="game-streak"><span aria-hidden="true">🔥</span> ${streak}-day completion streak</span>` : ""}
         </span>
         <span class="game-score" aria-label="${entries.you ? "Result saved" : "No result yet"}">${entries.you ? "✓" : ""}</span>
       </button>
@@ -7757,7 +7837,7 @@ function normalizeManualScore(gameId, result, raw, rank, rarity = "") {
   const value = String(raw).trim();
   if (gameId === "wordle" && result === "missed") return { score: "X/6", result };
   if (gameId === "mini-crossword") {
-    if (!/^\d{1,3}:[0-5]\d$/.test(value)) return { error: "Enter a time like 00:54 or 12:03." };
+    if (!/^\d{1,3}:[0-5]\d$/.test(value) || !Number.isFinite(gameScoring.timeSeconds(value))) return { error: "Enter a completion time greater than 00:00, like 00:54 or 12:03." };
     return { score: value.padStart(5, "0"), result };
   }
   if (gameId === "spelling-bee") {
@@ -7813,7 +7893,7 @@ function normalizeCustomScore(type, result, raw) {
   const value = String(raw).trim();
   if (type === "complete") return { score: result === "solved" ? "Complete" : result === "missed" ? "Missed" : "Played", result };
   if (type === "time") {
-    if (!/^\d{1,3}:[0-5]\d(?::[0-5]\d)?$/.test(value)) return { error: "Enter a time like 01:30 or 1:02:30." };
+    if (!/^\d{1,3}:[0-5]\d(?::[0-5]\d)?$/.test(value) || !Number.isFinite(gameScoring.timeSeconds(value))) return { error: "Enter a time like 01:30 or 1:02:30." };
     return { score: value.padStart(5, "0"), result };
   }
   if (["guesses", "mistakes"].includes(type)) {
@@ -7826,6 +7906,7 @@ function normalizeCustomScore(type, result, raw) {
 }
 
 function saveManualScore() {
+  refreshCurrentDate();
   const game = getActiveGame();
   if (gameSource(game) === "solvry") return;
   const date = elements.manualDateInput.value;
@@ -8040,9 +8121,7 @@ function buildGameLeaderboard(game, date = state.selectedDate, dailyOnly = false
 }
 
 function scoreTier(row, game) {
-  if (!row.hasEntry || !Number.isFinite(row.score.value) || !["solved", "played"].includes(row.entry?.result)) return 0;
-  if (game.id === "strands" && row.entry.result !== "solved") return 0;
-  if (game.manualOnly && ["guesses", "time", "complete", "strokes", "mistakes"].includes(game.type) && row.entry.result !== "solved") return 0;
+  if (!row.hasEntry || !gameScoring.isRankable(game, row.entry, row.score)) return 0;
   if (["guesses", "mistakes", "time", "complete"].includes(game.type)) return row.entry.result === "solved" ? 2 : 1;
   return 1;
 }
@@ -8077,6 +8156,7 @@ function scoreEntryForGame(entry, game) {
   }
   if (type === "time") return parseTimeScore(score);
   if (type === "guesses") return parseGuessScore(score, entry.result);
+  if (game.id === "strands") return parseNumberScore(/^No hints$/i.test(score) ? "0 hints" : score, "hints");
   if (type === "mistakes") return parseNumberScore(score, "mistakes");
   if (type === "strokes") return parseNumberScore(score, "strokes");
   if (type === "rank") return parseRankScore(score);
@@ -8092,8 +8172,8 @@ function scoreEntryForGame(entry, game) {
 }
 
 function parseGuessScore(score, result) {
-  const miss = /x\/6/i.test(score) || result === "missed";
-  const match = score.match(/([1-6])\s*\/\s*6/i) || score.match(/\b([1-9]\d*)\s*(?:guess|guesses)\b/i);
+  const miss = /^x\/6$/i.test(score) || result === "missed";
+  const match = score.match(/^([1-6])\s*\/\s*6$/i) || score.match(/^([1-9]\d*)\s+guess(?:es)?$/i);
   return {
     value: miss ? Number.POSITIVE_INFINITY : Number(match?.[1] || Number.POSITIVE_INFINITY),
     label: score || defaultScoreLabel(result),
@@ -8102,9 +8182,8 @@ function parseGuessScore(score, result) {
 }
 
 function parseTimeScore(score) {
-  const parts = score.split(":").map((part) => Number(part));
-  const valid = /^\d+:\d{2}(?::\d{2})?$/.test(score) && parts.every((part, index) => Number.isFinite(part) && part >= 0 && (index === 0 || part < 60));
-  const seconds = valid ? parts.reduce((total, part) => total * 60 + part, 0) : Number.POSITIVE_INFINITY;
+  const seconds = gameScoring.timeSeconds(score);
+  const valid = Number.isFinite(seconds);
   return {
     value: seconds,
     label: score || "-",
@@ -8113,8 +8192,9 @@ function parseTimeScore(score) {
 }
 
 function parseNumberScore(score, unit) {
-  const match = score.match(/-?\d+(\.\d+)?/);
-  const value = match ? Number(match[0]) : Number.POSITIVE_INFINITY;
+  const match = score.match(/^(-?\d+(?:\.\d+)?)(?:\/\d+)?(?:\s+(.+))?$/);
+  const validUnit = !match?.[2] || [unit, unit.replace(/s$/, "")].includes(match[2]);
+  const value = match && validUnit ? Number(match[1]) : Number.POSITIVE_INFINITY;
   return {
     value,
     label: score || "-",
@@ -8563,6 +8643,7 @@ function parseMiniCrosswordShare(lines) {
   if (timeMatch[1].split(":").slice(1).some((part) => Number(part) > 59)) {
     return { parsed: null, error: "That time doesn't look right. Seconds and minutes within an hour must be between 00 and 59." };
   }
+  if (!Number.isFinite(gameScoring.timeSeconds(timeMatch[1]))) return { parsed: null, error: "Enter a completion time greater than 00:00." };
 
   return {
     parsed: {
@@ -8731,16 +8812,14 @@ function calculateTotalSolves() {
 }
 
 function calculateStreak() {
-  const dates = Object.keys(state.entries).sort().reverse();
   let streak = 0;
-  let cursor = new Date(`${today}T00:00:00`);
-
-  for (const date of dates) {
-    const expected = localDateKey(cursor);
-    if (date === expected && hasUserPlayedDate(date)) {
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
+  const cursor = new Date(`${today}T12:00:00`);
+  // Activity counts any recorded attempt, including a miss. Today's opportunity
+  // remains open, so yesterday's consecutive activity is still active.
+  if (!hasUserPlayedDate(today)) cursor.setDate(cursor.getDate() - 1);
+  while (hasUserPlayedDate(localDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
   }
 
   return streak;
@@ -9332,8 +9411,9 @@ document.querySelector("#closeDeleteAccount").addEventListener("click", () => { 
 document.querySelector("#deleteAccountDialog").addEventListener("cancel", event => { if (accountDeletionBusy) event.preventDefault(); });
 document.querySelector("#accountPrivacyLink").addEventListener("click", () => elements.accountDialog.close());
 window.addEventListener("offline", () => { updateSyncStatus(); if (accountDeletionBusy) document.querySelector("#deleteAccountStatus").textContent = "Connection lost. Deletion is not complete. Keep this page open to reconnect, or resume after signing in again."; });
-window.addEventListener("online", () => { updateSyncStatus(); if (storageOwner && !cloudBackend.deletionPending) recoverAccountConnection().catch(() => {}); });
+window.addEventListener("online", () => { refreshCurrentDate(); updateSyncStatus(); if (storageOwner && !cloudBackend.deletionPending) recoverAccountConnection().catch(() => {}); });
 initCloudBackend();
+watchDateRollover();
 render();
 if (storageProblem) showAppNotice(storageProblem);
 handleCustomGameLink();

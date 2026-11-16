@@ -46,6 +46,29 @@ const request = {
   createdAt: "2026-11-09",
   updatedAt: "2026-11-09",
 };
+function friendClient(uid) {
+  const app = fs.readFileSync(new URL('../dist/app.js', import.meta.url), 'utf8');
+  const c = vm.createContext({
+    state: { account: {uid}, profile: {name:uid,handle:'@'+uid}, friendRequests:{incoming:[],outgoing:[]} },
+    cloudBackend: {db:db(uid),modules:{firestore:{...firestore,
+      // The VM models browser code; normalize objects at the Node SDK boundary.
+      runTransaction: (database, action) => firestore.runTransaction(database, transaction => action({
+        get: ref => transaction.get(ref),
+        set: (ref, value) => transaction.set(ref, structuredClone(value)),
+        update: (ref, value) => transaction.update(ref, structuredClone(value))
+      }))
+    }}},
+    cloudSession: () => ({uid}), currentCloudSession: session => session.uid === uid,
+    cloudFriendsAvailable: () => true, normalizeHandle: handle => handle.replace(/^@/,''),
+    applyAcceptedRequests: () => {}
+  });
+  for (const name of ['friendPairIds','friendRequestPeer','cacheFriendRequests','friendRequestStatus','sendCloudFriendRequest','updateFriendRequest']) {
+    const match = new RegExp(`(?:async )?function ${name}\\(`).exec(app);
+    const tail = app.slice(match.index), next = /\n(?:async )?function \w+\(/.exec(tail);
+    vm.runInContext(tail.slice(0,next?.index),c);
+  }
+  return c;
+}
 const databases = new Map();
 const db = (uid) => {
   if (!databases.has(uid)) {
@@ -381,6 +404,109 @@ test("request actions enforce actor, immutable participants and status transitio
       ),
     ),
   );
+});
+
+test('legacy accepted connections in either orientation retain score access until removed', async () => {
+  await publish(db('owner'),body('3/6'));
+  for(const id of ['owner__friend','friend__owner']) {
+    await seed({[`friendRequests/${id}`]:request});
+    await assertSucceeds(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+    await assertFails(firestore.getDoc(firestore.doc(db('stranger'),path('owner'))));
+    await assertSucceeds(firestore.updateDoc(firestore.doc(db('owner'),`friendRequests/${id}`),{status:'removed',updatedAt:'audit'}));
+    await assertFails(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+    await environment.withSecurityRulesDisabled(context=>firestore.deleteDoc(firestore.doc(context.firestore(),`friendRequests/${id}`)));
+  }
+});
+
+test('removing either accepted duplicate immediately revokes gets and score queries in both directions', async () => {
+  for(const removedId of ['owner__friend','friend__owner']) {
+    await seed({'friendRequests/owner__friend':request,'friendRequests/friend__owner':request});
+    await publish(db('owner'),body('3/6',removedId==='owner__friend'?1:2));
+    await publish(db('friend'),body('5/6',removedId==='owner__friend'?1:2),'friend');
+    await assertSucceeds(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+    await assertSucceeds(firestore.getDoc(firestore.doc(db('owner'),path('friend'))));
+    await assertSucceeds(firestore.updateDoc(firestore.doc(db('friend'),`friendRequests/${removedId}`),{status:'removed',updatedAt:'audit'}));
+    await assertFails(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+    await assertFails(firestore.getDoc(firestore.doc(db('owner'),path('friend'))));
+    await assertFails(firestore.getDocs(firestore.query(firestore.collection(db('friend'),'sharedScores/owner/games/wordle/results'),firestore.where('deleted','==',false))));
+    const other=removedId==='owner__friend'?'friend__owner':'owner__friend';
+    assert.equal((await firestore.getDoc(firestore.doc(db('owner'),`friendRequests/${other}`))).data().status,'accepted');
+  }
+});
+
+test('normal client removes both accepted duplicates and reconnects only after fresh mutual consent', async () => {
+  await seed({'friendRequests/owner__friend':request,'friendRequests/friend__owner':request,
+    'profiles/friend':{schemaVersion:2,profile:{name:'Friend',handle:'@friend',handleLower:'friend'}}});
+  await publish(db('owner'),body('3/6'));
+  const owner=friendClient('owner'), friend=friendClient('friend');
+  await owner.updateFriendRequest('remove','owner__friend');
+  for(const id of ['friend__owner','owner__friend']) {
+    const data=(await firestore.getDoc(firestore.doc(db('owner'),`friendRequests/${id}`))).data();
+    assert.equal(data.status,'removed'); assert.deepEqual(data.fromProfile,request.fromProfile);
+  }
+  await assertFails(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+  await owner.sendCloudFriendRequest('','@friend');
+  const active=(await firestore.getDoc(firestore.doc(db('owner'),'friendRequests/friend__owner'))).data();
+  assert.equal(active.status,'pending');
+  assert.equal((await firestore.getDoc(firestore.doc(db('owner'),'friendRequests/owner__friend'))).data().status,'superseded');
+  await assertFails(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+  await assertFails(firestore.updateDoc(firestore.doc(db('owner'),'friendRequests/friend__owner'),{status:'accepted',updatedAt:'forged'}));
+  await friend.updateFriendRequest('accept','friend__owner');
+  await assertSucceeds(firestore.getDoc(firestore.doc(db('friend'),path('owner'))));
+  await assertFails(firestore.getDoc(firestore.doc(db(null),path('owner'))));
+});
+
+test('client reinvitation handles a leftover accepted or stale pending duplicate without deleting it', async () => {
+  for(const status of ['accepted','pending']) {
+    await seed({'friendRequests/owner__friend':{...request,status:'removed'},
+      'friendRequests/friend__owner':{...request,status},
+      'profiles/friend':{schemaVersion:2,profile:{name:'Friend',handle:'@friend',handleLower:'friend'}}});
+    await friendClient('owner').sendCloudFriendRequest('','@friend');
+    const retired=(await firestore.getDoc(firestore.doc(db('owner'),'friendRequests/friend__owner'))).data();
+    assert.equal(retired.status,'superseded'); assert.deepEqual(retired.fromProfile,request.fromProfile);
+    assert.equal((await firestore.getDoc(firestore.doc(db('owner'),'friendRequests/owner__friend'))).data().status,'pending');
+  }
+});
+
+test('second-orientation requests and atomic double-invitations cannot create a duplicate active connection', async () => {
+  const pending={...request,status:'pending'};
+  const batch=firestore.writeBatch(db('owner'));
+  for(const id of ['friend__owner','owner__friend']) batch.set(firestore.doc(db('owner'),`friendRequests/${id}`),pending);
+  await assertFails(batch.commit());
+  await assertSucceeds(firestore.setDoc(firestore.doc(db('owner'),'friendRequests/owner__friend'),pending));
+  await assertFails(firestore.setDoc(firestore.doc(db('owner'),'friendRequests/friend__owner'),pending));
+  await assertSucceeds(firestore.updateDoc(firestore.doc(db('friend'),'friendRequests/owner__friend'),{status:'accepted',updatedAt:'now'}));
+  await assertFails(firestore.setDoc(firestore.doc(db('owner'),'friendRequests/friend__owner'),pending));
+});
+
+test('stale invitations, unilateral superseding and direct resurrection cannot bypass a removal', async () => {
+  await seed({'friendRequests/owner__friend':{...request,status:'removed'},'friendRequests/friend__owner':{...request,status:'pending'}});
+  const removed=firestore.doc(db('owner'),'friendRequests/owner__friend');
+  await assertFails(firestore.updateDoc(firestore.doc(db('friend'),'friendRequests/friend__owner'),{status:'accepted',updatedAt:'now'}));
+  await assertFails(firestore.updateDoc(removed,{status:'superseded',updatedAt:'now'}));
+  await assertFails(firestore.updateDoc(removed,{status:'accepted',updatedAt:'now'}));
+  await assertFails(firestore.deleteDoc(removed));
+  const attack=firestore.writeBatch(db('owner'));
+  attack.update(removed,{status:'superseded',updatedAt:'now'});
+  attack.update(firestore.doc(db('owner'),'friendRequests/friend__owner'),{updatedAt:'now'});
+  await assertFails(attack.commit());
+});
+
+test('strangers, forged participants, arbitrary paths and oversized new requests are denied', async () => {
+  const pending={...request,status:'pending'};
+  for(const [uid,id,value] of [
+    ['stranger','owner__friend',pending], ['owner','arbitrary',pending],
+    ['owner','owner__friend',{...pending,fromUid:'friend',toUid:'owner'}],
+    ['owner','owner__friend',{...pending,status:'accepted'}],
+    ['owner','owner__friend',{...pending,fromProfile:{name:'x'.repeat(257),handle:'@owner'}}],
+    ['owner','owner__friend',{...pending,extra:'pollution'}]
+  ]) await assertFails(firestore.setDoc(firestore.doc(db(uid),`friendRequests/${id}`),value));
+  await seed({'friendRequests/owner__friend':request});
+  await publish(db('owner'),body('3/6'));
+  await assertFails(firestore.updateDoc(firestore.doc(db('stranger'),'friendRequests/owner__friend'),{status:'removed',updatedAt:'now'}));
+  await assertFails(firestore.updateDoc(firestore.doc(db('owner'),'friendRequests/owner__friend'),{toUid:'stranger'}));
+  for(const uid of ['stranger',null]) await assertFails(firestore.getDoc(firestore.doc(db(uid),path('owner'))));
+  await assertFails(firestore.getDocs(firestore.collection(db('owner'),'friendRequests')));
 });
 test("legacy mixed documents and security marker are inaccessible for client writes", async () => {
   await seed({ "users/owner": { entries: { secret: "raw paste" } } });

@@ -8,7 +8,7 @@ const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 
 function setup() {
   const context = vm.createContext({
-    structuredClone, safety, storageOwner: 'owner', SHOW_SOLVRY_GAMES: false,
+    structuredClone, safety, gameScoring: require('../Assets/game-scoring.mjs'), storageOwner: 'owner', SHOW_SOLVRY_GAMES: false,
     state: {
       profile: { id: 'you', name: 'You', handle: '@you' },
       friends: [{ id: 'a', name: 'Alice', handle: '@alice', status: 'local' }, { id: 'b', name: 'Bob', handle: '@bob', status: 'local' }],
@@ -22,7 +22,7 @@ function setup() {
   const names = ['visibleGames', 'gameSource', 'getActiveGame', 'normalizeHandle', 'addOrUpdateFriend', 'cloudFriendsAvailable', 'isDemoFriend', 'visibleFriends', 'getPeople',
     'eligibleForDailyRanking', 'importDateError', 'placementScore', 'gameScoreDirection', 'resultWeight', 'leaderboardDates', 'buildOverallLeaderboard', 'buildGameLeaderboard',
     'scoreTier', 'compareScoreValues', 'compareScoreRows', 'scoreEntryForGame', 'parseGuessScore', 'parseTimeScore', 'parseNumberScore', 'parseRankScore',
-    'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'accountRecords', 'serializeCloudState', 'cloudSession', 'currentCloudSession', 'requestSnapshotToState', 'refreshCloudFriendRequests'];
+    'friendPairIds', 'friendRequestPeer', 'cacheFriendRequests', 'friendRequestStatus', 'sendCloudFriendRequest', 'updateFriendRequest', 'applyAcceptedRequests', 'mergeFriendEntries', 'accountRecords', 'serializeCloudState', 'cloudSession', 'currentCloudSession', 'requestSnapshotToState', 'refreshCloudFriendRequests'];
   for (const name of names) {
     const match = new RegExp(`(?:async )?function ${name}\\(`).exec(app);
     assert.ok(match, name);
@@ -129,22 +129,23 @@ test('request actions enforce direction, participant, status, and allowed action
 });
 
 function mockCloud(c, initial) {
-  let record = initial;
+  const records = new Map();
+  if (initial) records.set('friend__owner', { fromUid: 'owner', toUid: 'friend', ...initial });
   let writes = 0;
   c.state.account.uid = 'owner';
   c.cloudBackend.ready = true;
   c.cloudBackend.syncReady = true;
   c.cloudBackend.auth = { currentUser: { uid: 'owner' } };
   c.cloudBackend.modules = { firestore: {
-    collection: () => ({}), doc: () => ({}), query: () => ({}), where: () => ({}),
+    collection: () => ({}), doc: (_, collection, id) => ({ id }), query: () => ({}), where: () => ({}),
     getDocs: async () => ({ docs: [{ id: 'friend', data: () => ({ profile: { name: 'Friend', handle: '@friend' } }) }] }),
     runTransaction: async (_, action) => action({
-      get: async () => ({ exists: () => !!record, data: () => record }),
-      set: (_, value) => { record = value; writes++; },
-      update: (_, value) => { record = { ...record, ...value }; writes++; }
+      get: async (ref) => ({ exists: () => records.has(ref.id), data: () => records.get(ref.id) }),
+      set: (ref, value) => { records.set(ref.id, value); writes++; },
+      update: (ref, value) => { records.set(ref.id, { ...records.get(ref.id), ...value }); writes++; }
     })
   } };
-  return { record: () => record, writes: () => writes };
+  return { record: () => records.get('friend__owner'), records, writes: () => writes };
 }
 
 test('sending never overwrites an existing pending or accepted connection', async () => {
@@ -232,14 +233,14 @@ test('send, accept, and remove preserve own history and purge the removed peer c
   const db = mockCloud(c, null);
   await c.sendCloudFriendRequest('', '@friend');
   assert.equal(db.record().status, 'pending');
-  await assert.rejects(c.updateFriendRequest('accept', 'request'), /isn't yours/);
+  await assert.rejects(c.updateFriendRequest('accept', 'friend__owner'), /isn't yours/);
   c.state.account.uid = 'friend';
   c.storageOwner = 'friend';
   c.cloudBackend.auth.currentUser.uid = 'friend';
-  await c.updateFriendRequest('accept', 'request');
+  await c.updateFriendRequest('accept', 'friend__owner');
   assert.equal(c.state.friends.find((friend) => friend.uid === 'owner').status, 'accepted');
   c.state.entries['2026-11-02'] = { wordle: { owner: entry('3/6'), you: entry('4/6') } };
-  await c.updateFriendRequest('remove', 'request');
+  await c.updateFriendRequest('remove', 'friend__owner');
   assert.ok(!c.state.friends.some((friend) => friend.uid === 'owner'));
   assert.equal(c.state.entries['2026-11-02'].wordle.owner, undefined);
   assert.equal(c.state.entries['2026-11-02'].wordle.you.score, '4/6');
@@ -251,6 +252,55 @@ test('refresh removes a deleted remote score but keeps other people’s scores',
   c.mergeFriendEntries('a', {});
   assert.equal(c.state.entries['2026-11-02'].wordle.a, undefined);
   assert.equal(c.state.entries['2026-11-02'].wordle.you.score, '3/6');
+});
+
+test('a removed orientation wins over an accepted duplicate regardless of listener order', () => {
+  for (const reverse of [false,true]) {
+    const c=setup(); c.state.account.uid='owner';
+    const requests=[
+      {id:'friend__owner',fromUid:'owner',toUid:'friend',status:'accepted',toProfile:{name:'Friend'}},
+      {id:'owner__friend',fromUid:'friend',toUid:'owner',status:'removed'}
+    ];
+    c.state.friends=[{id:'friend',uid:'friend',status:'accepted'}];
+    c.state.entries={'2026-11-02':{wordle:{you:entry('4/6'),friend:entry('1/6')}}};
+    c.state.friendRequests={incoming:reverse?requests:[],outgoing:reverse?[]:requests};
+    c.applyAcceptedRequests();
+    assert.ok(!c.state.friends.some(friend=>friend.uid==='friend'));
+    assert.equal(c.state.entries['2026-11-02'].wordle.friend,undefined);
+    assert.equal(c.state.entries['2026-11-02'].wordle.you.score,'4/6');
+  }
+});
+
+test('removal updates both accepted orientations; a new invitation retires only the closed duplicate', async () => {
+  const c=setup(), cloud=mockCloud(c,{status:'accepted'});
+  cloud.records.set('owner__friend',{fromUid:'friend',toUid:'owner',status:'accepted',fromProfile:{name:'Friend'}});
+  await c.updateFriendRequest('remove','friend__owner');
+  assert.equal(cloud.records.get('friend__owner').status,'removed');
+  assert.equal(cloud.records.get('owner__friend').status,'removed');
+  await c.sendCloudFriendRequest('', '@friend');
+  assert.equal(cloud.records.get('friend__owner').status,'pending');
+  assert.equal(cloud.records.get('owner__friend').status,'superseded');
+  assert.equal(cloud.records.get('owner__friend').fromProfile.name,'Friend');
+  assert.equal(cloud.records.size,2);
+});
+
+test('a lone noncanonical connection is reused and cannot be duplicated by normal client sends', async () => {
+  const c=setup(), cloud=mockCloud(c,null);
+  cloud.records.set('owner__friend',{fromUid:'owner',toUid:'friend',status:'accepted'});
+  await assert.rejects(c.sendCloudFriendRequest('', '@friend'), /connected/);
+  assert.equal(cloud.writes(),0);
+  await c.updateFriendRequest('remove','owner__friend');
+  await c.sendCloudFriendRequest('', '@friend');
+  assert.equal(cloud.records.size,1); assert.equal(cloud.records.get('owner__friend').status,'pending');
+});
+
+test('unscoped accepted documents cannot create friends and stale pending duplicates cannot undo removal', async () => {
+  const c=setup(), cloud=mockCloud(c,{status:'removed'});
+  c.state.friendRequests={incoming:[{id:'arbitrary',fromUid:'friend',toUid:'owner',status:'accepted'}],outgoing:[]};
+  c.applyAcceptedRequests(); assert.ok(!c.state.friends.some(friend=>friend.uid==='friend'));
+  cloud.records.set('owner__friend',{fromUid:'friend',toUid:'owner',status:'pending'});
+  await assert.rejects(c.updateFriendRequest('accept','owner__friend'),/removed connection needs a new invitation/);
+  assert.equal(cloud.writes(),0);
 });
 
 test('cloud payload excludes cached friend scores and sample people', () => {

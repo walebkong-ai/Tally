@@ -68,9 +68,51 @@ export function catalogScore(game,entry) {
   return {value,label,detail:game.type==='guesses'?`Fewest ${f.unit}`:game.type==='strokes'?'Lowest score vs par':game.type==='mistakes'?`Fewest ${game.id==='fine-print'?'incorrect cuts':'mistakes'}`:game.id==='rngdle'?'Entropy points (EP)':'Most daily points'};
 }
 
+// One eligibility gate for placement and performance. It reads history without rewriting it.
+export function timeSeconds(text) {
+  if (!/^\d+:[0-5]\d(?::[0-5]\d)?$/.test(String(text))) return Infinity;
+  const seconds = String(text).split(':').reduce((total, part) => total * 60 + Number(part), 0);
+  return Number.isSafeInteger(seconds) && seconds > 0 ? seconds : Infinity;
+}
+
+export function isRankable(game, entry, score) {
+  const n = score?.value, text = String(entry?.score ?? '').trim(), p = profile(game);
+  if (!entry || !['solved', 'played'].includes(entry.result) || !Number.isFinite(n)) return false;
+  if (['guesses', 'mistakes', 'time', 'complete'].includes(game.type) && entry.result !== 'solved') return false;
+  if (game.manualOnly) {
+    const parsed = catalogScore(game, entry);
+    if (!Number.isFinite(parsed.value) || parsed.value !== n) return false;
+  }
+  if (game.type === 'time') return timeSeconds(text) === n;
+  if (p?.method === 'bounded-guesses' || p?.method === 'guess-decay') {
+    const match = game.manualOnly ? text.match(/^(\d+) (?:guess(?:es)?|moves?)$/) : text.match(/^(\d+)(?:\s*\/\s*6| guess(?:es)?)$/);
+    return !!match && Number(match[1]) === n && Number.isSafeInteger(n) && n >= p.min
+      && n <= (p.method === 'bounded-guesses' ? p.max : game.maxScore ?? 1000000);
+  }
+  if (p?.method === 'mistakes') return /^(\d+) mistakes?$/.test(text) && Number(text.match(/^\d+/)[0]) === n && Number.isInteger(n) && n >= 0 && n < p.max;
+  if (p?.method === 'par') return entry.result === 'solved' && Number.isSafeInteger(n) && n >= (game.minScore ?? -1000) && n <= (game.maxScore ?? 1000000);
+  if (p?.method === 'points' || p?.method === 'points-decay') {
+    const match = text.match(/^(-?\d+(?:\.\d+)?)(?:\/(\d+))?(?: points?)?$/);
+    return !!match && Number(match[1]) === n && (!match[2] || p.method === 'points' && Number(match[2]) === p.max)
+      && (game.decimalScore || game.id === 'color' || Number.isSafeInteger(n))
+      && n >= (game.minScore ?? 0) && n <= (game.maxScore ?? (p.method === 'points' ? p.max : game.id === 'krillion' ? 9999 : 1000000));
+  }
+  if (game.type === 'rank') return /^(Beginner|Good Start|Moving(?: Up)?|Good|Solid|Nice|Great|Amazing|Genius|Queen Bee)(?: · \d+ pts)?$/i.test(text) && Number.isInteger(n) && n >= 1 && n <= 10;
+  if (p?.method === 'completion') return entry.result === 'solved' && (game.id !== 'strands' || /^(?:No hints|\d+ hints?)$/i.test(text) && n === (/^No hints$/i.test(text) ? 0 : Number(text.split(' ')[0])) && n >= 0 && n <= 999);
+  if (game.type === 'grid') return Number.isInteger(n) && n >= 0 && n <= 9 && Number.isFinite(score.rarity) && score.rarity >= 0 && score.rarity <= 900;
+  if (p?.method === 'excluded') return true; // Validated luck board, outside combined points.
+  if (game.type === 'complete') return text === 'Complete';
+  if (game.type === 'guesses' || game.type === 'mistakes') {
+    const match = text.match(game.type === 'guesses' ? /^(\d+) guess(?:es)?$/ : /^(\d+) mistakes?$/);
+    return !!match && Number(match[1]) === n && Number.isSafeInteger(n) && n >= (game.type === 'guesses' ? 1 : 0) && n <= 1000000;
+  }
+  if (['points','strokes','depth'].includes(game.type)) return /^-?\d+(?:\.\d+)?$/.test(text) && Number(text) === n && Math.abs(n) <= 1000000000;
+  return false;
+}
+
 export function performancePoints(game,entry,score) {
   const p=profile(game), n=score?.value;
-  if(!p || p.method==='excluded' || !entry || !['solved','played'].includes(entry.result) || !Number.isFinite(n)) return null;
+  if(!p || p.method==='excluded' || !isRankable(game,entry,score)) return null;
   if(['bounded-guesses','guess-decay','mistakes','par','time','completion'].includes(p.method) && entry.result!=='solved') return null;
   let points;
   switch(p.method) {

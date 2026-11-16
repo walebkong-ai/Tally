@@ -9,14 +9,14 @@ function add(c, name) {
   vm.runInContext(name === 'localDateKey' ? tail.slice(0,tail.indexOf('\n}')+2) : tail.slice(0,next?.index), c);
 }
 function setup(date = '2026-11-11') {
-  const c = vm.createContext({today:date,SHOW_SOLVRY_GAMES:false,structuredClone});
+  const c = vm.createContext({today:date,SHOW_SOLVRY_GAMES:false,structuredClone,gameScoring:require('../Assets/game-scoring.mjs')});
   vm.runInContext(app.slice(app.indexOf('const ADDITIONAL_IMPORT_GAMES'), app.indexOf('let state = loadState()')),c);
   c.state = vm.runInContext('structuredClone(starterState)',c);
   c.state.entries = {}; c.state.pinnedGameIds = [];
-  for (const name of ['localDateKey','gameCategory','gameStreak','getSortedGames','catalogSections','matchesGameSearch','visibleGames','gameSource','isCompletedResult','getActiveGame']) add(c,name);
+  for (const name of ['localDateKey','gameCategory','gameStreak','getSortedGames','catalogSections','matchesGameSearch','visibleGames','gameSource','isCompletedResult','getActiveGame','scoreEntryForGame','parseGuessScore','parseTimeScore','parseNumberScore','parseRankScore','resultWeight']) add(c,name);
   return c;
 }
-function save(c,date,id,result='solved') { ((c.state.entries[date] ||= {})[id] ||= {}).you = {result,score:'3/6'}; }
+function save(c,date,id,result='solved') { ((c.state.entries[date] ||= {})[id] ||= {}).you = {result,score:id==='wordle'?'3/6':id==='spelling-bee'?'Genius':id==='strands'?'No hints':id==='connections'?'0 mistakes':c.state.games.find(g=>g.id===id)?.type==='guesses'?'3 guesses':'110'}; }
 const plain = value => JSON.parse(JSON.stringify(value));
 
 test('every active official game has exactly one category and no Immaculate editions remain visible',()=>{

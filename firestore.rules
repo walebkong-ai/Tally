@@ -4,6 +4,9 @@
 // Score removals are revisioned tombstones, with public projections changed atomically.
 // Profiles expose only name/handle; shared results require an accepted active connection.
 // Request participant IDs are immutable except re-opening the same two-party connection.
+// Both legacy pair-ID orientations remain readable. A removed record vetoes either accepted
+// record. New invitations cannot coexist with an active opposite record. Explicit re-invitation
+// may atomically mark a closed duplicate 'superseded'; it never deletes relationship history.
 // clientHealth/{uid}: one owner-readable operational summary, no result content or PII.
 // schemaVersion=1, release:string<=64, updatedAt:server timestamp, counts:fixed bounded integer map,
 // lastError:{area,code,route}:fixed enums. Updates at most once per five minutes; IAM operators can inspect.
@@ -28,8 +31,16 @@ service cloud.firestore {
           || (get(path).data.fromUid == b && get(path).data.toUid == a));
     }
     function connected(a, b) {
-      return signedIn() && accountActive(a) && accountActive(b) && (accepted(/databases/$(database)/documents/friendRequests/$(a + '__' + b), a, b)
+      return signedIn() && accountActive(a) && accountActive(b)
+        && !removed(/databases/$(database)/documents/friendRequests/$(a + '__' + b), a, b)
+        && !removed(/databases/$(database)/documents/friendRequests/$(b + '__' + a), a, b)
+        && (accepted(/databases/$(database)/documents/friendRequests/$(a + '__' + b), a, b)
         || accepted(/databases/$(database)/documents/friendRequests/$(b + '__' + a), a, b));
+    }
+    function removed(path, a, b) {
+      return exists(path) && get(path).data.status == 'removed'
+        && ((get(path).data.fromUid == a && get(path).data.toUid == b)
+          || (get(path).data.fromUid == b && get(path).data.toUid == a));
     }
     function customAccess(uid, gameId) {
       let ownGame = get(/databases/$(database)/documents/privateUsers/$(uid)/records/$('game_' + gameId)).data;
@@ -128,7 +139,8 @@ service cloud.firestore {
       allow delete: if owner(uid) && deleting(uid);
     }
     function requestShape(r, id) {
-      return r.keys().hasOnly(['fromUid','toUid','fromProfile','toProfile','status','createdAt','updatedAt'])
+      return r.keys().hasAll(['fromUid','toUid','fromProfile','toProfile','status','createdAt','updatedAt'])
+        && r.keys().hasOnly(['fromUid','toUid','fromProfile','toProfile','status','createdAt','updatedAt'])
         && r.fromUid is string && r.toUid is string && r.fromUid != r.toUid
         && (id == r.fromUid + '__' + r.toUid || id == r.toUid + '__' + r.fromUid)
         && r.fromProfile is map && r.fromProfile.keys().hasOnly(['name','handle'])
@@ -136,23 +148,53 @@ service cloud.firestore {
         && r.fromProfile.name is string && r.fromProfile.handle is string && r.toProfile.name is string && r.toProfile.handle is string
         && r.createdAt is string && r.updatedAt is string;
     }
+    function oppositeRequest(r, id) {
+      return /databases/$(database)/documents/friendRequests/$(id == r.fromUid + '__' + r.toUid
+        ? r.toUid + '__' + r.fromUid : r.fromUid + '__' + r.toUid);
+    }
+    function closed(status) { return status in ['rejected','cancelled','removed','superseded']; }
+    function newInvitation(r, id) {
+      let opposite = oppositeRequest(r, id);
+      return r.fromUid.size() > 0 && r.fromUid.size() <= 128 && r.toUid.size() > 0 && r.toUid.size() <= 128
+        && r.fromProfile.name.size() <= 256 && r.toProfile.name.size() <= 256
+        && r.fromProfile.handle.size() <= 257 && r.toProfile.handle.size() <= 257
+        && r.createdAt.size() <= 64 && r.updatedAt.size() <= 64
+        && (!existsAfter(opposite) || getAfter(opposite).data.status == 'superseded');
+    }
+    function mayAccept(r, id) {
+      let opposite = oppositeRequest(r, id);
+      return !existsAfter(opposite) || !(getAfter(opposite).data.status in ['accepted','removed']);
+    }
+    function maySupersede(r, id) {
+      let opposite = oppositeRequest(r, id);
+      // Require a NEW pending invitation by this actor in this same atomic operation.
+      // A stale pending request or a leftover accepted record cannot clear revocation.
+      return (closed(r.status) || exists(opposite) && get(opposite).data.status == 'removed')
+        && (!exists(opposite) || closed(get(opposite).data.status))
+        && existsAfter(opposite) && getAfter(opposite).data.status == 'pending'
+        && getAfter(opposite).data.fromUid == request.auth.uid;
+    }
     match /friendRequests/{id} {
       allow get: if signedIn() && (!exists(/databases/$(database)/documents/friendRequests/$(id))
         || request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
       allow list: if signedIn() && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
       allow create: if signedIn() && writeActive(request.auth.uid) && writeActive(request.resource.data.toUid) && ready() && requestShape(request.resource.data, id)
-        && request.resource.data.fromUid == request.auth.uid && request.resource.data.status == 'pending';
+        && request.resource.data.fromUid == request.auth.uid && request.resource.data.status == 'pending'
+        && newInvitation(request.resource.data, id);
       allow update: if signedIn() && writeActive(request.auth.uid) && writeActive(resource.data.fromUid) && writeActive(resource.data.toUid) && ready() && requestShape(request.resource.data, id)
+        && request.resource.data.updatedAt.size() <= 64
         && request.auth.uid in [resource.data.fromUid, resource.data.toUid]
         && request.resource.data.fromUid in [resource.data.fromUid, resource.data.toUid]
         && request.resource.data.toUid in [resource.data.fromUid, resource.data.toUid]
-        && (resource.data.status in ['rejected','cancelled','removed']
-          ? request.resource.data.fromUid == request.auth.uid && request.resource.data.status == 'pending'
-          : request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
-            && (resource.data.status == 'pending'
-              ? request.auth.uid == resource.data.toUid && request.resource.data.status in ['accepted','rejected']
+        && ((closed(resource.data.status) && request.resource.data.fromUid == request.auth.uid
+              && request.resource.data.status == 'pending' && newInvitation(request.resource.data, id))
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+            && (request.resource.data.status == 'superseded' && maySupersede(resource.data, id)
+              || (resource.data.status == 'pending'
+              ? request.auth.uid == resource.data.toUid && (request.resource.data.status == 'rejected'
+                    || request.resource.data.status == 'accepted' && mayAccept(resource.data, id))
                 || request.auth.uid == resource.data.fromUid && request.resource.data.status == 'cancelled'
-              : resource.data.status == 'accepted' && request.auth.uid in [resource.data.fromUid,resource.data.toUid] && request.resource.data.status == 'removed'));
+              : resource.data.status == 'accepted' && request.resource.data.status == 'removed')));
       allow delete: if signedIn() && deleting(request.auth.uid) && request.auth.uid in [resource.data.fromUid,resource.data.toUid];
     }
     function healthCount(c, k) { return c[k] is int && c[k] >= 0 && c[k] <= 1000000; }
