@@ -7,7 +7,7 @@ const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 
 function setup() {
-  const context = vm.createContext({
+  const context = vm.createContext({ importers: require('../Assets/importers.mjs'),
     structuredClone, safety, gameScoring: require('../Assets/game-scoring.mjs'), storageOwner: 'owner', SHOW_SOLVRY_GAMES: false,
     state: {
       profile: { id: 'you', name: 'You', handle: '@you' },

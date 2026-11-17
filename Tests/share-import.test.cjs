@@ -7,7 +7,7 @@ const path = require('node:path');
 // Exercise the shipped parser after building the Swift site.
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 const parserSource = app.slice(app.indexOf('function parseShareText('), app.indexOf('function renderSharePreview('));
-const context = vm.createContext({ gameScoring: require('../Assets/game-scoring.mjs') });
+const context = vm.createContext({ importers: require('../Assets/importers.mjs'), gameScoring: require('../Assets/game-scoring.mjs') });
 vm.runInContext(app.slice(app.indexOf("const ADDITIONAL_IMPORT_GAMES"), app.indexOf("const starterState")), context);
 vm.runInContext(parserSource, context);
 const parse = (text) => context.parseShareText(text);

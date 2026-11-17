@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=40" />
+    <link rel="stylesheet" href="styles.css?v=41" />
   </head>
   <body>
     <div class="app" id="app">
@@ -131,15 +131,15 @@ let html = #"""
             <div class="view-head score-page-head"><div><p class="eyebrow">From your daily games</p><h1>Add score</h1><p class="view-copy">A good round deserves a place here. Paste a result or enter it yourself.</p></div><span class="score-page-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="8" width="23" height="28" rx="5"/><rect x="15" y="4" width="11" height="8" rx="3" fill="#f5eedb"/><path d="m15 25 4 4 8-10M5 13H3m2 8H2M36 7l2-2"/></svg></span></div>
             <div class="score-tabs" role="tablist" aria-label="Add score method"><button id="pasteTab" type="button" role="tab" aria-selected="true" aria-controls="pastePanel">Paste result</button><button id="manualTab" type="button" role="tab" aria-selected="false" aria-controls="manualEntry" tabindex="-1">Enter manually</button></div>
             <div id="pastePanel" class="paste-panel score-entry-layout" role="tabpanel" aria-labelledby="pasteTab">
-              <section class="score-compose-card"><p class="score-step-label">01 · Bring your result</p><h2>Copy. Paste. You’re in.</h2><p class="score-card-copy">Use your game’s Share button to copy the full result. We’ll recognize supported games.</p>
+              <section class="score-compose-card"><p class="score-step-label">01 · Paste</p><h2>Paste your daily result.</h2><p class="score-card-copy">One result or a few—we’ll recognize supported games. Keep each game’s heading; use --- between results if needed.</p>
                 <div class="import-input-head"><label for="shareTextInput">Your copied result</label><button class="ghost-button compact-button" id="importClipboardButton" type="button">Paste from clipboard</button></div>
                 <textarea id="shareTextInput" class="share-input" rows="7" aria-describedby="importStatus" placeholder="Paste your game’s shared result here…" spellcheck="false"></textarea>
                 <details class="import-help"><summary>Supported games &amp; sample results</summary><label>Game<select id="importExampleGame"><option value="wordle">Wordle</option><option value="connections">Connections</option><option value="strands">Strands</option><option value="mini-crossword">Mini Crossword</option><option value="spelling-bee">Spelling Bee</option><option value="krillion">Krillion</option></select></label><pre id="importExampleText" class="share-grid"></pre><a id="importExampleLink" target="_blank" rel="noopener">Open game ↗</a></details>
               </section>
-              <section class="score-review-card"><p class="score-step-label">02 · Review &amp; save</p><h2>Check your result.</h2><label class="import-date">Played on<input id="importDate" type="date" required /></label>
+              <section class="score-review-card"><p class="score-step-label">02 · Review</p><h2>Check your result.</h2><label class="import-date">Played on<input id="importDate" type="date" required /></label>
                 <div class="preview-placeholder"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="11" y="9" width="27" height="34" rx="5"/><rect x="18" y="5" width="13" height="8" rx="3"/><path d="M19 22h11m-11 6h7m-7 6h13M6 18H3m3 9H2"/></svg><strong>Your next score goes here.</strong><p>Paste a result to preview the game and score before saving.</p></div>
                 <div class="share-preview" id="sharePreview" role="group" aria-label="Score preview" hidden></div><div class="import-status" id="importStatus" role="status" aria-live="polite"></div>
-                <div class="import-actions"><button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button><button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button></div><p class="score-save-hint">Review the date and score before saving.</p>
+                <div class="import-actions"><button class="primary-button" id="importPasteButton" type="button" disabled>Save score</button><button class="ghost-button" id="importClearButton" type="button" hidden>Add another score</button></div><p class="score-save-hint">03 · Save when the game, score and date look right. Cloud confirmation appears in the sync indicator.</p>
               </section>
             </div>
           </div>
@@ -340,7 +340,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=44" type="module"></script>
+    <script src="app.js?v=46" type="module"></script>
   </body>
 </html>
 """#
@@ -4108,13 +4108,39 @@ button:disabled { cursor:wait; }
   #app .catalog-category-select select { width: 0; }
 }
 
+
+/* Paste → Review → Save: use the existing cream, teal and pastel surfaces. */
+.score-review-card { min-width: 0; }
+.score-view .share-preview { display: block; padding: 0; border: 0; background: none; }
+.import-review-item { min-width: 0; margin: 0 0 14px; padding: 18px; border: 1px solid #d8cfbc; border-radius: 16px; background: #fffdf6; }
+.import-review-item:last-child { margin-bottom: 0; }
+.import-review-item[data-state="ready"] { border-color: #b9d4c2; }
+.import-review-item[data-state="error"] { border-color: #d9b0a3; }
+.import-review-item[data-state="confirm"] { border-color: #d8c58c; }
+.import-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.import-badge { padding: 5px 9px; border-radius: 7px; background: #e2eddf; color: #416448; font-size: 12px; font-weight: 700; }
+[data-state="error"] .import-badge { background: #f4e2db; color: #8c4939; }
+[data-state="confirm"] .import-badge { background: #f6e9c8; color: #78591c; }
+[data-state="saved"] .import-badge { background: #dfecee; color: var(--petrol); }
+.import-unknown { display: block; margin-bottom: 12px; font-family: var(--display); font-size: 23px; }
+.import-review-item .preview-score { font-size: 30px; overflow-wrap: anywhere; }
+.import-review-item .field-help, .replacement-review p { line-height: 1.6; font-size: 13px; }
+.queue-date { display: grid; gap: 7px; margin-top: 14px; }
+.replacement-review { padding: 13px; margin: 14px 0; border-radius: 12px; background: #f6edda; }
+.import-confirm { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.import-confirm input { width: 18px; height: 18px; flex: 0 0 18px; accent-color: var(--petrol); }
+.import-raw { margin: 13px 0; }
+.import-raw pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.import-review-item .text-link { min-height: 36px; }
+@media (max-width: 760px) { .import-review-item { padding: 14px; } .import-card-top { flex-wrap: wrap; } }
 """#
 
 let appScript = #"""
-import * as safety from "./assets/sync-safety.mjs?v=36";
+import * as safety from "./assets/sync-safety.mjs?v=37";
 import * as management from "./assets/account-management.mjs?v=37";
 import * as operations from "./assets/launch-ops.mjs?v=2";
 import * as gameScoring from "./assets/game-scoring.mjs?v=2";
+import * as importers from "./assets/importers.mjs?v=2";
 const STORAGE_KEY = "solvry-state-v2";
 const LEGACY_STORAGE_KEY = "solvry-state-v1";
 const ORIGINAL_STORAGE_KEY = "tallyo-state-v1";
@@ -4210,15 +4236,15 @@ const GOLF_SURFACES = {
 // Keep the game engines and saved rounds available for a future return.
 const SHOW_SOLVRY_GAMES = false;
 const ADDITIONAL_IMPORT_GAMES = [
-  // Verified daily editions with explicit manual entry; no guessed share parsers.
-  {"id": "contexto", "name": "Contexto", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily English puzzle on contexto.me only. Record total guesses from an unassisted solve; do not enter the best semantic rank, hints, archives or Unlimited results. Enter manually; paste import is not supported yet.", "example": "30 guesses"}, "logo": "wordle", "officialUrl": "https://contexto.me/en/daily", "aliases": ["contextle"]},
+  // manualOnly also selects strict catalog scoring. pasteSupported enables verified share parsers without changing that validation.
+  {"id": "contexto", "name": "Contexto", "type": "guesses", "manualOnly": true, "pasteSupported": true, "scoring": {"label": "Fewest guesses", "helper": "Daily English puzzle on contexto.me only. Record total guesses from an unassisted solve; do not enter the best semantic rank, hints or Unlimited results. Paste a complete daily share, or enter it manually.", "example": "30 guesses"}, "logo": "wordle", "officialUrl": "https://contexto.me/en/daily", "aliases": ["contextle"]},
   {"id": "fine-print", "name": "Fine Print Daily", "type": "mistakes", "manualOnly": true, "maxScore": 4, "scoreLabel": "Incorrect cuts", "scoreFieldHelp": "0–3 incorrect cuts for a solve; 4 is a miss.", "scoring": {"label": "Fewest incorrect cuts", "helper": "The solo Daily passage on playfineprint.com. Count incorrect cuts after finding all four impostors. Four strikes is a miss. Party, Remix and friends’ custom passages stay separate. Enter manually; paste import is not supported yet.", "example": "1 mistake"}, "logo": "mystery", "officialUrl": "https://playfineprint.com/", "aliases": ["fineprint", "playfineprint"]},
   {"id": "minute-cryptic", "name": "Minute Cryptic", "type": "strokes", "manualOnly": true, "minScore": -1000, "scoreLabel": "Score vs par", "scoreFieldHelp": "Signed score relative to par: -1, 0 or +2. Lower is better.", "scoring": {"label": "Lowest score vs par", "helper": "Enter the signed score relative to par from your finished daily clue recap. Under par is negative; over par is positive. Exclude courses, Minis, archives and custom clues. Enter manually; paste import is not supported yet.", "example": "-1"}, "logo": "wordle", "officialUrl": "https://www.minutecryptic.com/", "aliases": ["minute", "likes cryptic"]},
   {"id": "clevergoat-categories", "name": "Categories (CleverGoat)", "type": "mistakes", "manualOnly": true, "maxScore": 4, "scoreLabel": "Mistakes", "scoreFieldHelp": "0–3 mistakes for a solve; 4 is a miss.", "scoring": {"label": "Fewest mistakes", "helper": "Daily CleverGoat Categories only. Count failed groups; losing all four lives is a miss. This is a separate puzzle from NYT Connections. Enter manually; paste import is not supported yet.", "example": "1 mistake"}, "logo": "connections", "officialUrl": "https://categories.clevergoat.com/", "aliases": ["categories"]},
   {"id": "rngdle", "name": "RNGdle", "type": "points", "manualOnly": true, "decimalScore": true, "dailyRanked": false, "scoreLabel": "Entropy points (EP)", "scoreFieldHelp": "Daily roll EP only. Luck-based; excluded from combined rankings.", "scoring": {"label": "Highest daily EP", "helper": "Daily roll’s entropy points, not the rolled number, badge count or lifetime total. This luck-based game has its own board and is excluded from the combined leaderboard. Enter manually; paste import is not supported yet.", "example": "25.5"}, "logo": "daily-tens", "officialUrl": "https://www.rngdle.com/"},
   {"id": "dsmdle", "name": "DSMdle Classic", "type": "guesses", "manualOnly": true, "maxScore": 6, "scoring": {"label": "Fewest guesses", "helper": "The linked site’s Daily Classic fictional case, up to 6 guesses. Hard and archive cases stay separate. Record only the game result; use the publisher’s game-only guidance. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "mystery", "officialUrl": "https://www.dsmdle.com/", "aliases": ["dsmdle"]},
   {"id": "quordle", "name": "Quordle (quordlewordle.io)", "type": "guesses", "manualOnly": true, "minScore": 4, "maxScore": 9, "scoring": {"label": "Fewest total guesses", "helper": "Daily mode on quordlewordle.io only. Enter the total guesses used when all four words are solved, from 4 to 9. Other publishers, Endless and partial solves stay separate. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "wordle", "officialUrl": "https://quordlewordle.io/", "aliases": ["quordle", "queen duried"]},
-  {"id": "poople", "name": "Poople", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily word ladder to POOP. Record the move count shown by the game; fewer moves win. Practice is separate. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://poople.io/"},
+  {"id": "poople", "name": "Poople", "type": "guesses", "manualOnly": true, "pasteSupported": true, "scoring": {"label": "Fewest guesses", "helper": "Daily word ladder to POOP. Record the move count shown by the game; fewer moves win. Practice is separate. Paste a complete daily share, or enter it manually.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://poople.io/"},
   {"id": "flagle", "name": "Flagle", "type": "guesses", "maxScore": 6, "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Teuteuf’s daily flag puzzle only. Record guesses for the main flag; exclude bonus rounds. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "flagcognito", "officialUrl": "https://www.flagle.io/"},
   {"id": "terradle", "name": "Terradle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Guess the daily Terraria weapon. Record total guesses; do not mix other Terraria guessing games. Enter manually; paste import is not supported yet.", "example": "7 guesses"}, "logo": "crafting", "officialUrl": "https://www.terradle.com/"},
   {"id": "spotle", "name": "Spotle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily music artist puzzle, up to 10 guesses. Exclude Movies, Rewind, Brackets and custom puzzles. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "music", "officialUrl": "https://spotle.io/", "maxScore": 10},
@@ -4234,12 +4260,12 @@ const ADDITIONAL_IMPORT_GAMES = [
   {"id": "noillirk", "name": "Noillirk", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Daily Crowd mode’s final points out of 2,500. Exclude Rare, Unlimited, parties, people pulled and height scores. Enter manually; paste import is not supported yet.", "example": "1800/2500"}, "logo": "krillion", "officialUrl": "https://noillirk.com/", "maxScore": 2500},
   {"id": "maptap", "name": "MapTap", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Record the total score displayed after completing the daily geography puzzle. Exclude archives, practice and percentile ranks. Enter manually; paste import is not supported yet.", "example": "750"}, "logo": "globle", "officialUrl": "https://maptap.gg/"},
   {"id": "fibble", "name": "Fibble", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily puzzle only. Record the final guess count shown by Fibble, including its own starting-row convention. Exclude Unlimited. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "wordle", "officialUrl": "https://fibble.xyz/"},
-  {"id": "chainle", "name": "Chainle", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "Final total from the same five daily rounds, up to 5,000 points. Exclude Unlimited and percentile ranks. Enter manually; paste import is not supported yet.", "example": "4200/5000"}, "logo": "connections", "officialUrl": "https://chainle.io/", "maxScore": 5000},
-  {"id": "costcodle", "name": "Costcodle Classic", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily Classic price puzzle, up to 6 guesses. Select CLASSIC on the official site. Checkout dollar error is a separate mode. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "price", "officialUrl": "https://costcodle.com/", "maxScore": 6, "aliases": ["costcodle", "costco dle"]},
+  {"id": "chainle", "name": "Chainle", "type": "points", "manualOnly": true, "pasteSupported": true, "scoring": {"label": "Most points", "helper": "Final total from the same five daily rounds, up to 5,000 points. Exclude Unlimited and percentile ranks. Paste a complete daily share, or enter it manually.", "example": "4200/5000"}, "logo": "connections", "officialUrl": "https://chainle.io/", "maxScore": 5000},
+  {"id": "costcodle", "name": "Costcodle Classic", "type": "guesses", "manualOnly": true, "pasteSupported": true, "scoring": {"label": "Fewest guesses", "helper": "Daily Classic price puzzle, up to 6 guesses. Select CLASSIC on the official site. Checkout dollar error is a separate mode. Paste a complete daily share, or enter it manually.", "example": "3 guesses"}, "logo": "price", "officialUrl": "https://costcodle.com/", "maxScore": 6, "aliases": ["costcodle", "costco dle"]},
   {"id": "minecraftle", "name": "Minecraftle", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Daily crafting-recipe puzzle, up to 10 guesses. Use the original game’s Daily mode; Random and other Craftle games are separate. Enter manually; paste import is not supported yet.", "example": "4 guesses"}, "logo": "crafting", "officialUrl": "https://minecraftle.zachmanson.com/", "maxScore": 10},
   {"id": "enclose-horse", "name": "Enclose Horse", "type": "points", "manualOnly": true, "scoring": {"label": "Most points", "helper": "The score from your single submission on the shared daily puzzle, including tile bonuses and penalties. Exclude weekly and community levels. Enter manually; paste import is not supported yet.", "example": "85"}, "logo": "horse", "officialUrl": "https://enclose.horse/", "minScore": -1000000, "aliases": ["enclose.horse"]},
   {"id": "genshindle", "name": "Genshindle Daily Normal", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "Genshin Impact Daily Normal mode only, up to 5 guesses. Other character games and Quote, Ability, Emoji or Endless modes stay separate. Enter manually; paste import is not supported yet.", "example": "3 guesses"}, "logo": "mystery", "officialUrl": "https://us.genshindle.com/", "maxScore": 5, "aliases": ["genshidle", "genshindle normal"]},
-  {"id": "squirdle", "name": "Squirdle Daily", "type": "guesses", "manualOnly": true, "scoring": {"label": "Fewest guesses", "helper": "The daily Pokémon puzzle only. Record final guesses used. Random games, Stats Edition and restricted-generation settings are separate. Enter manually; paste import is not supported yet.", "example": "5 guesses"}, "logo": "animal", "officialUrl": "https://squirdle.fireblend.com/daily.html", "aliases": ["squirtle", "squirdle"]},
+  {"id": "squirdle", "name": "Squirdle Daily", "type": "guesses", "manualOnly": true, "pasteSupported": true, "scoring": {"label": "Fewest guesses", "helper": "The daily Pokémon puzzle only. Record final guesses used. Random games, Stats Edition and restricted-generation settings are separate. Paste a complete daily share, or enter it manually.", "example": "5 guesses"}, "logo": "animal", "officialUrl": "https://squirdle.fireblend.com/daily.html", "aliases": ["squirtle", "squirdle"]},
   { id: "connections-sports", name: "Connections: Sports Edition", type: "mistakes", maxScore: 4, scoring: { label: "Fewest mistakes", helper: "The Athletic's Sports Edition has its own scoreboard. Lower mistakes win; four is a miss.", example: "1 mistake" }, logo: "connections", officialUrl: "https://www.nytimes.com/athletic/connections-sports-edition" },
   { id: "daily-tens", name: "Daily Tens", type: "points", maxScore: 10, scoring: { label: "Most correct", helper: "One point per trophy in the shared top-10 grid. More correct answers win; percentile is not used.", example: "8/10" }, logo: "daily-tens", officialUrl: "https://dailytens.com/" },
   { id: "centumth", name: "Centumth", type: "points", maxScore: 490, scoring: { label: "Most points", helper: "Sum of the ranks from your five official guesses. Higher is better, up to 490. Arcade guesses do not count.", example: "350/490" }, logo: "centumth", officialUrl: "https://www.centumth.com/" },
@@ -4466,6 +4492,10 @@ let manualFormKey = "";
 let manualFormDirty = false;
 let lastRenderedGameId = null;
 const importDrafts = new Map();
+let importQueue = [];
+let importQueueText = null;
+let importQueueOwner = storageOwner;
+let importDateTouched = false;
 let importDraftRevision = 0;
 let leaderboardView = "overall";
 let leaderboardDays = 1;
@@ -4498,7 +4528,7 @@ document.querySelector("#homeScores").addEventListener("click", (event) => {
   const button = event.target.closest("[data-home-game]");
   if (button) openGame(button.dataset.homeGame);
 });
-elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.filter((game) => !game.manualOnly && !game.retired).map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
+elements.importExampleGame.innerHTML += ADDITIONAL_IMPORT_GAMES.filter((game) => (!game.manualOnly || game.pasteSupported) && !game.retired).map((game) => `<option value="${game.id}">${escapeHtml(game.name)}</option>`).join("");
 
 function wireSocialTabs(tabs, select) {
   tabs.forEach((tab, index) => {
@@ -4758,7 +4788,13 @@ elements.importClipboardButton.addEventListener("click", async () => {
 });
 
 elements.shareTextInput.addEventListener("input", () => previewImport());
-elements.importDate.addEventListener("change", () => previewImport());
+elements.importDate.addEventListener("change", () => {
+  importDateTouched = true;
+  if (importQueue.filter(item => !item.removed).length === 1) { const item = importQueue.find(item => !item.removed); item.date = elements.importDate.value; item.saveError = ''; item.confirmed = false; }
+  previewImport();
+});
+elements.sharePreview.addEventListener('change', handleImportReviewChange);
+elements.sharePreview.addEventListener('click', handleImportReviewClick);
 elements.importExampleGame.addEventListener("change", renderImportExample);
 elements.importClearButton.addEventListener("click", () => {
   importDraftRevision += 1;
@@ -4882,8 +4918,8 @@ function watchDateRollover() {
 function render(focusGolf = true) {
   const activeGame = getActiveGame();
   state.activeGameId = activeGame.id;
-  if (lastRenderedGameId && lastRenderedGameId !== activeGame.id) switchImportDraft(lastRenderedGameId, activeGame.id);
-  if ((activeGame.source === "custom" || activeGame.manualOnly) && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
+  if (lastRenderedGameId && lastRenderedGameId !== activeGame.id) { switchImportDraft(lastRenderedGameId, activeGame.id); resetImportReview(); }
+  if ((activeGame.source === "custom" || activeGame.manualOnly && !activeGame.pasteSupported) && lastRenderedGameId !== activeGame.id) setScoreMethod("manual");
   lastRenderedGameId = activeGame.id;
   const gameEntries = getGameEntries(state.selectedDate, state.activeGameId);
   const myEntry = gameEntries.you;
@@ -4892,7 +4928,7 @@ function render(focusGolf = true) {
   document.body.classList.toggle("solvry-holes-focus", activeGame.id === "solvry-holes");
   elements.activeGameTitle.textContent = activeGame.name;
   document.querySelector("#gameHeroIcon").innerHTML = gameLogo(activeGame);
-  document.querySelector("#gameTypeLabel").textContent = activeGame.source === "custom" ? "Custom game" : activeGame.source === "solvry" ? "Solvry original" : activeGame.manualOnly ? "Manual entry" : "Supported game";
+  document.querySelector("#gameTypeLabel").textContent = activeGame.source === "custom" ? "Custom game" : activeGame.source === "solvry" ? "Solvry original" : activeGame.manualOnly && !activeGame.pasteSupported ? "Manual entry" : "Supported game";
   document.querySelector("#gameScoreExample").textContent = scoreStyleExample(activeGame);
   document.querySelector("#gameDateLabel").textContent = state.selectedDate;
   elements.scoreHint.textContent = scoreStyleHelp(activeGame);
@@ -7582,7 +7618,7 @@ function renderGameCard(game) {
         ${gameLogo(game)}
         <span class="game-meta">
           <strong>${escapeHtml(game.name)}</strong>
-          <span>${scoreStyleLabel(game)}${game.manualOnly ? " · Manual entry" : ""}</span>
+          <span>${scoreStyleLabel(game)}${game.manualOnly && !game.pasteSupported ? " · Manual entry" : ""}</span>
           ${streak ? `<span class="game-streak"><span aria-hidden="true">🔥</span> ${streak}-day completion streak</span>` : ""}
         </span>
         <span class="game-score" aria-label="${entries.you ? "Result saved" : "No result yet"}">${entries.you ? "✓" : ""}</span>
@@ -8274,6 +8310,11 @@ function renderImportExample() {
     "mini-crossword": "I solved the Mini Crossword in 0:54!",
     "spelling-bee": "Spelling Bee\nGenius · 150 points",
     krillion: "Krillion #77\n110",
+    poople: "Poople #100 2/2\n⬜🟫⬜🟫\n⬜🟫🟫🟫\n🟫🟫🟫🟫\n\nhttps://poople.io/",
+    chainle: "Chainle #100 · 4,200 🔗\nBeat 80% of players\n🟩🟩🟨🟩🟨\nhttps://chainle.io",
+    contexto: "I played contexto.me 11/03/2026 and got it in 17 guesses.\n\n🟩🟩 4\n🟨🟨 5\n🟥🟥🟥 8",
+    costcodle: "Costcodle Classic #2 2/6\n⬆🟨\n✅\n\nPlay now at https://www.costcodle.com",
+    squirdle: "Squirdle Daily 100 - 2/9\n🟦❌❌🔼🔽\n✅✅✅✅✅",
     "connections-sports": "Connections: Sports Edition\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪",
     "daily-tens": "DailyTens #123\n🏆 🏆\n🏆 ❌\n🏆 🏆\n❌ 🏆\n🏆 🏆\nhttps://dailytens.com/",
     centumth: "Centumth Nov 3, 2026 - Example topic\nTotal: 350/490\nhttps://www.centumth.com/",
@@ -8296,7 +8337,10 @@ function switchImportDraft(previousGameId, nextGameId) {
   const date = elements.importDate.value;
   const parsed = parseShareText(text).parsed;
   const saved = parsed && sameImportedScore(state.entries[date]?.[parsed.gameId]?.you, parsed);
-  if (text.trim() && !saved) importDrafts.set(previousGameId, { text, date });
+  if (text.trim() && !saved) importDrafts.set(previousGameId, {
+    text, date, owner: storageOwner,
+    review: typeof importQueue !== 'undefined' && importQueueOwner === storageOwner && importQueueText === text.trim() ? structuredClone(importQueue) : null
+  });
   else importDrafts.delete(previousGameId);
   const next = importDrafts.get(nextGameId);
   elements.shareTextInput.value = next?.text || "";
@@ -8305,447 +8349,199 @@ function switchImportDraft(previousGameId, nextGameId) {
 }
 
 function importDateError(parsed, date) {
-  if (!parsed.dailyMonthDay) return "";
-  if (date.slice(5) === parsed.dailyMonthDay && (!parsed.dailyYear || date.slice(0, 4) === parsed.dailyYear)) return "";
-  return `This Color Daily result is dated ${parsed.dailyYear ? parsed.dailyYear + "-" : ""}${parsed.dailyMonthDay}, but Played on is ${date}. Change Played on to the result's date before saving.`;
+  return importers.dateError(parsed, date, typeof today === 'undefined' ? '' : today);
 }
 
 function sameImportedScore(entry, parsed) {
-  return entry?.source === "official-share" && entry.result === parsed.result && entry.score === parsed.score
-    && entry.shareText === elements.shareTextInput.value.trim();
+  return importers.sameResult(entry, parsed, elements.importDate.value);
+}
+
+function resetImportReview() {
+  importQueue = [];
+  importQueueText = null;
+  importQueueOwner = storageOwner;
+  const draft = importDrafts.get(state.activeGameId);
+  importDateTouched = !!draft;
+  if (draft?.owner === storageOwner && draft.review && draft.text.trim() === elements.shareTextInput.value.trim()) {
+    importQueue = structuredClone(draft.review); importQueueText = draft.text.trim();
+  }
+}
+
+function syncImportReview(text) {
+  if (importQueueOwner !== storageOwner) {
+    elements.shareTextInput.value = ''; resetImportReview(); return;
+  }
+  if (importQueueText === text) return;
+  const previous = importQueue;
+  importQueueText = text;
+  if (!text) { importQueue = []; importDateTouched = false; return; }
+  const blocks = importers.splitResults(text, state.games);
+  importQueue = blocks.map((block, index) => {
+    const old = previous.find(item => item.text === block.text && item.index === index);
+    return old || { ...block, index, date: !importDateTouched && block.parsed?.date || elements.importDate.value, confirmed: false, saved: false, removed: false, saveError: '' };
+  });
+  if (importQueue.length === 1) elements.importDate.value = importQueue[0].date;
+}
+
+function evaluateImportReview() {
+  const visible = importQueue.filter(item => !item.removed);
+  for (const item of visible) {
+    item.game = state.games.find(game => game.id === (item.parsed?.gameId || item.gameId));
+    item.existing = item.parsed ? state.entries[item.date]?.[item.parsed.gameId]?.you : null;
+    item.duplicate = !!item.parsed && importers.sameResult(item.existing, item.parsed, item.date);
+    item.reviewError = item.error || (!item.game || item.game.retired || item.game.id.startsWith('immaculate-') ? 'This game is no longer available for new pasted scores. Use manual entry for another game.' : importDateError(item.parsed, item.date));
+    item.puzzleDate = item.parsed && importers.existingPuzzleDate(state.entries, item.parsed, item.date);
+    if (item.puzzleDate && !item.reviewError) item.reviewError = `This puzzle is already in your history on ${item.puzzleDate}. Use that date to review it, or correct the saved result’s date first.`;
+    const signature = JSON.stringify([item.parsed, item.date, item.existing]);
+    if (signature !== item.signature) { item.confirmed = false; item.signature = signature; }
+    item.reviewedEntry = item.existing ? structuredClone(item.existing) : null;
+  }
+  for (let i = 0; i < visible.length; i++) {
+    const item = visible[i];
+    if (!item.parsed || item.reviewError || item.saved) continue;
+    if (item.parsed.puzzleId && visible.some(other => other !== item && other.parsed?.gameId === item.parsed.gameId && other.parsed.puzzleId === item.parsed.puzzleId && other.date !== item.date)) {
+      item.reviewError = 'The same puzzle appears on two dates in this paste. Keep one card and confirm its correct date.'; continue;
+    }
+    const siblings = visible.filter(other => other !== item && other.parsed?.gameId === item.parsed.gameId && other.date === item.date);
+    if (siblings.some(other => other.parsed.score !== item.parsed.score || other.parsed.result !== item.parsed.result || other.parsed.puzzleId && item.parsed.puzzleId && other.parsed.puzzleId !== item.parsed.puzzleId)) {
+      item.reviewError = 'Two different results use the same game and date. Remove one or set their correct dates before saving.';
+    } else if (visible.slice(0, i).some(other => !other.reviewError && other.parsed?.gameId === item.parsed.gameId && other.date === item.date)) item.duplicate = true;
+  }
+  return visible;
 }
 
 function previewImport(showEmptyError = false) {
   const text = elements.shareTextInput.value.trim();
-  const { parsed, error } = parseShareText(text);
-  elements.importPasteButton.disabled = true;
-  elements.importPasteButton.textContent = "Save score";
-  elements.sharePreview.hidden = true;
-  elements.sharePreview.innerHTML = "";
-  document.querySelector("#scoreNextSteps").hidden = true;
+  syncImportReview(text);
+  const visible = evaluateImportReview(), batch = visible.length > 1;
+  elements.sharePreview.hidden = !visible.length;
+  elements.sharePreview.innerHTML = visible.map(item => renderSharePreview(item, batch)).join('');
+  elements.importDate.closest('label').hidden = batch || !visible[0]?.parsed;
+  if (!batch && visible[0]) elements.importDate.value = visible[0].date;
   elements.importClearButton.hidden = !text;
-  elements.importClearButton.textContent = "Clear";
-  elements.shareTextInput.removeAttribute("aria-invalid");
-  if (!text && !showEmptyError) { setImportStatus(""); return null; }
-  if (!parsed) {
-    if (showEmptyError && typeof launchReporter !== 'undefined') launchReporter.count('importRejected');
-    elements.shareTextInput.setAttribute("aria-invalid", "true");
-    setImportStatus(error, "error");
-    return null;
+  elements.importClearButton.textContent = 'Clear';
+  document.querySelector('#scoreNextSteps').hidden = !visible.some(item => item.saved);
+  const ready = visible.filter(item => item.parsed && !item.reviewError && !item.saveError && !item.duplicate && !item.saved && (!item.existing || item.confirmed));
+  elements.importPasteButton.disabled = !ready.length;
+  elements.importPasteButton.textContent = batch ? ready.length ? `Save ${ready.length} reviewed result${ready.length === 1 ? '' : 's'}` : visible.every(item => item.saved || item.duplicate) ? 'Results saved' : 'Review results before saving' : visible[0]?.existing && !visible[0]?.duplicate ? 'Replace saved score' : visible[0]?.duplicate ? 'Already saved' : 'Save score';
+  if (!text) {
+    elements.shareTextInput.removeAttribute('aria-invalid');
+    setImportStatus(showEmptyError ? 'Paste a shared result first, or choose Enter manually.' : '');
+    return [];
   }
-  const game = state.games.find((item) => item.id === parsed.gameId);
-  if (!game || game.retired || game.id.startsWith("immaculate-")) { setImportStatus("This game is no longer available for new scores.", "error"); return null; }
-  const date = elements.importDate.value;
-  if (!date || !elements.importDate.validity.valid) {
-    setImportStatus("Choose the day you played, up to today.", "error");
-    return null;
+  const problems = visible.filter(item => item.reviewError || item.saveError).length;
+  if (problems) elements.shareTextInput.setAttribute('aria-invalid', 'true');
+  else elements.shareTextInput.removeAttribute('aria-invalid');
+  if (!batch && visible[0]?.game && !visible[0].game.retired && visible[0]?.parsed && !manualFormDirty && scoreMethod === 'paste') {
+    state.activeGameId = visible[0].parsed.gameId;
+    lastRenderedGameId = state.activeGameId;
+    elements.manualGameInput.value = state.activeGameId;
   }
-  const dateError = importDateError(parsed, date);
-  if (dateError) { setImportStatus(dateError, "error"); return null; }
-  const existing = state.entries[date]?.[game.id]?.you;
-  const duplicate = sameImportedScore(existing, parsed);
-  renderSharePreview(parsed, game, date, existing, duplicate);
-  if (duplicate) {
-    document.querySelector("#scoreNextSteps").hidden = false;
-    setImportStatus(`Already saved for ${date}. No duplicate added.`, "success");
-    elements.importPasteButton.textContent = "Already saved";
-    elements.importClearButton.textContent = "Add another score";
-    return null;
+  const saved = visible.filter(item => item.saved).length;
+  setImportStatus(batch && visible.every(item => item.saved || item.duplicate) ? 'Results saved on this device. Check the sync indicator for cloud confirmation.' : batch ? `${saved ? `${saved} saved on this device · ` : ''}${ready.length} ready${problems ? ` · ${problems} need review` : ''}. Review each date before saving.`
+    : visible[0]?.saveError || visible[0]?.reviewError || (visible[0]?.saved ? 'Saved on this device. Check the sync indicator for cloud confirmation.' : visible[0]?.duplicate ? `Already saved for ${visible[0].date}. No duplicate added.` : visible[0]?.existing && !visible[0].confirmed ? 'Review the old and new result, then confirm the replacement below.' : 'Ready to save.'), problems ? 'error' : saved || visible[0]?.duplicate ? 'success' : '');
+  return ready;
+}
+
+function saveReviewedImport(item, owner) {
+  if (owner !== storageOwner || importQueueOwner !== owner) throw new Error('The account changed. Paste this result again in the intended account.');
+  const current = state.entries[item.date]?.[item.parsed.gameId]?.you || null;
+  if (!safety.equal(current, item.reviewedEntry)) throw new Error('This saved result changed. Review it again before replacing it.');
+  const dateError = importDateError(item.parsed, item.date);
+  if (dateError) throw new Error(dateError);
+  if (importers.existingPuzzleDate(state.entries, item.parsed, item.date)) throw new Error('This puzzle was just saved on another date. Review the date before retrying.');
+  if (current && !item.confirmed) throw new Error('Confirm this replacement before saving.');
+  const entry = {
+    ...current, result: item.parsed.result, score: item.parsed.score,
+    answer: current?.answer || '', note: current ? current.note || '' : item.parsed.note || '',
+    reveal: current?.reveal === true, source: 'official-share', shareText: item.text.trim(), grid: item.parsed.grid || []
+  };
+  if (item.parsed.gameId === 'color') {
+    delete entry.dailyDate;
+    if (item.parsed.dailyMonthDay) entry.dailyDate = item.date;
   }
-  elements.importPasteButton.disabled = false;
-  elements.importPasteButton.textContent = existing ? "Replace saved score" : "Save score";
-  setImportStatus("");
-  return { parsed, game, date, existing };
+  const previousDate = state.selectedDate, previousGame = state.activeGameId;
+  const entries = getGameEntries(item.date, item.parsed.gameId);
+  entries.you = entry; state.selectedDate = item.date; state.activeGameId = item.parsed.gameId;
+  try { saveState(); }
+  catch (error) {
+    if (current) entries.you = current; else delete entries.you;
+    state.selectedDate = previousDate; state.activeGameId = previousGame;
+    throw new Error(/Another tab|active account changed|deletion|current score operation/.test(error.message || '') ? error.message + ' Your pasted result is still here.' : 'Could not save on this device. Your pasted result is still here. Check storage and retry.');
+  }
+  item.saved = true; item.saveError = '';
+  if (typeof launchReporter !== 'undefined') launchReporter.count('scoreSave');
 }
 
 function importShareText(text) {
-  const draft = previewImport(true);
-  if (!draft) return;
-  const { parsed, game, date, existing } = draft;
-  const entry = {
-    ...existing,
-    result: parsed.result,
-    score: parsed.score,
-    answer: existing?.answer || "",
-    note: existing?.note || parsed.note,
-    reveal: existing?.reveal || false,
-    source: "official-share",
-    shareText: text.trim(),
-    grid: parsed.grid
-  };
-  const previousDate = state.selectedDate;
-  const previousGame = state.activeGameId;
-  state.activeGameId = game.id;
-  state.selectedDate = date;
-  const gameEntries = getGameEntries(date, game.id);
-  gameEntries.you = entry;
-  try {
-    saveState();
-  } catch {
-    if (existing) gameEntries.you = existing;
-    else delete gameEntries.you;
-    state.selectedDate = previousDate;
-    state.activeGameId = previousGame;
-    setImportStatus("Couldn't save on this device. Your pasted result is still here; free some browser storage and try again.", "error");
-    return;
+  const ready = previewImport(true), owner = storageOwner;
+  if (!ready.length) return;
+  const manualDraftView = manualFormDirty ? { game: state.activeGameId, date: state.selectedDate } : null;
+  for (const item of ready) {
+    try { saveReviewedImport(item, owner); }
+    catch (error) { item.saveError = error.message; item.confirmed = false; }
   }
-  elements.playDate.value = date;
-  elements.manualDateInput.value = date;
-  manualFormDirty = false;
-  importDrafts.delete(previousGame);
-  importDrafts.delete(game.id);
-  lastRenderedGameId = game.id;
+  // Keep failed cards and their dates intact. Successful records use the existing
+  // durable journal, revisioned sync queue, and private/shared projection boundary.
+  if (manualDraftView) { state.activeGameId = manualDraftView.game; state.selectedDate = manualDraftView.date; }
+  lastRenderedGameId = state.activeGameId;
+  elements.playDate.value = state.selectedDate;
+  if (!manualDraftView) elements.manualDateInput.value = state.selectedDate;
   importDraftRevision += 1;
   render();
-  setImportStatus(`${game.name} saved for ${date}. Scoreboards updated.`, "success");
-  elements.importClearButton.focus({ preventScroll: true });
+}
+
+function handleImportReviewChange(event) {
+  const item = importQueue.find(item => item.index === Number(event.target.dataset.importIndex));
+  if (!item || item.saved) return;
+  if (event.target.dataset.importAction === 'date') {
+    item.date = event.target.value; item.saveError = ''; item.confirmed = false;
+  } else if (event.target.dataset.importAction === 'replace') item.confirmed = event.target.checked;
+  previewImport();
+}
+
+function handleImportReviewClick(event) {
+  const button = event.target.closest('[data-import-action]');
+  if (!button || button.tagName !== 'BUTTON') return;
+  const item = importQueue.find(item => item.index === Number(button.dataset.importIndex));
+  if (!item) return;
+  if (button.dataset.importAction === 'remove') { item.removed = true; previewImport(); }
+  if (button.dataset.importAction === 'use-date') { item.date = item.puzzleDate; item.saveError = ''; item.confirmed = false; if (importQueue.filter(item => !item.removed).length === 1) elements.importDate.value = item.date; previewImport(); }
+  if (button.dataset.importAction === 'retry') { item.saveError = ''; item.confirmed = false; previewImport(); }
+  if (button.dataset.importAction === 'manual') {
+    if (manualFormDirty) { setImportStatus('Your manual draft is still open. Finish it before changing games.', 'error'); return; }
+    const game = state.games.find(game => game.id === (item.parsed?.gameId || item.gameId));
+    if (game) { state.activeGameId = game.id; lastRenderedGameId = game.id; }
+    if (importers.validDate(item.date)) elements.manualDateInput.value = item.date;
+    manualFormKey = ''; setScoreMethod('manual');
+  }
 }
 
 function parseShareText(text) {
-  const cleaned = String(text || "").trim();
-  if (!cleaned) return { parsed: null, error: "Paste a share result first." };
-  if (cleaned.length > 12000) return { parsed: null, error: "That text is too long. Paste just one game's shared result." };
-
-  const lines = normalizeShareLines(cleaned);
-  const attempts = [
-    parseWordleShare(lines),
-    parseConnectionsShare(lines),
-    parseStrandsShare(lines),
-    parseMiniCrosswordShare(lines),
-    parseSpellingBeeShare(lines),
-    parseKrillionShare(lines),
-    parseAdditionalShare(lines)
-  ];
-  if (attempts.filter((attempt) => attempt.parsed || attempt.error).length > 1) {
-    return { parsed: null, error: "There is more than one game here. Paste one result at a time so each score goes to the right scoreboard." };
-  }
-  const parsedAttempt = attempts.find((attempt) => attempt.parsed);
-  if (parsedAttempt) return parsedAttempt;
-
-  const knownError = attempts.find((attempt) => attempt.error);
-  return knownError || {
-    parsed: null,
-    error: "I could not identify this result. Copy the full result including its game name or link. Check Supported games & sample results, or use Enter manually for another game."
-  };
+  return importers.parseShareText(text);
 }
 
-function parseAdditionalShare(lines) {
-  const text = lines.join("\n");
-  const games = [
-    ["daily-tens", /\bDaily\s*Tens\b/i], ["centumth", /\bCentumth\b/i],
-    ["globle", /(?:#globle\b|globle-game\.com|^Globle\b)/im],
-    ["flagcognito", /\bFlagcognito\b/i], ["size-it-up", /\bSize It Up\b|magnitudle\.com\/size-it-up/i],
-    ["color", /dialed\.gg\/color(?:[?\s/#]|$)/i],
-    ["buzzfeed-trivia", /buzzfeed\.com\/daily-trivia|BuzzFeed.*Daily Trivia/i],
-    ["immaculate", /\bImmaculate Grid\b/i]
-  ].filter(([, pattern]) => pattern.test(text));
-  const fail = (error) => ({ parsed: null, error });
-  if (!games.length) return { parsed: null };
-  if (games.length > 1) return fail("Paste one result at a time so each game reaches the right scoreboard.");
-  const id = games[0][0];
-  const finish = (gameId, score, result = "played", grid = []) => ({ parsed: { gameId, score, result, grid, note: "Imported shared result" } });
-  const total = (pattern, max, decimal = false) => {
-    const matches = [...text.matchAll(pattern)];
-    if (matches.length !== 1) return null;
-    const raw = matches[0][1].replace(/,/g, "");
-    const denominator = matches[0][2].replace(/,/g, "");
-    const number = Number(raw);
-    return (decimal ? /^\d+(?:\.\d{1,2})?$/.test(raw) : /^\d+$/.test(raw)) && Number(denominator) === max && number >= 0 && number <= max ? number : null;
-  };
-  if (id === "daily-tens") {
-    const grid = lines.map(compactEmojiLine).filter((line) => /[🏆❌]/u.test(line));
-    if (grid.length !== 5 || grid.some((line) => !/^[🏆❌]{2}$/u.test(line))) return fail("Daily Tens needs all five rows of two trophies/crosses. Copy the full result from Share.");
-    const correct = (grid.join("").match(/🏆/gu) || []).length;
-    return finish(id, `${correct}/10`, correct === 10 ? "solved" : "played", grid);
-  }
-  if (id === "centumth") {
-    const score = total(/^Total:\s*([\d,]+)\s*\/\s*(\d+)(?![\d.])/gim, 490);
-    return score === null ? fail("Copy Centumth’s final Total: …/490 line. Individual guesses and Arcade scores aren't the daily total.") : finish(id, `${score}/490`);
-  }
-  if (id === "globle") {
-    if (/capitals/i.test(text)) return fail("This is Globle Capitals. Use a separate Other game entry; Globle tracks the country game.");
-    const results = lines.filter((line) => /=/.test(line));
-    const match = results.length === 1 && results[0].match(/^[\s🟥🟧🟨🟩🟦🟪⬜⬛]+\s*=\s*([1-9]\d*)$/u);
-    if (!match || Number(match[1]) > 1000000) return fail("Copy Globle’s completed emoji result with = followed by today's guess count. A streak or average isn't a daily score.");
-    return finish(id, `${Number(match[1])} guess${Number(match[1]) === 1 ? "" : "es"}`, "solved", results);
-  }
-  if (id === "flagcognito") {
-    const score = total(/^\s*([\d,]+)\s*\/\s*([\d,]+)\s*$/gm, 3000);
-    return score === null ? fail("Copy Flagcognito’s final total out of 3,000, including the game name. Tap counts and distances aren't the score.") : finish(id, `${score}/3000`);
-  }
-  if (id === "size-it-up") {
-    if (/\b(practice|unlimited|pop culture|weekly|geography)\b/i.test(text)) return fail("This scoreboard is for original daily Size It Up. Track other editions or practice with a separate Other game entry.");
-    if (!/magnitudle/i.test(text)) return fail("Include the Magnitudle name or official Size It Up link so we can identify the edition.");
-    const score = total(/^Score:\s*([\d,]+)\s*\/\s*(\d+)\s*$/gim, 500);
-    return score === null ? fail("Copy Size It Up’s final Score: …/500 line, not an individual round.") : finish(id, `${score}/500`);
-  }
-  if (id === "color") {
-    if (/dialed\.gg\/color\/(?:live|toon)|\blive game\b/i.test(text)) return fail("Use the Color memory result, not a live room or another Dialed game.");
-    const score = total(/(?<![\w.\-])(\d+(?:\.\d+)?)\s*\/\s*(50)(?!\d|\.\d)/g, 50, true);
-    if (score === null) return fail("This Color link doesn't include a readable score. Copy the result text with your score out of 50, or enter it manually.");
-    const output = finish(id, `${score}/50`);
-    if (/^Color Daily\b/im.test(text)) {
-      const daily = text.match(/^Color Daily\s*[—–-]\s*([A-Za-z]+)\s+(\d{1,2})(?:,?\s+(\d{4}))?\s*$/im);
-      const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-      const month = daily ? months.indexOf(daily[1].slice(0, 3).toLowerCase()) + 1 : 0;
-      const day = daily ? Number(daily[2]) : 0;
-      const validDay = new Date(Date.UTC(Number(daily?.[3] || 2024), month - 1, day)).getUTCDate() === day;
-      if (!daily || !month || !day || !validDay || !/https?:\/\/(?:www\.)?dialed\.gg\/color\?[^\s]*\bd=1(?:&|$|\s)/im.test(text)) return fail("Copy the complete Color Daily result including its date and daily link.");
-      output.parsed.dailyMonthDay = `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      output.parsed.dailyYear = daily[3] || null;
-      output.parsed.note = "Imported Color Daily result";
-    }
-    return output;
-  }
-  if (id === "buzzfeed-trivia") {
-    const score = total(/\bI got\s+(\d+)\s+out of\s+(\d+)\b/gi, 5);
-    return score === null ? fail("Copy BuzzFeed Daily Trivia’s full result: I got … out of 5, plus the Daily Trivia link.") : finish(id, `${score}/5`, score === 5 ? "solved" : "played");
-  }
-  const headers = lines.filter((line) => /Immaculate Grid/i.test(line));
-  if (headers.length !== 1) return fail("Paste one Immaculate Grid result, with its sport and rarity score.");
-  const sportMatches = [
-    ["baseball", /⚾|\bbaseball\b/i], ["football", /🏈|\bfootball\b/i],
-    ["basketball-women", /\bwomen[’']?s\b|\/basketball\/womens\//i],
-    ["hockey", /🏒|\bhockey\b/i]
-  ].filter(([, pattern]) => pattern.test(text));
-  if (/🏀|\bbasketball\b|\bmen[’']?s\b/i.test(text) && !sportMatches.some(([sport]) => sport === "basketball-women")) sportMatches.push(["basketball-men"]);
-  if (sportMatches.length !== 1) return fail("Include the sport emoji or name in your Immaculate Grid result so it goes to the correct sport's scoreboard.");
-  const count = headers[0].match(/\b([0-9])\s*\/\s*9\b/);
-  const rarities = lines.filter((line) => /^Rarity(?: score)?:/i.test(line));
-  const rarity = rarities.length === 1 && rarities[0].match(/^Rarity(?: score)?:\s*(\d+(?:\.\d+)?)\s*$/i);
-  if (!count || !rarity || Number(rarity[1]) > 900) return fail("Include correct answers out of 9 and Rarity: followed by its score (0–900). Rarity is not a percentage.");
-  const grid = lines.map(compactEmojiLine).filter((line) => /[🟩⬜⬛]/u.test(line));
-  if (grid.length && (grid.length !== 3 || grid.some((line) => !/^[🟩⬜⬛]{3}$/u.test(line)) || (grid.join("").match(/🟩/gu) || []).length !== Number(count[1]))) return fail("The Immaculate Grid squares don't match the score. Copy the complete 3×3 result again.");
-  return finish(`immaculate-${sportMatches[0][0]}`, `${Number(count[1])}/9 · rarity ${Number(rarity[1])}`, count[1] === "9" ? "solved" : "played", grid);
-}
-
-function parseWordleShare(lines) {
-  const headers = lines.filter((line) => /^Wordle\b/i.test(line));
-  if (!headers.length) return { parsed: null };
-  if (headers.length !== 1) return { parsed: null, error: "Paste one Wordle result at a time." };
-  const scoreMatch = headers[0].match(/^Wordle(?:\s+#?([\d,]+))?\s+([1-6X])\/6\*?$/i);
-  if (!scoreMatch) {
-    return {
-      parsed: null,
-      error: "I found Wordle, but I could not find a score like 4/6 or X/6. Paste the result line plus the emoji grid."
-    };
-  }
-
-  const grid = lines.map(compactEmojiLine).filter((line) => /[🟩🟨⬛⬜🟦🟧🟥🟪]/u.test(line));
-  const rawScore = scoreMatch[2].toUpperCase();
-  const score = `${rawScore}/6`;
-  const solvedRow = (row) => /^(?:🟩{5}|🟧{5})$/u.test(row);
-  if (grid.length && (grid.some((row) => !/^[🟩🟨⬛⬜🟦🟧]{5}$/u.test(row))
-    || grid.length !== (rawScore === "X" ? 6 : Number(rawScore))
-    || (rawScore === "X" ? grid.some(solvedRow) : !solvedRow(grid.at(-1)) || grid.slice(0, -1).some(solvedRow)))) {
-    return { parsed: null, error: "The Wordle grid does not match its score. Copy one complete result with five squares per row." };
-  }
-
-  return {
-    parsed: {
-      gameId: "wordle",
-      score,
-      result: rawScore === "X" ? "missed" : "solved",
-      note: `Imported official Wordle${scoreMatch[1] ? ` #${scoreMatch[1]}` : ""}${grid.length ? ` with ${grid.length} rows` : ""}`,
-      grid
-    }
-  };
-}
-
-function parseConnectionsShare(lines) {
-  const text = lines.join(" ");
-  const header = lines.find((line) => /^Connections\b/i.test(line)) || (/\bConnections\b/i.test(text) ? text : "");
-  if (!header) return { parsed: null };
-
-  const sports = /Connections\s*:?\s*Sports Edition/i.test(header);
-  const headers = lines.filter((line) => /^Connections\b/i.test(line));
-  if (headers.length > 1) return { parsed: null, error: "Paste one Connections result at a time, including its edition." };
-  const gridPattern = /^[\u{1F7E8}\u{1F7E9}\u{1F7E6}\u{1F7EA}]{4}$/u;
-  const grid = lines
-    .map((line) => sports ? line.replace(/🟡/gu, "🟨").replace(/🟢/gu, "🟩").replace(/🔵/gu, "🟦").replace(/🟣/gu, "🟪") : line)
-    .map(compactEmojiLine)
-    .filter((line) => /[🟨🟩🟦🟪🟥🟧⬜⬛🟡🟢🔵🟣]/u.test(line));
-  if (grid.some((line) => !gridPattern.test(line))) return { parsed: null, error: "A Connections row is incomplete or invalid. Copy every row with exactly four colored squares." };
-  if (!grid.length) {
-    return {
-      parsed: null,
-      error: "I found Connections, but I could not find the four-color emoji grid. Paste the full shared result, including the colored square rows."
-    };
-  }
-
-  const puzzleMatch = text.match(/(?:Puzzle\s*)?#\s*([\d,]+)/i) || text.match(/\bConnections\s+#?([\d,]+)/i);
-  const correctRows = grid.filter((line) => /^([\u{1F7E8}]{4}|[\u{1F7E9}]{4}|[\u{1F7E6}]{4}|[\u{1F7EA}]{4})$/u.test(line));
-  const solvedRows = new Set(correctRows).size;
-  const mistakes = grid.length - correctRows.length;
-  if (grid.length > 7 || mistakes > 4 || solvedRows !== correctRows.length) return { parsed: null, error: "This Connections grid has repeated groups or too many rows. Paste one complete result." };
-  let groups = 0, errors = 0;
-  for (let index = 0; index < grid.length; index++) {
-    if (correctRows.includes(grid[index])) groups++; else errors++;
-    if (index < grid.length - 1 && (groups === 4 || errors === 4)) return { parsed: null, error: "This Connections grid continues after the game ended. Paste one result." };
-  }
-
-  return {
-    parsed: {
-      gameId: sports ? "connections-sports" : "connections",
-      score: `${mistakes} mistake${mistakes === 1 ? "" : "s"}`,
-      result: solvedRows >= 4 ? "solved" : mistakes >= 4 ? "missed" : "played",
-      note: `Imported official Connections${puzzleMatch ? ` #${puzzleMatch[1]}` : ""} with ${grid.length} rows`,
-      grid
-    }
-  };
-}
-
-function parseStrandsShare(lines) {
-  const text = lines.join(" ");
-  const header = lines.find((line) => /^Strands\b/i.test(line)) || (/\bStrands\b/i.test(text) ? text : "");
-  if (!header) return { parsed: null };
-  if (lines.filter(line => /^Strands\b/i.test(line)).length > 1) return { parsed: null, error: "Paste one Strands result at a time." };
-  const grid = lines
-    .map(compactEmojiLine)
-    .filter((line) => /[🔵🟡💡]/u.test(line));
-  if (grid.some(line => !/^[🔵🟡💡]+$/u.test(line)) || (grid.join("").match(/🟡/gu) || []).length > 1) return { parsed: null, error: "The Strands recap is malformed. Copy one full result." };
-  if (!grid.length) {
-    return {
-      parsed: null,
-      error: "I found Strands, but I could not find the blue/yellow/hint emoji recap. Paste the full shared result."
-    };
-  }
-
-  const puzzleMatch = text.match(/#\s*([\d,]+)/i) || text.match(/\bStrands\s+#?([\d,]+)/i);
-  const hintCount = (grid.join("").match(/\u{1F4A1}/gu) || []).length;
-  const foundSpangram = grid.some((line) => /\u{1F7E1}/u.test(line));
-  const score = hintCount ? `${hintCount} hint${hintCount === 1 ? "" : "s"}` : "No hints";
-
-  return {
-    parsed: {
-      gameId: "strands",
-      score,
-      result: "played",
-      completionUnverified: true,
-      note: `Imported official Strands${puzzleMatch ? ` #${puzzleMatch[1]}` : ""}${foundSpangram ? " with spangram" : ""}; completion unverified`,
-      grid
-    }
-  };
-}
-
-function parseMiniCrosswordShare(lines) {
-  const text = lines.join(" ");
-  if (!/\b(Mini Crossword|The Mini|NYT Mini|New York Times Mini)\b/i.test(text)) return { parsed: null };
-
-  const timeMatch = text.match(/\b(?:in|time:|time\s*)\s*(\d{1,2}:\d{2}(?::\d{2})?)\b/i)
-    || text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
-  if (!timeMatch) {
-    return {
-      parsed: null,
-      error: "I found Mini Crossword, but I could not find a completion time like 0:54 or 12:03."
-    };
-  }
-  if (timeMatch[1].split(":").slice(1).some((part) => Number(part) > 59)) {
-    return { parsed: null, error: "That time doesn't look right. Seconds and minutes within an hour must be between 00 and 59." };
-  }
-  if (!Number.isFinite(gameScoring.timeSeconds(timeMatch[1]))) return { parsed: null, error: "Enter a completion time greater than 00:00." };
-
-  return {
-    parsed: {
-      gameId: "mini-crossword",
-      score: normalizeTimeScore(timeMatch[1]),
-      result: "solved",
-      note: "Imported official Mini Crossword time",
-      grid: []
-    }
-  };
-}
-
-function parseSpellingBeeShare(lines) {
-  const text = lines.join(" ");
-  if (!/Spelling Bee/i.test(text)) return { parsed: null };
-
-  const ranks = ["Queen Bee", "Genius", "Amazing", "Great", "Nice", "Solid", "Good Start", "Good", "Moving Up", "Moving", "Beginner"];
-  const rank = ranks.find((item) => new RegExp(`\\b${item}\\b`, "i").test(text));
-  if (!rank) {
-    return {
-      parsed: null,
-      error: "I found Spelling Bee, but I could not find a rank like Genius, Amazing, or Queen Bee."
-    };
-  }
-
-  const pointMatch = text.match(/\b(\d{1,4})\s*(?:points?|pts?)\b/i);
-  const score = pointMatch ? `${rank} · ${pointMatch[1]} pts` : rank;
-
-  return {
-    parsed: {
-      gameId: "spelling-bee",
-      score,
-      result: rank === "Queen Bee" ? "solved" : "played",
-      note: `Imported official Spelling Bee rank: ${rank}`,
-      grid: []
-    }
-  };
-}
-
-function parseKrillionShare(lines) {
-  const text = lines.join(" ");
-  const header = lines.find((line) => /^Krillion\b/i.test(line)) || (/\bKrillion\b/i.test(text) ? text : "");
-  if (!header) return { parsed: null };
-
-  const headerIndex = lines.indexOf(header);
-  const searchableLines = headerIndex >= 0 ? lines.slice(headerIndex + 1) : lines;
-  const directScore = searchableLines.find((line) => /^\d{1,4}$/.test(line));
-  const labeledScore = text.match(/\b(?:score|depth|total)\s*:?\s*(\d{1,4})\b/i)
-    || text.match(/\b(\d{1,4})\s*(?:depth\s*)?(?:points?|pts?)\b/i);
-  const scoreLine = directScore || labeledScore?.[1];
-  if (!scoreLine) {
-    return {
-      parsed: null,
-      error: "I found Krillion, but I could not find the total depth score. Paste the line with the final number, like 110."
-    };
-  }
-
-  const numberMatch = text.match(/\bKrillion\s+#?([\d,]+)/i);
-  const grid = lines
-    .slice(Math.max(lines.indexOf(String(scoreLine)) + 1, 0))
-    .filter((line) => !/^https?:\/\//i.test(line) && line !== scoreLine && !/^Krillion\b/i.test(line));
-
-  return {
-    parsed: {
-      gameId: "krillion",
-      score: scoreLine,
-      result: Number(scoreLine) > 0 ? "played" : "missed",
-      note: `Imported official Krillion #${numberMatch?.[1] || "daily dive"} with ${scoreLine} depth points`,
-      grid
-    }
-  };
-}
-
-function normalizeShareLines(text) {
-  return text
-    .replace(/\uFE0F/g, "")
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function compactEmojiLine(line) {
-  return line.replace(/[\s\u200B-\u200D]/g, "");
-}
-
-function normalizeTimeScore(score) {
-  const parts = score.split(":");
-  return parts.length === 2 ? score.padStart(5, "0") : score;
-}
-
-function renderSharePreview(parsed, game, date, existing, duplicate) {
-  elements.sharePreview.hidden = false;
-  elements.sharePreview.innerHTML = `
-    <div class="import-result-head">${gameLogo(game)}<div><small>Detected game</small><strong>${escapeHtml(game.name)}</strong></div></div>
-    <strong class="preview-score">${escapeHtml(parsed.score)}</strong>
-    <div class="preview-meta"><span>${escapeHtml(parsed.result)}</span><span>${escapeHtml(date)}</span><span>${duplicate ? "Saved" : "Not saved yet"}</span></div>
-    ${parsed.completionUnverified ? '<p class="import-warning">This recap does not prove every theme word was found. It will be saved as Played without completion points. Use Enter manually and choose Solved after confirming you finished.</p>' : ""}
-    ${game.dailyRanked === false && !parsed.dailyMonthDay ? `<p class="import-warning">Challenge result: compare the same challenge with friends. Excluded from the combined daily ranking.</p>` : ""}
-    ${parsed.dailyMonthDay ? `<p class="field-help">Daily result · Counts toward the combined leaderboard.</p>` : ""}
-    ${existing && !duplicate ? `<p class="import-warning">You already saved ${escapeHtml(existing.score)} for this day. Saving will replace that score and keep your answer, note, and sharing choice.</p>` : ""}
-    ${parsed.grid.length ? `<details><summary>View shared result</summary><div class="share-grid">${escapeHtml(parsed.grid.join("\n"))}</div></details>` : ""}
-  `;
+function renderSharePreview(item, batch) {
+  const { parsed, game, date, existing, duplicate } = item;
+  const esc = escapeHtml, id = item.index;
+  const previous = existing?.shareText && parseShareText(existing.shareText).parsed;
+  const status = item.saved ? 'Saved on device' : item.saveError || item.reviewError ? 'Needs review' : duplicate ? 'Already saved' : existing ? 'Confirm replacement' : 'Detected';
+  return `<article class="import-review-item" data-state="${item.saved || duplicate ? 'saved' : item.reviewError || item.saveError ? 'error' : existing ? 'confirm' : 'ready'}">
+    <div class="import-card-top"><span class="import-badge">${esc(status)}</span>${batch ? `<button type="button" class="text-link" data-import-action="remove" data-import-index="${id}" aria-label="Remove ${esc(game?.name || 'unrecognized')} result">Remove</button>` : ''}</div>
+    ${parsed && game ? `<div class="import-result-head">${gameLogo(game)}<div><small>Detected game</small><strong>${esc(game.name)}</strong></div></div><strong class="preview-score">${esc(parsed.score)}</strong>
+    <div class="preview-meta"><span>${esc(parsed.result)}</span>${parsed.puzzleId && parsed.puzzleId !== parsed.date ? `<span>Puzzle #${esc(parsed.puzzleId)}</span>` : ''}</div>` : `<strong class="import-unknown">${esc(game?.name || 'This result needs a little help.')}</strong>`}
+    ${batch && parsed ? `<label class="queue-date">Played on<input type="date" value="${esc(date)}" max="${today}" data-import-action="date" data-import-index="${id}" ${item.saved ? 'disabled' : ''} required /></label>` : ''}
+    ${parsed ? `<p class="field-help">${esc(parsed.dateSource || (parsed.dailyMonthDay ? 'Share includes a month/day but no reliable year. Confirm the year above.' : 'No reliable date in this share. Confirm the day you played.'))} · ${esc(date)}</p>` : ''}
+    ${parsed?.optimalMoves ? `<p class="field-help">Publisher’s best solution: ${parsed.optimalMoves} moves. Your move count is the score.</p>` : ''}
+    ${parsed?.completionUnverified ? '<p class="import-warning">Completion is unverified. This saves as Played without completion points. Confirm a finished solve using Enter manually.</p>' : ''}
+    ${game?.dailyRanked === false && !parsed?.dailyMonthDay ? '<p class="import-warning">This result stays on its own game board, outside combined daily totals.</p>' : ''}
+    ${item.reviewError ? `<p class="import-warning">${esc(item.reviewError)}</p>` : ''}
+    ${item.puzzleDate ? `<button type="button" class="text-link" data-import-action="use-date" data-import-index="${id}">Use saved date ${esc(item.puzzleDate)}</button>` : ''}
+    ${item.saveError ? `<p class="import-warning">${esc(item.saveError)}</p><button type="button" class="text-link" data-import-action="retry" data-import-index="${id}">Review and retry</button>` : ''}
+    ${existing && !duplicate && !item.saved && !item.reviewError ? `<div class="replacement-review"><strong>${esc(existing.score)} → ${esc(parsed.score)}</strong><p>${esc(existing.result)} → ${esc(parsed.result)} · ${esc(date)}.</p><p>${esc(existing.source === 'official-share' ? 'Official share' : 'Manual entry')} → official share${previous?.puzzleId || parsed.puzzleId ? ` · Puzzle ${esc(previous?.puzzleId || 'not recorded')} → ${esc(parsed.puzzleId || 'not provided')}` : ''}. Your answer, note and sharing choice stay as they are.</p><label class="import-confirm"><input type="checkbox" data-import-action="replace" data-import-index="${id}" ${item.confirmed ? 'checked' : ''} /> Replace this saved result</label></div>` : ''}
+    <details class="import-raw"><summary>View pasted result</summary><pre class="share-grid">${esc(item.text)}</pre></details>
+    ${!item.saved && !duplicate ? `<button type="button" class="text-link" data-import-action="manual" data-import-index="${id}">Enter manually instead →</button>` : ''}
+  </article>`;
 }
 
 function setImportStatus(message, tone = "") {
@@ -9001,7 +8797,7 @@ function mergeState(base, saved) {
       ...game,
       ...savedGame,
       retired: game.retired === true,
-      type: game.type, source: game.source, manualOnly: game.manualOnly,
+      type: game.type, source: game.source, manualOnly: game.manualOnly, pasteSupported: game.pasteSupported,
       minScore: game.minScore, maxScore: game.maxScore, decimalScore: game.decimalScore, dailyRanked: game.dailyRanked,
       scoring: { ...scoringForType(game.type), ...savedGame.scoring, ...game.scoring },
       logo: savedGame.logo || game.logo,

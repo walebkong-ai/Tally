@@ -34,6 +34,8 @@ Start the dedicated loopback emulators with `Operations/restore-emulators.json`,
 
 ## Roll back a release
 
+For the Prompt 3 importer release, prefer the immediately previous **v76** saved client and retain all current rules/data. Its verified saved-version ID, source/archive fingerprint and release-specific procedure are in [PROMPT3_PRODUCTION_REVIEW.md](../QA/PROMPT3_PRODUCTION_REVIEW.md#controlled-release-and-rollback). The v65 instructions below are the older general emergency fallback, not the preferred rollback for Prompt 3.
+
 1. Stop additional deployment work and confirm current audience/version with Sites `get_site`. Preserve the audience. Export/check a current encrypted backup before any data migration.
 2. Read [rollback.json](rollback.json). Version65 is the beta-verified schema2 fallback, with saved-version ID, full source SHA and archive fingerprint recorded. Check it with `get_site_version`; use that saved ID unchanged.
 3. Call Sites `deploy_site_version` for the saved fallback. A deploy changes production. Inspect nonterminal deployment status until succeeded/failed and confirm the returned version ID. Record the incident and deployment ID.

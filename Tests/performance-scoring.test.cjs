@@ -11,7 +11,7 @@ function add(c,name) {
   vm.runInContext(tail.slice(0,next?.index),c);
 }
 function setup() {
-  const c=vm.createContext({today:'2026-11-11',gameScoring:scoring,structuredClone,SHOW_SOLVRY_GAMES:false});
+  const c=vm.createContext({ importers: require('../Assets/importers.mjs'),today:'2026-11-11',gameScoring:scoring,structuredClone,SHOW_SOLVRY_GAMES:false});
   vm.runInContext(app.slice(app.indexOf('const ADDITIONAL_IMPORT_GAMES'),app.indexOf('let state = loadState()')),c);
   c.state=vm.runInContext('structuredClone(starterState)',c);c.state.entries={};c.state.selectedDate='2026-11-11';
   c.getPeople=()=>[{id:'you',name:'You'},{id:'a',name:'Alice'},{id:'b',name:'Bob'}];

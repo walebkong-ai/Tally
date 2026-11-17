@@ -6,7 +6,7 @@ const path = require('node:path');
 const safety = require('../Assets/sync-safety.mjs');
 const app = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
 function setup() {
-  const c = vm.createContext({
+  const c = vm.createContext({ importers: require('../Assets/importers.mjs'),
     safety, storageOwner: '', storageBaseline: {}, storageProblem: '', ORIGINAL_STORAGE_KEY: 'original',
     state: {selectedDate:'2026-11-03',entries:{}},
     elements: {shareTextInput:{value:''},importDate:{value:'2026-11-03'}},

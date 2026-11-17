@@ -1,0 +1,60 @@
+{
+  "observedOn": "2026-11-16",
+  "basis": "Read-only publisher share-builder source; fixture scores are synthetic examples of that grammar, not claimed played results.",
+  "publishers": [
+    {
+      "gameId": "squirdle",
+      "publisher": "https://squirdle.fireblend.com/daily.html",
+      "assets": [
+        {
+          "url": "https://squirdle.fireblend.com/scripts/game.js",
+          "sha256": "926fb433a18cc37c2fe3f30c912379b845c7842d8a5d64642c02224c6b2dff93"
+        }
+      ]
+    },
+    {
+      "gameId": "contexto",
+      "publisher": "https://contexto.me/en/",
+      "assets": [
+        {
+          "url": "https://contexto.me/assets/index-p6O9qHBk.js",
+          "sha256": "f061aab133ebf1a97404df9882e003b0dff9cec5e2dd7bfe22b3a6a0e324dfd4"
+        }
+      ]
+    },
+    {
+      "gameId": "costcodle",
+      "publisher": "https://costcodle.com/",
+      "assets": [
+        {
+          "url": "https://costcodle.com/scripts/main.js",
+          "sha256": "c38660fde5a18bbf51e0fb00be9c04e93bce1a0fde537e9c318fdd578001df27"
+        },
+        {
+          "url": "https://costcodle.com/scripts/checkout/main.js",
+          "sha256": "3ff70cd80d1498300272614144ec3ae4ab0fc5b03e22064941a04f9487146838"
+        }
+      ]
+    },
+    {
+      "gameId": "poople",
+      "publisher": "https://poople.io/",
+      "assets": [
+        {
+          "url": "https://poople.io/assets/index-CbbZj1rp.js",
+          "sha256": "4e15f14a91768bd0b3c7104ed443dfd4499cbd0b4f7cdcbd1525fa83bfb6f5f9"
+        }
+      ]
+    },
+    {
+      "gameId": "chainle",
+      "publisher": "https://chainle.io/",
+      "assets": [
+        {
+          "url": "https://chainle.io/assets/index-B6r5Nyi6.js",
+          "sha256": "e10538d80352ee53b71e5a4ebfa170627f1b2d30a794484c7b3032f832af1b57"
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const app = fs.readFileSync(require('node:path').join(__dirname, '../dist/app.js'), 'utf8');
 function context() {
-  const c = vm.createContext({ gameScoring: require('../Assets/game-scoring.mjs') });
+  const c = vm.createContext({ importers: require('../Assets/importers.mjs'), gameScoring: require('../Assets/game-scoring.mjs') });
   vm.runInContext(app.slice(app.indexOf('function parseShareText('), app.indexOf('function renderSharePreview(')), c);
   return c;
 }

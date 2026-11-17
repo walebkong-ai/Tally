@@ -97,15 +97,12 @@ test('cached retirement flags cannot reactivate removed editions or delete histo
 });
 
 test('a retired share preview disables saving while legacy history parsing remains available',()=>{
-  const c=setup();let status='';
-  const node=()=>({hidden:false,innerHTML:'',value:'',disabled:false,textContent:'',removeAttribute(){},setAttribute(){}});
-  c.elements={shareTextInput:{...node(),value:'Immaculate Grid'},importPasteButton:node(),sharePreview:node(),importClearButton:node()};
-  c.document={querySelector:()=>node()};
-  c.parseShareText=()=>({parsed:{gameId:'immaculate-baseball'}});c.setImportStatus=message=>status=message;
-  add(c,'previewImport');
-  assert.equal(c.previewImport(true),null);assert.equal(c.elements.importPasteButton.disabled,true);
-  assert.match(status,/no longer available/);
+  const c=require('./helpers/import-review.cjs').setup();
+  c.paste('⚾ Immaculate Grid 123 9/9:\nRarity: 75\n🟩🟩🟩\n🟩🟩🟩\n🟩🟩🟩');
+  assert.equal(c.previewImport(true).length,0);assert.equal(c.elements.importPasteButton.disabled,true);
+  assert.match(c.status,/no longer available/);
+  assert.equal(c.state.activeGameId,'wordle');
   // All new-entry selectors derive from the active catalog, including pasted-result examples.
   assert.match(app,/manualGameInput.innerHTML = visibleGames\(\)/);
-  assert.match(app,/ADDITIONAL_IMPORT_GAMES.filter\(\(game\) => !game.manualOnly && !game.retired\)/);
+  assert.match(app,/ADDITIONAL_IMPORT_GAMES.filter\(\(game\) => \(!game.manualOnly \|\| game.pasteSupported\) && !game.retired\)/);
 });

@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "test": "node --test Tests/*.test.cjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-solvry-safety \"node --test Tests/firestore-rules.test.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-solvry-safety \"node --test Tests/firestore-rules.test.mjs\"",
+    "test:import-sync": "firebase emulators:exec --only firestore,auth --config firebase.import-tests.json --project demo-solvry-import-readiness \"node --test Tests/import-sync-emulator.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "3.0.4",

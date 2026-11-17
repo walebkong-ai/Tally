@@ -1,0 +1,78 @@
+[
+  {
+    "gameId": "wordle",
+    "text": "Wordle 1,234 3/6\n\n⬛🟨⬛⬛⬛\n🟩🟩🟨⬛⬛\n🟩🟩🟩🟩🟩"
+  },
+  {
+    "gameId": "connections",
+    "text": "Connections\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪"
+  },
+  {
+    "gameId": "strands",
+    "text": "Strands #123\n🔵🔵🟡🔵🔵🔵🔵"
+  },
+  {
+    "gameId": "mini-crossword",
+    "text": "I solved the Mini Crossword in 0:54!"
+  },
+  {
+    "gameId": "spelling-bee",
+    "text": "Spelling Bee\nGenius · 150 points"
+  },
+  {
+    "gameId": "krillion",
+    "text": "Krillion #77\n110"
+  },
+  {
+    "gameId": "poople",
+    "text": "Poople #100 2/2\n⬜🟫⬜🟫\n⬜🟫🟫🟫\n🟫🟫🟫🟫\n\nhttps://poople.io/"
+  },
+  {
+    "gameId": "chainle",
+    "text": "Chainle #100 · 4,200 🔗\nBeat 80% of players\n🟩🟩🟨🟩🟨\nhttps://chainle.io"
+  },
+  {
+    "gameId": "contexto",
+    "text": "I played contexto.me 11/03/2026 and got it in 17 guesses.\n\n🟩🟩 4\n🟨🟨 5\n🟥🟥🟥 8"
+  },
+  {
+    "gameId": "costcodle",
+    "text": "Costcodle Classic #2 2/6\n⬆🟨\n✅\n\nPlay now at https://www.costcodle.com"
+  },
+  {
+    "gameId": "squirdle",
+    "text": "Squirdle Daily 100 - 2/9\n🟦❌❌🔼🔽\n✅✅✅✅✅"
+  },
+  {
+    "gameId": "connections-sports",
+    "text": "Connections: Sports Edition\nPuzzle #123\n🟨🟨🟨🟨\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪"
+  },
+  {
+    "gameId": "daily-tens",
+    "text": "DailyTens #123\n🏆 🏆\n🏆 ❌\n🏆 🏆\n❌ 🏆\n🏆 🏆\nhttps://dailytens.com/"
+  },
+  {
+    "gameId": "centumth",
+    "text": "Centumth Nov 3, 2026 - Example topic\nTotal: 350/490\nhttps://www.centumth.com/"
+  },
+  {
+    "gameId": "globle",
+    "text": "🌎 Nov 3, 2026 🌍\n🔥 4 | Avg. Guesses: 6.2\n🟨🟥🟩 = 3\nhttps://globle-game.com\n#globle"
+  },
+  {
+    "gameId": "flagcognito",
+    "text": "Flagcognito · Nov 3, 2026\n2,400 / 3,000\nhttps://guessdash.com/flagcognito"
+  },
+  {
+    "gameId": "size-it-up",
+    "text": "Magnitudle — Size It Up\nNov 3, 2026\nScore: 425/500\nhttps://magnitudle.com/size-it-up"
+  },
+  {
+    "gameId": "color",
+    "text": "My color memory is a 39.12/50.\nhttps://dialed.gg/color?c=example"
+  },
+  {
+    "gameId": "buzzfeed-trivia",
+    "text": "I got 4 out of 5 on today’s Daily Trivia. Can you beat my score? https://www.buzzfeed.com/daily-trivia"
+  }
+]

@@ -398,11 +398,18 @@ export function writeLocal(storage, key, writer, baseline, state, fallback) {
   const next = structuredClone(state);
   applyRecords(next, edits.records);
   next.localWriters = { ...stored.localWriters, ...state.localWriters };
+  const previousDraft = JSON.parse(storage.getItem(key + ":draft:" + writer) || "null");
+  const cached = JSON.parse(storage.getItem(key) || "null");
+  if (previousDraft && (cached?.localWriters?.[writer] || 0) < previousDraft.sequence) {
+    // The old journal may be the only durable copy of an earlier save. Checkpoint
+    // its recovered state before replacing that writer's journal. If storage is
+    // still full, reject the new edit and keep the earlier commit recoverable.
+    storage.setItem(key, JSON.stringify(stored));
+  }
   const sequence =
     Math.max(
       next.localWriters[writer] || 0,
-      JSON.parse(storage.getItem(key + ":draft:" + writer) || "null")
-        ?.sequence || 0,
+      previousDraft?.sequence || 0,
     ) + 1;
   const draft = {
     writer,
