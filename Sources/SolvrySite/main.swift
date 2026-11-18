@@ -37,7 +37,7 @@ let html = #"""
     />
     <link rel="icon" type="image/svg+xml" href="assets/Brand/solvry-icon.svg?v=33" />
     <meta name="theme-color" content="#276776" />
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <div class="app" id="app">
@@ -70,20 +70,18 @@ let html = #"""
             <div class="home-welcome"><p class="eyebrow">A little play, every day</p><h1>Your daily results<span class="welcome-spark" aria-hidden="true">✳</span></h1><p class="view-copy">Big wins, close calls. Keep them all here.</p></div>
             <label class="date-control">Viewing date<input id="playDate" type="date" /></label>
           </div>
-          <div class="metrics home-metrics" aria-label="Your progress">
-            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="6" width="22" height="23" rx="5"/><path d="M10 3v6m12-6v6M5 13h22m-16 7 4 4 7-7"/></svg><strong id="playedMetric">0</strong><span>results this day</span></div>
-            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3c2 8 8 10 8 17a10 10 0 0 1-20 0c0-4 2-7 6-10-1 5 1 7 3 8 3-4 4-9 3-15Z"/><path d="M17 20c0 3 3 4 3 6a4 4 0 0 1-8 0c0-2 2-4 5-6Z"/></svg><strong id="streakMetric">0</strong><span>activity streak</span></div>
-            <div><svg class="metric-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 3.7 7.5 8.3 1.2-6 5.9 1.4 8.3-7.4-3.9-7.4 3.9 1.4-8.3-6-5.9 8.3-1.2Z"/></svg><strong id="totalSolvesMetric">0</strong><span>total results</span></div>
-            <span id="solvedMetric" hidden>0</span>
-          </div>
+          <section class="daily-progress" aria-label="Daily progress">
+            <div class="daily-progress-main"><div class="daily-progress-top"><h2 id="dailyProgressTitle">Your daily progress</h2><span id="dailyRemainingLabel"></span></div><p class="daily-progress-count" id="dailyProgressCount"></p><div id="dailyProgressBar" class="daily-progress-track" role="progressbar" aria-label="Pinned game completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="dailyProgressFill"></span></div><p class="field-help" id="dailyProgressHelp"></p></div>
+            <div class="daily-streak" title="Consecutive local days with any recorded attempt, including a miss. Yesterday’s streak stays active while today is still open."><strong id="streakMetric">0</strong><span>day activity streak</span><small>Includes attempts</small></div>
+          </section>
           <div class="home-columns">
             <div class="home-main">
-              <section class="panel home-games"><div class="section-head compact"><div><h2>Your games</h2><p class="field-help" id="quickGamesHint">Pin your favorites to keep them here.</p></div><a class="text-link" href="#games">Browse all →</a></div><div class="dashboard-strip" id="quickGames" aria-label="Your games"></div></section>
-              <section class="panel home-scores"><div class="section-head compact"><h2>Your scores</h2><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div><div id="homeScores" class="home-score-list"></div></section>
+              <section class="panel home-games"><div class="section-head compact"><div><h2>Your games</h2><p class="field-help" id="quickGamesHint">Choose the daily games you want to track.</p></div><a class="text-link" href="#games">Customize games →</a></div><button class="ghost-button compact-button pending-games-filter" id="dashboardPendingFilter" type="button" aria-pressed="false" hidden>Not played</button><div class="dashboard-strip" id="quickGames" aria-label="Pinned daily games"></div></section>
+              <details class="panel home-extra-results" id="homeScoresDetails" hidden><summary id="homeScoresTitle">Other results this day</summary><p class="field-help">These results stay in your history. Pin a game to include it in daily progress.</p><div id="homeScores" class="home-score-list"></div></details>
             </div>
             <div class="home-side">
-              <section class="panel home-ranking"><div class="section-head compact"><h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0V3Zm0 2H3v3a4 4 0 0 0 5 4m9-7h4v3a4 4 0 0 1-5 4m-4 2v6m-4 1h8"/></svg>Overall leaderboard</h2></div><p class="field-help" id="homeRankingDate"></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
-              <section class="panel activity-card"><h2>Recent activity</h2><div class="progress-days" id="progressDays" aria-label="Recent play history"></div></section>
+              <section class="panel home-ranking"><div class="section-head compact"><h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0V3Zm0 2H3v3a4 4 0 0 0 5 4m9-7h4v3a4 4 0 0 1-5 4m-4 2v6m-4 1h8"/></svg>Your friend group</h2></div><p class="field-help" id="homeRankingDate"></p><p class="field-help" id="homeFriendAvailability" role="status" hidden></p><div id="homeLeaderboard" class="leaderboard"></div><a class="text-link block-link" href="#leaderboard">See full leaderboard →</a></section>
+              <section class="panel activity-card"><div class="section-head compact"><h2>Recent activity</h2><span class="field-help">7 days</span></div><div class="progress-days" id="progressDays" aria-label="Seven-day activity"></div><p class="field-help activity-legend" id="activitySummary"></p></section>
             </div>
           </div>
         </section>
@@ -340,7 +338,7 @@ let html = #"""
         </form>
       </dialog>
     </div>
-    <script src="app.js?v=46" type="module"></script>
+    <script src="app.js?v=47" type="module"></script>
   </body>
 </html>
 """#
@@ -4133,6 +4131,110 @@ button:disabled { cursor:wait; }
 .import-raw pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 .import-review-item .text-link { min-height: 36px; }
 @media (max-width: 760px) { .import-review-item { padding: 14px; } .import-card-top { flex-wrap: wrap; } }
+/* Today: the existing cream/teal identity with one compact progress summary. */
+#today .daily-progress { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px; align-items:center; margin-bottom:22px; padding:18px 22px; border:1px solid #d8cfbc; border-radius:18px; background:#fffdf6; }
+#today .daily-progress-top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
+#today .daily-progress-top h2 { font-family:inherit; font-size:13px; margin:0; }
+#today #dailyRemainingLabel { font-size:12px; color:var(--muted); }
+#today .daily-progress-count { display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; margin:8px 0 10px; }
+#today .daily-progress-count strong { font-family:var(--display); font-size:32px; line-height:1.1; }
+#today .daily-progress-count strong span { color:#7d8173; font-size:24px; }
+#today .daily-progress-count > span { font-size:13px; color:var(--muted); }
+#today .daily-progress-track { height:7px; border-radius:9px; overflow:hidden; background:#e8e2d3; }
+#today .daily-progress-track[hidden] { display:none; }
+#today .daily-progress-track > span { height:100%; display:block; background:var(--petrol); border-radius:9px; }
+#today #dailyProgressHelp { margin-top:8px; font-size:11px; max-width:85ch; }
+#today .daily-streak { border-left:1px solid var(--line); padding-left:24px; display:grid; grid-template-columns:auto minmax(0,100px); align-items:center; gap:2px 10px; }
+#today .daily-streak strong { font-family:var(--display); font-size:34px; grid-row:1/3; }
+#today .daily-streak span { font-size:12px; font-weight:600; }
+#today .daily-streak small { color:var(--muted); font-size:10px; }
+#today .home-columns { grid-template-columns:minmax(0,1.8fr) minmax(280px,1fr); }
+#today .home-main, #today .home-side { min-width:0; }
+#today .home-side { padding:0; border:0; }
+#today .home-ranking, #today .activity-card { border:1px solid #d8cfbc; border-radius:18px; background:#fffdf6; box-shadow:none; }
+#today .home-ranking h2, #today .activity-card h2 { font-size:19px; }
+#today .dashboard-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+#today .dashboard-game { display:grid; align-content:start; grid-template-rows:auto 1fr auto; gap:12px; padding:16px; min-width:0; border:1px solid #d8cfbc; border-radius:16px; background:#fffdf6; }
+#today .dashboard-game[data-status="pending"] { background:#f9f5e8; }
+#today .dashboard-game[data-status="completed"] { border-color:#c7d6c1; background:#f0f3e9; }
+#today .dashboard-game[data-status="missed"] { background:#f8eee6; }
+#today .dashboard-game-head { display:flex; align-items:center; gap:10px; min-width:0; }
+#today .dashboard-game-head .game-logo { width:38px; height:38px; padding:6px; border-radius:11px; flex-shrink:0; }
+#today .dashboard-game-head h3 { font-family:inherit; font-size:14px; line-height:1.35; margin:0; overflow-wrap:anywhere; }
+#today .dashboard-completion { color:#48694a; margin-left:auto; font-size:17px; }
+#today .dashboard-game-result { display:grid; gap:8px; }
+#today .dashboard-status { width:fit-content; border-radius:6px; padding:3px 6px; background:#ece7d8; color:#616253; font-size:10px; font-weight:600; }
+#today [data-status="completed"] .dashboard-status { background:#dfe9d8; color:#3c5e40; }
+#today [data-status="missed"] .dashboard-status, #today [data-status="review"] .dashboard-status { background:#f0ded1; color:#814c38; }
+#today .dashboard-game-result > strong { font-size:18px; font-weight:650; line-height:1.3; overflow-wrap:anywhere; }
+#today [data-status="pending"] .dashboard-game-result > strong { font-size:12px; font-weight:400; color:var(--muted); }
+#today .dashboard-card-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+#today .dashboard-card-actions .primary-button, #today .dashboard-card-actions .ghost-button { flex:1; min-width:0; white-space:nowrap; padding-inline:10px; font-size:12px; text-align:center; }
+#today .dashboard-card-actions .ghost-button { background:#e3efec; color:var(--petrol); border-color:#bdd1cd; box-shadow:none; }
+#today .dashboard-no-link { flex:1; color:var(--muted); font-size:11px; }
+#today .pending-games-filter { margin-bottom:12px; font-size:12px; }
+#today .pending-games-filter[aria-pressed="true"] { background:var(--petrol); color:white; }
+#today .dashboard-onboarding, #today .dashboard-filter-empty { grid-column:1/-1; padding:24px; border:1px dashed #b8bfac; border-radius:16px; background:#f9f5e8; }
+#today .dashboard-onboarding strong { font-family:var(--display); font-size:25px; }
+#today .dashboard-onboarding p { color:var(--muted); font-size:13px; line-height:1.6; margin:8px 0 16px; }
+#today .home-extra-results { border-top:1px solid var(--line); padding-top:14px; }
+#today .home-extra-results > summary { font-size:13px; font-weight:600; cursor:pointer; }
+#today .home-extra-results .home-score-row { background:transparent; box-shadow:none; }
+#today #homeLeaderboard { gap:0; margin-top:12px; }
+#today .dashboard-ranking-label { font-size:11px; color:var(--muted); margin:0 0 6px; }
+#today .home-ranking .rank-row { grid-template-columns:26px minmax(0,1fr) auto; gap:8px; padding:9px 0; }
+#today .home-ranking .rank-performance { display:none; }
+#today .home-ranking .rank-mobile-detail { display:block; font-size:10px; line-height:1.4; }
+#today .home-ranking .rank-person { gap:8px; min-width:0; }
+#today .home-ranking .rank-person strong { overflow-wrap:anywhere; font-size:13px; }
+#today .home-ranking .rank-avatar { width:27px; height:27px; font-size:12px; }
+#today .home-ranking .rank-row .points { font-size:14px; }
+#today .dashboard-your-place { display:grid; grid-template-columns:1fr auto; gap:5px 12px; margin-top:14px; padding:12px; border-radius:10px; background:#e8efec; font-size:12px; }
+#today .dashboard-your-place small { grid-column:1/-1; color:var(--muted); font-size:11px; }
+#today .ranking-empty { padding-block:12px; }
+#today .progress-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; margin-top:14px; }
+#today .progress-day { position:relative; display:grid; justify-items:center; gap:5px; padding:9px 2px; border:1px solid #e4decd; border-radius:9px; background:#f8f4e9; color:var(--muted); min-width:0; }
+#today .progress-day strong { font-size:9px; text-transform:uppercase; }
+#today .progress-day .activity-date { font-size:12px; }
+#today .progress-day .activity-day-label { font-size:8px; }
+#today .progress-day .activity-dot { width:6px; height:6px; border-radius:50%; background:#d7d1c1; }
+#today .progress-day.played { background:#f6ead6; }
+#today .progress-day.played .activity-dot { background:#a37b38; }
+#today .progress-day.completed { background:#e8efdf; }
+#today .progress-day.completed .activity-dot { background:#4e7253; }
+#today .progress-day.today { border-color:var(--petrol); }
+#today .activity-tooltip { display:none; position:absolute; bottom:calc(100% + 6px); left:0; width:185px; padding:9px; background:#35463e; color:white; font-size:11px; border-radius:8px; z-index:3; line-height:1.5; }
+#today .progress-day:nth-child(n+4) .activity-tooltip { left:auto; right:0; }
+#today .progress-day:hover .activity-tooltip, #today .progress-day:focus .activity-tooltip { display:block; }
+#today .activity-legend { font-size:11px; line-height:1.5; margin-top:12px; }
+#today .progress-day:focus-visible { outline:2px solid var(--petrol); outline-offset:2px; }
+@media(max-width:1200px) { #today .dashboard-strip { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:900px) { #today .home-columns { grid-template-columns:minmax(0,1fr); } #today .home-side { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; } }
+@media(max-width:600px) {
+  #today .view-head { align-items:flex-start; }
+  #today .home-welcome .eyebrow { display:none; }
+  #today .home-welcome h1 { font-size:28px; }
+  #today .home-welcome .view-copy { font-size:12px; }
+  #today .daily-progress { padding:14px; gap:12px; margin-bottom:18px; }
+  #today .daily-progress-count { gap:6px; margin:6px 0 8px; }
+  #today .daily-progress-count strong { font-size:27px; }
+  #today .daily-progress-count > span { font-size:11px; }
+  #today .daily-streak { padding-left:12px; grid-template-columns:1fr; gap:3px; max-width:72px; }
+  #today .daily-streak strong { grid-row:auto; font-size:27px; }
+  #today .daily-streak span { font-size:10px; }
+  #today .daily-streak small { font-size:9px; }
+  #today #dailyProgressHelp { font-size:10px; line-height:1.5; }
+  #today .dashboard-strip { gap:10px; }
+  #today .dashboard-game { padding:12px; gap:10px; }
+  #today .dashboard-game-head { gap:7px; }
+  #today .dashboard-game-head .game-logo { width:30px; height:30px; padding:5px; }
+  #today .dashboard-game-head h3 { font-size:12px; }
+  #today .dashboard-card-actions { gap:6px; }
+  #today .dashboard-card-actions .primary-button, #today .dashboard-card-actions .ghost-button { font-size:11px; padding-inline:7px; }
+  #today .home-side { grid-template-columns:1fr; }
+}
+@media(max-width:350px) { #today .dashboard-strip { grid-template-columns:1fr; } }
+
 """#
 
 let appScript = #"""
@@ -4141,6 +4243,7 @@ import * as management from "./assets/account-management.mjs?v=37";
 import * as operations from "./assets/launch-ops.mjs?v=2";
 import * as gameScoring from "./assets/game-scoring.mjs?v=2";
 import * as importers from "./assets/importers.mjs?v=2";
+import * as dashboard from "./assets/dashboard.mjs?v=1";
 const STORAGE_KEY = "solvry-state-v2";
 const LEGACY_STORAGE_KEY = "solvry-state-v1";
 const ORIGINAL_STORAGE_KEY = "tallyo-state-v1";
@@ -4359,10 +4462,7 @@ const elements = {
   noteInput: document.querySelector("#noteInput"),
   revealInput: document.querySelector("#revealInput"),
   saveStatus: document.querySelector("#saveStatus"),
-  playedMetric: document.querySelector("#playedMetric"),
-  solvedMetric: document.querySelector("#solvedMetric"),
   streakMetric: document.querySelector("#streakMetric"),
-  totalSolvesMetric: document.querySelector("#totalSolvesMetric"),
   progressDays: document.querySelector("#progressDays"),
   overallLeaderboard: document.querySelector("#overallLeaderboard"),
   gameLeaderboard: document.querySelector("#gameLeaderboard"),
@@ -4504,10 +4604,9 @@ let leaderboardGameId = state.activeGameId;
 let friendBusy = false;
 let pinnedOnly = false;
 let catalogCategory = "for-you";
-const roomyOverview = window.matchMedia("(min-width: 1400px) and (min-height: 850px)");
-roomyOverview.addEventListener("change", () => renderQuickGames());
-const wideOverview = window.matchMedia("(min-width: 1700px) and (min-height: 850px)");
-wideOverview.addEventListener("change", () => renderQuickGames());
+let dashboardPendingOnly = false;
+document.querySelector('#dashboardPendingFilter').addEventListener('click', () => { dashboardPendingOnly = !dashboardPendingOnly; renderQuickGames(); });
+elements.quickGames.addEventListener('click', handleDashboardAction);
 document.querySelector("#gameSearch").addEventListener("input", renderGameList);
 document.querySelector("#gameCategorySelect").addEventListener("change", (event) => {
   catalogCategory = event.target.value;
@@ -4557,12 +4656,11 @@ wireSocialTabs([elements.friendsTab, elements.requestsTab], (index) => {
 });
 document.querySelector("#leaderboardScoring").addEventListener("change", (event) => {
   leaderboardScoring = event.target.value === "performance" ? "performance" : "placement";
-  renderScoreboards(getActiveGame());
-  renderHome();
+  renderHome(renderScoreboards(getActiveGame()));
 });
 elements.leaderboardRange.addEventListener("change", () => {
   leaderboardDays = Number(elements.leaderboardRange.value) === 7 ? 7 : 1;
-  renderScoreboards(getActiveGame());
+  renderHome(renderScoreboards(getActiveGame()));
 });
 elements.leaderboardDate.addEventListener("change", () => {
   if (!elements.leaderboardDate.value || !elements.leaderboardDate.validity.valid) return;
@@ -4940,7 +5038,8 @@ function render(focusGolf = true) {
   renderNav();
   renderAccount();
   updateSyncStatus();
-  renderQuickGames();
+  const homeProgress = dailyDashboard();
+  renderQuickGames(homeProgress);
   renderGameList();
   renderOfficialLink(activeGame);
   renderCustomGameTools(activeGame);
@@ -4949,11 +5048,11 @@ function render(focusGolf = true) {
   if (SHOW_SOLVRY_GAMES) renderBoard(activeGame.name);
   elements.letterBoard.hidden = !SHOW_SOLVRY_GAMES;
   renderForm(myEntry);
-  renderMetrics();
-  renderScoreboards(activeGame);
+  renderMetrics(homeProgress);
+  const homeRows = renderScoreboards(activeGame);
   renderFriendSync();
   renderAnswers();
-  renderHome();
+  renderHome(homeRows);
   previewImport();
   if (focusGolf) focusHolesViewport(activeGame);
 }
@@ -5021,19 +5120,39 @@ function showAppNotice(message) {
   notice.hidden = !message;
 }
 
-function renderHome() {
-  const games = visibleGames().filter((game) => state.entries[state.selectedDate]?.[game.id]?.you);
-  const scoreRows = games.map((game) => {
+function renderHome(overallRows) {
+  const pinned = new Set(state.pinnedGameIds);
+  const games = visibleGames().filter(game => !pinned.has(game.id) && state.entries[state.selectedDate]?.[game.id]?.you);
+  const scoreRows = games.map(game => {
     const entry = state.entries[state.selectedDate][game.id].you;
-    return `<button type="button" class="home-score-row" data-home-game="${escapeHtml(game.id)}">${gameLogo(game)}<span><strong>${escapeHtml(game.name)}</strong><small>${entry.source === "manual" ? "Manual" : "Imported"} · ${escapeHtml(entry.result)}</small></span><span class="home-score-value">${escapeHtml(entry.score)} <span aria-hidden="true">→</span></span></button>`;
+    return `<button type="button" class="home-score-row" data-home-game="${escapeHtml(game.id)}">${gameLogo(game)}<span><strong>${escapeHtml(game.name)}</strong><small>${escapeHtml(dashboard.resultStatus(game, entry, scoreEntryForGame).label)}</small></span><span class="home-score-value">${escapeHtml(entry.score)} <span aria-hidden="true">→</span></span></button>`;
   });
-  document.querySelector("#homeScores").innerHTML = scoreRows.length
-    ? scoreRows.slice(0, 3).join("") + (scoreRows.length > 3 ? `<details class="more-home-scores"><summary>Show ${scoreRows.length - 3} more ${scoreRows.length === 4 ? "score" : "scores"}</summary>${scoreRows.slice(3).join("")}</details>` : "")
-    : '<div class="home-empty"><div><h3>No scores yet.</h3><p>Copy a game’s result and paste it here.</p></div><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
-  const rows = buildOverallLeaderboard(1, leaderboardScoring);
-  const ranked = rows.filter((row) => row.rank);
-  document.querySelector("#homeLeaderboard").innerHTML = ranked.length ? renderRankRows(ranked.slice(0, 3), "No scores yet") : '<div class="ranking-empty"><strong>No ranked results yet.</strong><p>Save a result to see your place. Compare scores with friends when they’re available.</p><a class="primary-button add-score-button" href="#import"><span class="add-score-icon" aria-hidden="true">+</span><span>Add score</span></a></div>';
-  document.querySelector("#homeRankingDate").textContent = `${state.selectedDate} · ${leaderboardScoring === "performance" ? "Performance" : "Placement"} points`;
+  document.querySelector('#homeScoresDetails').hidden = !games.length;
+  document.querySelector('#homeScoresTitle').textContent = `Other results this day (${games.length})`;
+  document.querySelector('#homeScores').innerHTML = scoreRows.join('');
+  const rows = overallRows || buildOverallLeaderboard(leaderboardDays, leaderboardScoring);
+  const preview = dashboard.friendPreview(rows, visibleFriends());
+  const friends = preview.topFriends;
+  const yours = preview.yours;
+  const empty = preview.hasFriends ? 'No friend scores for this period yet.' : 'A little friendly competition?';
+  document.querySelector('#homeLeaderboard').innerHTML = (friends.length ? `<p class="dashboard-ranking-label">Top ${Math.min(friends.length,3)} friends · Group places</p>${renderRankRows(friends)}`
+    : `<div class="ranking-empty"><strong>${empty}</strong><p>${preview.hasFriends ? 'Their eligible shared results will appear here when available.' : 'Connect with friends to compare your daily results.'}</p><a class="text-link" href="#friends">${preview.hasFriends ? 'Open Friends →' : 'Find your friends →'}</a></div>`)
+    + `<div class="dashboard-your-place"><span>${friends.length && yours?.rank ? `Your group position <strong>#${yours.rank}</strong>` : 'Your total'}</span><strong>${escapeHtml(yours?.value || '—')}</strong>${!yours?.rank ? '<small>No ranked result for this period.</small>' : !friends.length ? '<small>Compare places once a friend has a ranked result.</small>' : ''}</div>`;
+  const dates = leaderboardDates(leaderboardDays);
+  renderHomeFriendAvailability();
+  document.querySelector('#homeRankingDate').textContent = `${leaderboardScoring === 'performance' ? 'Performance' : 'Placement'} points · ${dates.length === 1 ? dates[0] : `${dates.at(-1)} – ${dates[0]}`} · Available friend group${state.showDemoFriends ? ' · Includes samples' : ''}`;
+}
+
+function renderHomeFriendAvailability() {
+  const status = document.querySelector('#homeFriendAvailability');
+  const message = !state.account?.uid ? ''
+    : navigator.onLine === false ? 'Offline · Available standings may be cached. Reconnect and refresh in Friends.'
+    : !cloudFriendsAvailable() ? 'Waiting for account sync. Friend standings appear when this account is ready.'
+    : cloudBackend.requestsError ? 'Friend updates paused · Standings may be out of date. Refresh in Friends.'
+    : cloudBackend.requestsLoading ? 'Checking friend connections · Standings may still be updating.'
+    : 'Available shared results · Refresh in Friends for the latest standings.';
+  status.textContent = message;
+  status.hidden = !message;
 }
 
 function openAccountDialog(mode) {
@@ -5755,16 +5874,17 @@ async function runFriendAction(action) {
 
 function refreshSocialViews() {
   renderFriendSync();
-  renderScoreboards(getActiveGame());
+  const homeRows = renderScoreboards(getActiveGame());
   renderAnswers();
   renderQuickGames();
   renderGameList();
-  renderHome();
+  renderHome(homeRows);
   const count = visibleFriends().filter((friend) => state.entries[state.selectedDate]?.[state.activeGameId]?.[friend.id]).length;
   elements.friendCompletion.textContent = `${count} friend${count === 1 ? "" : "s"} done`;
 }
 
 function renderFriendSync() {
+  renderHomeFriendAvailability();
   const connected = cloudFriendsAvailable();
   const friends = visibleFriends();
   const incoming = connected ? (state.friendRequests.incoming || []).filter((request) => request.status === "pending") : [];
@@ -7506,33 +7626,56 @@ function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
-function renderQuickGames() {
-  const sorted = getSortedGames();
-  const games = sorted.slice(0, wideOverview.matches ? 12 : roomyOverview.matches ? 10 : 6);
-  const hasPriority = sorted.some((game) => state.pinnedGameIds.includes(game.id) || gameStreak(game));
-  document.querySelector("#quickGamesHint").textContent = hasPriority ? "Pinned favorites and active streaks first." : "Pin favorites in Games.";
-  elements.quickGames.innerHTML = games
-    .map((game) => {
-      const entries = getGameEntries(state.selectedDate, game.id);
-      const mine = entries.you;
-      const status = mine ? mine.score || defaultScoreLabel(mine.result) : "Add your result";
-      return `
-        <button class="quick-game${game.id === state.activeGameId ? " active" : ""}${mine ? " is-saved" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" aria-label="Open ${escapeHtml(game.name)}">
-          ${gameLogo(game)}
-          <span>
-            <strong>${escapeHtml(game.name)}</strong>
-            <span>${escapeHtml(status)}</span>
-          </span>
-        </button>
-      `;
-    })
-    .join("");
+function dailyDashboard() {
+  return dashboard.dailyProgress(visibleGames(), state.pinnedGameIds, state.entries, state.selectedDate, today, scoreEntryForGame);
+}
 
-  elements.quickGames.querySelectorAll("[data-game-id]").forEach((button) => {
-    button.addEventListener("click", () => {
-      openGame(button.dataset.gameId);
-    });
-  });
+function renderDashboardProgress(model) {
+  document.querySelector('#dailyProgressTitle').textContent = state.selectedDate === today ? 'Today’s progress' : `Progress · ${state.selectedDate}`;
+  document.querySelector('#dailyProgressCount').innerHTML = model.total ? `<strong>${model.completed}<span> / ${model.total}</span></strong><span>completed or scored</span>` : '<strong>Your daily lineup.</strong><span>Choose the games you want to track.</span>';
+  document.querySelector('#dailyRemainingLabel').textContent = model.total ? `${model.remaining} not completed` : 'No games pinned';
+  const bar = document.querySelector('#dailyProgressBar');
+  bar.hidden = !model.total; bar.setAttribute('aria-valuenow', String(model.percent));
+  bar.setAttribute('aria-valuetext', `${model.completed} of ${model.total} pinned games completed or scored; ${model.remaining} not completed`);
+  document.querySelector('#dailyProgressFill').style.width = `${model.percent}%`;
+  document.querySelector('#dailyProgressHelp').textContent = model.total
+    ? `${model.pending} not played · ${model.played} played without completion. Device saves included; see sync status above.`
+    : 'Pin games in Games to build your daily routine. Your existing results stay in your history.';
+  elements.streakMetric.textContent = calculateStreak();
+}
+
+function renderQuickGames(model = dailyDashboard()) {
+  document.querySelector('#quickGamesHint').textContent = model.total ? `${model.total} pinned · Your pin order stays put` : 'Start with a few favorites. You can change them any time.';
+  const filter = document.querySelector('#dashboardPendingFilter');
+  filter.hidden = !model.total; filter.textContent = `Not played (${model.pending})`; filter.setAttribute('aria-pressed', String(dashboardPendingOnly));
+  const cards = dashboardPendingOnly ? model.cards.filter(card => card.pending) : model.cards;
+  elements.quickGames.innerHTML = !model.total
+    ? '<div class="dashboard-onboarding"><strong>A little play, your way.</strong><p>Choose your daily games, then play and keep your results together.</p><a class="primary-button" href="#games">Choose games →</a></div>'
+    : !cards.length ? '<p class="dashboard-filter-empty">Every pinned game has a result. Turn off Not played to see them all.</p>'
+    : cards.map(card => {
+      const {game, entry} = card, play = dashboard.publisherUrl(game);
+      return `<article class="dashboard-game" data-status="${card.state}" aria-label="${escapeHtml(game.name)} · ${escapeHtml(card.label)}">
+        <div class="dashboard-game-head">${gameLogo(game)}<h3>${escapeHtml(game.name)}</h3>${card.completed ? '<span class="dashboard-completion" aria-label="Daily progress complete">✓</span>' : ''}</div>
+        <div class="dashboard-game-result"><span class="dashboard-status" title="${escapeHtml(card.detail)}">${escapeHtml(card.label)}</span><strong>${entry ? escapeHtml(entry.score || defaultScoreLabel(entry.result)) : 'Ready when you are.'}</strong></div>
+        <div class="dashboard-card-actions">${play ? `<a class="ghost-button compact-button" href="${escapeHtml(play)}" target="_blank" rel="noopener noreferrer" aria-label="Play ${escapeHtml(game.name)} at the publisher (opens a new tab)">Play ↗</a>` : '<span class="dashboard-no-link">No play link</span>'}<button class="primary-button compact-button" type="button" data-dashboard-result="${escapeHtml(game.id)}" aria-label="${entry ? 'Edit' : 'Add'} ${escapeHtml(game.name)} result for ${state.selectedDate}">${entry ? 'Edit result' : 'Add result'}</button></div>
+      </article>`;
+    }).join('');
+}
+
+function handleDashboardAction(event) {
+  const button = event.target.closest('[data-dashboard-result]');
+  if (!button) return;
+  const game = visibleGames().find(game => game.id === button.dataset.dashboardResult);
+  if (!game) return;
+  if (manualFormDirty && game.id !== state.activeGameId) {
+    navigateTo('import'); setScoreMethod('manual'); showAppNotice('Your unfinished manual result is still open. Save or finish that draft before changing games.'); return;
+  }
+  state.activeGameId = game.id;
+  if (!manualFormDirty) elements.manualDateInput.value = state.selectedDate;
+  if (!elements.shareTextInput.value.trim() && !importDrafts.has(game.id)) elements.importDate.value = state.selectedDate;
+  render(); navigateTo('import');
+  const entry = state.entries[state.selectedDate]?.[game.id]?.you;
+  setScoreMethod(manualFormDirty || entry || game.source === 'custom' || game.manualOnly && !game.pasteSupported ? 'manual' : 'paste');
 }
 
 function matchesGameSearch(game, search) {
@@ -7979,45 +8122,19 @@ function saveManualScore() {
   document.querySelector("#scoreNextSteps").hidden = false;
 }
 
-function renderMetrics() {
-  const dayEntries = state.entries[state.selectedDate] || {};
-  let played = 0;
-  let completed = 0;
-
-  visibleGames().forEach((game) => {
-    const gameEntries = dayEntries[game.id] || {};
-    const mine = gameEntries.you;
-    if (!mine) return;
-    played += 1;
-    if (isCompletedResult(mine.result, game)) completed += 1;
-  });
-
-  elements.playedMetric.textContent = played;
-  elements.solvedMetric.textContent = completed;
-  elements.streakMetric.textContent = calculateStreak();
-  elements.totalSolvesMetric.textContent = Object.values(state.entries).reduce((count, day) => count + visibleGames().filter((game) => day[game.id]?.you).length, 0);
+function renderMetrics(model = dailyDashboard()) {
+  renderDashboardProgress(model);
   renderProgressDays();
 }
 
 function renderProgressDays() {
-  const baseDate = new Date(`${state.selectedDate}T00:00:00`);
-  const days = [];
-
-  for (let offset = -4; offset <= 0; offset += 1) {
-    const date = new Date(baseDate);
-    date.setDate(baseDate.getDate() + offset);
-    const key = localDateKey(date);
-    const played = hasUserPlayedDate(key);
-    const isToday = key === today;
-    days.push(`
-      <div class="progress-day${played ? " done" : ""}${isToday ? " today" : ""}">
-        <strong>${escapeHtml(shortWeekday(date))}</strong>
-        <span>${played ? "Recorded" : "—"}</span>
-      </div>
-    `);
-  }
-
-  elements.progressDays.innerHTML = days.join("");
+  const week = dashboard.activityWeek(visibleGames(), state.entries, state.selectedDate, today, scoreEntryForGame);
+  elements.progressDays.innerHTML = week.map(day => {
+    const explanation = `${day.date}: ${day.completed} completed or scored, ${day.played} played without completion${!day.recorded ? ', no activity' : ''}`;
+    return `<div class="progress-day${day.recorded ? ' done' : ''}${day.today ? ' today' : ''} ${day.state}" tabindex="0" role="img" aria-label="${escapeHtml(explanation)}" title="${escapeHtml(explanation)}"><strong>${escapeHtml(day.weekday)}</strong><span class="activity-date">${day.day}</span><span class="activity-dot" aria-hidden="true"></span><span class="activity-day-label">${day.completed ? 'Done' : day.recorded ? 'Played' : '—'}</span><span class="activity-tooltip" aria-hidden="true">${escapeHtml(explanation)}</span></div>`;
+  }).join('');
+  const active = week.filter(day => day.recorded).length, completed = week.filter(day => day.completed).length;
+  document.querySelector('#activitySummary').textContent = active ? `${active} active day${active===1?'':'s'} · ${completed} with completions or scored rounds. Focus a day for details.` : 'Your next result starts the story. Played days and completed days will appear here.';
 }
 
 function renderScoreboards(activeGame) {
@@ -8060,6 +8177,7 @@ function renderScoreboards(activeGame) {
   document.querySelector("#gameStandingsNote").textContent = state.showDemoFriends ? "Includes sample friends." : `Saved results for ${state.selectedDate}.`;
   const sample = state.showDemoFriends ? " · Includes sample friends" : "";
   elements.leaderboardSummary.textContent = (mine?.rank ? `You're #${mine.rank} · ${mine.value}` : "Save a score to join these rankings.") + sample;
+  return overallRows;
 }
 
 function renderRankRows(rows, emptyText) {
@@ -8594,9 +8712,9 @@ function isCompletedResult(result, game) {
   return result === "solved" || result === "played" && ["points", "depth", "strokes", "grid"].includes(game?.type);
 }
 
-function hasUserPlayedDate(dateKey) {
+function hasUserPlayedDate(dateKey, games = visibleGames()) {
   const dayEntries = state.entries[dateKey] || {};
-  return visibleGames().some((game) => dayEntries[game.id]?.you);
+  return games.some((game) => dayEntries[game.id]?.you);
 }
 
 function calculateTotalSolves() {
@@ -8609,11 +8727,12 @@ function calculateTotalSolves() {
 
 function calculateStreak() {
   let streak = 0;
+  const games = visibleGames();
   const cursor = new Date(`${today}T12:00:00`);
   // Activity counts any recorded attempt, including a miss. Today's opportunity
   // remains open, so yesterday's consecutive activity is still active.
-  if (!hasUserPlayedDate(today)) cursor.setDate(cursor.getDate() - 1);
-  while (hasUserPlayedDate(localDateKey(cursor))) {
+  if (!hasUserPlayedDate(today, games)) cursor.setDate(cursor.getDate() - 1);
+  while (hasUserPlayedDate(localDateKey(cursor), games)) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
@@ -9206,8 +9325,8 @@ document.querySelector("#deleteAccountForm").addEventListener("submit", deleteCu
 document.querySelector("#closeDeleteAccount").addEventListener("click", () => { if (!accountDeletionBusy) document.querySelector("#deleteAccountDialog").close(); });
 document.querySelector("#deleteAccountDialog").addEventListener("cancel", event => { if (accountDeletionBusy) event.preventDefault(); });
 document.querySelector("#accountPrivacyLink").addEventListener("click", () => elements.accountDialog.close());
-window.addEventListener("offline", () => { updateSyncStatus(); if (accountDeletionBusy) document.querySelector("#deleteAccountStatus").textContent = "Connection lost. Deletion is not complete. Keep this page open to reconnect, or resume after signing in again."; });
-window.addEventListener("online", () => { refreshCurrentDate(); updateSyncStatus(); if (storageOwner && !cloudBackend.deletionPending) recoverAccountConnection().catch(() => {}); });
+window.addEventListener("offline", () => { updateSyncStatus(); renderHomeFriendAvailability(); if (accountDeletionBusy) document.querySelector("#deleteAccountStatus").textContent = "Connection lost. Deletion is not complete. Keep this page open to reconnect, or resume after signing in again."; });
+window.addEventListener("online", () => { refreshCurrentDate(); updateSyncStatus(); renderHomeFriendAvailability(); if (storageOwner && !cloudBackend.deletionPending) recoverAccountConnection().catch(() => {}); });
 initCloudBackend();
 watchDateRollover();
 render();

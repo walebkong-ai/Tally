@@ -34,6 +34,8 @@ Start the dedicated loopback emulators with `Operations/restore-emulators.json`,
 
 ## Roll back a release
 
+For the Today dashboard release, prefer the immediately previous **v77** complete client/assets and retain all current rules/data. Its verified saved version, source/archive and release-specific rollback gate are in [TODAY_DASHBOARD_PRODUCTION_REVIEW.md](../QA/TODAY_DASHBOARD_PRODUCTION_REVIEW.md#release-and-rollback-gate).
+
 For the Prompt 3 importer release, prefer the immediately previous **v76** saved client and retain all current rules/data. Its verified saved-version ID, source/archive fingerprint and release-specific procedure are in [PROMPT3_PRODUCTION_REVIEW.md](../QA/PROMPT3_PRODUCTION_REVIEW.md#controlled-release-and-rollback). The v65 instructions below are the older general emergency fallback, not the preferred rollback for Prompt 3.
 
 1. Stop additional deployment work and confirm current audience/version with Sites `get_site`. Preserve the audience. Export/check a current encrypted backup before any data migration.

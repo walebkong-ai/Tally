@@ -97,3 +97,16 @@ test('account switch while a real transaction read is suspended cannot write to 
  const ownerAgain=await client('switch-review-owner-check','switch-import-review@example.test',credentials.password);
  assert.equal((await firestore.getDocFromServer(resultRef(ownerAgain,oldUid))).exists(),false);
 });
+test('Today progress follows actual authenticated account namespaces and offline saves',{timeout:90000},async()=>{
+ const a=await client('dashboard-account-a','dashboard-a@example.test',credentials.password,true),b=await client('dashboard-account-b','dashboard-b@example.test',credentials.password,true);
+ function todayController(identity){const c=controller(identity);c.dashboard=require('../Assets/dashboard.mjs');
+  for(const name of ['dailyDashboard','visibleGames','gameSource','scoreEntryForGame','parseGuessScore','parseTimeScore','parseNumberScore','parseRankScore','resultWeight'])load(c,name);return c;}
+ const first=todayController(a);first.state.pinnedGameIds=['wordle','connections'];first.paste(share('wordle'));first.importShareText();await first.flush();assert.equal(first.dailyDashboard().completed,1);
+ first.navigator.onLine=false;await firestore.disableNetwork(a.db);first.paste(share('connections'));first.importShareText();assert.equal(first.dailyDashboard().completed,2);assert.ok(first.pendingCloudChanges());assert.equal(await first.flush(),false);
+ await firestore.enableNetwork(a.db);first.navigator.onLine=true;await first.retryAccountSync();assert.equal(first.pendingCloudChanges(),0);
+ const second=todayController(b);second.state.pinnedGameIds=['wordle'];second.paste('Wordle 1234 5/6');second.importShareText();await second.flush();
+ await auth.signOut(a.identity);await auth.signInWithEmailAndPassword(a.identity,'dashboard-b@example.test',credentials.password);
+ const switched=todayController(a);await switched.loadCloudState(a.identity.currentUser.uid);assert.equal(score(switched).score,'5/6');assert.equal(switched.dailyDashboard().total,1);assert.equal(switched.dailyDashboard().completed,1);assert.equal(score(switched,'connections'),undefined);
+ await auth.signOut(a.identity);await auth.signInWithEmailAndPassword(a.identity,'dashboard-a@example.test',credentials.password);
+ const returned=todayController(a);await returned.loadCloudState(a.identity.currentUser.uid);assert.equal(score(returned).score,'3/6');assert.equal(returned.dailyDashboard().total,2);assert.equal(returned.dailyDashboard().completed,2);
+});

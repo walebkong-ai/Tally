@@ -114,7 +114,7 @@ test('rollover and streaks cross month/year and DST calendar boundaries', () => 
 
 test('activity and completion metrics have distinct visible labels', () => {
   const html = fs.readFileSync(require('node:path').join(__dirname, '../dist/index.html'), 'utf8');
-  assert.match(html, /<span>activity streak<\/span>/);
+  assert.match(html, /<span>day activity streak<\/span>/);
   assert.match(app, /-day completion streak/);
   assert.match(app, /failed attempts do not count/);
 });

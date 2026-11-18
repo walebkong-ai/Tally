@@ -95,8 +95,8 @@ test('routes cover each task, retain old answer links, and recover unknown links
 test('streak and history preserve local dates east of UTC',()=>{
   const original=process.env.TZ;process.env.TZ='Asia/Tokyo';
   try {
-    const c=setup();Object.assign(c,{Date,today:'2026-11-03',hasUserPlayedDate:d=>['2026-11-02','2026-11-03'].includes(d),escapeHtml:s=>s,shortWeekday:d=>String(d.getDate())});
-    c.state.entries={'2026-11-02':{},'2026-11-03':{}};c.elements.progressDays={};
+    const c=setup();Object.assign(c,{dashboard:require('../Assets/dashboard.mjs'),visibleGames:()=>c.state.games,scoreEntryForGame:e=>({value:3,label:e.score}),document:{querySelector:()=>({})},Date,today:'2026-11-03',hasUserPlayedDate:d=>['2026-11-02','2026-11-03'].includes(d),escapeHtml:s=>s,shortWeekday:d=>String(d.getDate())});
+    c.state.games=[{id:'wordle',type:'guesses'}];c.state.entries=Object.fromEntries(['2026-11-02','2026-11-03'].map(day=>[day,{wordle:{you:{result:'solved',score:'3/6'}}}]));c.elements.progressDays={};
     addFunction(c,'calculateStreak');addFunction(c,'renderProgressDays');
     assert.equal(c.calculateStreak(),2);c.renderProgressDays();
     assert.equal((c.elements.progressDays.innerHTML.match(/ done/g)||[]).length,2);
