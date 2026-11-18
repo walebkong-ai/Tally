@@ -79,3 +79,7 @@ Preferred rollback is the verified **v77** saved client:
 Confirm current audience and fetch that exact saved version, then deploy it with Sites `deploy_site_version`. Poll a nonterminal result until success and verify its returned version/source. Preserve current Firestore rules, account schema and all user data. Rollback is a complete website/assets publication, not a data restore. No live rollback mutation is needed to establish compatibility here: both clients use the same stored-data and rule schemas, and the exact previous saved artifact is available. Record the new saved version after publication so it can be redeployed for a fix forward.
 
 Remaining risks: self-reported scores and publisher format drift; memory-only unsaved drafts; pre-existing friend-history query scaling and refresh freshness; full pin lineups can require scrolling; older open tabs retain their prior client until refreshed; live Google/production multi-device verification and native mobile/assistive-technology checks remain incomplete.
+
+## Publication outcome
+
+The reviewed candidate was published as **v78** with a conditional pass for the existing invited audience. GitHub application commit `59799a5ce68c14948ad3028b517610343f07d42e`; Sites source `44ebb902d8826dd9a81cabf6ee32c695af777f40`. Native publication succeeded and static verification, unchanged-rule read-back and worker error checks completed. Exact deployment IDs, asset/HTML verification evidence, outstanding live/native checks and rollback instructions are in [DEPLOYMENT_V78.md](DEPLOYMENT_V78.md).

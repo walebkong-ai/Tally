@@ -1,0 +1,73 @@
+[
+  {
+    "path": "index.html",
+    "onlyAdditions": true,
+    "changes": [
+      {
+        "kind": "insert",
+        "localRange": [
+          37585,
+          37585
+        ],
+        "remoteRange": [
+          37585,
+          38699
+        ],
+        "remoteChars": 1114,
+        "sha256": "49c61f86346a64a0bccb0adaccac9b71a39fa3b2da5893f34da9bfec52efe2d4",
+        "cloudflareChallengeBootstrap": true,
+        "tags": [
+          {
+            "tag": "script",
+            "attributeNames": [
+              "src",
+              "type"
+            ],
+            "sourceHost": null,
+            "sourcePath": "app.js"
+          },
+          {
+            "tag": "script",
+            "attributeNames": []
+          }
+        ],
+        "identifierNames": [
+          "script",
+          "function",
+          "c",
+          "var",
+          "b",
+          "a",
+          "contentDocument",
+          "contentWindow",
+          "document",
+          "if",
+          "d",
+          "createElement",
+          "redacted",
+          "innerHTML",
+          "getElementsByTagName",
+          "appendChild",
+          "body",
+          "height",
+          "width",
+          "style",
+          "position",
+          "top",
+          "left",
+          "border",
+          "visibility",
+          "readyState",
+          "else",
+          "window",
+          "addEventListener",
+          "e",
+          "onreadystatechange"
+        ]
+      }
+    ],
+    "hasApp47": true,
+    "hasCss42": true,
+    "hasTodayProgress": true
+  }
+]

@@ -1,0 +1,160 @@
+{
+  "source": "44ebb902d8826dd9a81cabf6ee32c695af777f40",
+  "checks": [
+    {
+      "path": "app.js",
+      "status": 200,
+      "bytes": 286304,
+      "canonicalPath": "/app.js",
+      "sha256": "42bb8a7b22dea177c6ecbb924192e33989396c8555a33a457ab8e26f10b60ca3",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-icon.svg",
+      "status": 200,
+      "bytes": 453,
+      "canonicalPath": "/assets/Brand/solvry-icon.svg",
+      "sha256": "0a4725182cea855c48dc022f8a8f49d5895f2ec7d6d5ff697d621765a7f45f8f",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-logo-mono.svg",
+      "status": 200,
+      "bytes": 5784,
+      "canonicalPath": "/assets/Brand/solvry-logo-mono.svg",
+      "sha256": "61773b3524a3c35c918c0caa56b27a5cb471698d051a70b4af21f4d6ae1bf03c",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-logo-reversed.svg",
+      "status": 200,
+      "bytes": 5784,
+      "canonicalPath": "/assets/Brand/solvry-logo-reversed.svg",
+      "sha256": "9b94e459bf3661455da3ff48a7e7690b5eb450dcc6625354dc2c233c3f77b3e4",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-logo.svg",
+      "status": 200,
+      "bytes": 5784,
+      "canonicalPath": "/assets/Brand/solvry-logo.svg",
+      "sha256": "957270426871feaee95b678c08ca2579018eda6212bc0e18322ba4d061beec73",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-mark-mono.svg",
+      "status": 200,
+      "bytes": 351,
+      "canonicalPath": "/assets/Brand/solvry-mark-mono.svg",
+      "sha256": "7849310ffa6c15045080c10831611043ed64f72265065daa5b4dab3866ac9809",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/Brand/solvry-mark.svg",
+      "status": 200,
+      "bytes": 351,
+      "canonicalPath": "/assets/Brand/solvry-mark.svg",
+      "sha256": "a6984b67e7c086e581e74966401d41688f326e0e63b6741064776ec6d8b9da29",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/account-management.mjs",
+      "status": 200,
+      "bytes": 10576,
+      "canonicalPath": "/assets/account-management.mjs",
+      "sha256": "de321134370972e055fd22f93dc048ab5285c30570c3b6044a94032f83b8a202",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/beta-check.html",
+      "status": 200,
+      "bytes": 6345,
+      "canonicalPath": "/assets/beta-check",
+      "sha256": "acc89e538c62ef5ac9a1f3f856577081df2421e55273158c5f787cedccad78a8",
+      "matchesTestedBuild": false
+    },
+    {
+      "path": "assets/beta-check.mjs",
+      "status": 200,
+      "bytes": 4799,
+      "canonicalPath": "/assets/beta-check.mjs",
+      "sha256": "fd4ff6e5d06ce6a4735e4ce22e3bee5af503653034f95e908c39daefc67143a7",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/beta-checks.mjs",
+      "status": 200,
+      "bytes": 6691,
+      "canonicalPath": "/assets/beta-checks.mjs",
+      "sha256": "6fbd3b32f489486a2394997456f53efbce3b089665a7fb6a89007373c5bb673e",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/dashboard.mjs",
+      "status": 200,
+      "bytes": 3992,
+      "canonicalPath": "/assets/dashboard.mjs",
+      "sha256": "fb5f6801a44bcaa1c49e5338dcf697eaaf7bf771526e312a175f965d651d080c",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/game-scoring.mjs",
+      "status": 200,
+      "bytes": 12103,
+      "canonicalPath": "/assets/game-scoring.mjs",
+      "sha256": "2f471bb9311a7bfcca6f1fdebcbe0be215366cd106ae6e2dc3b2bdaeea28b1bb",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/importers.mjs",
+      "status": 200,
+      "bytes": 30942,
+      "canonicalPath": "/assets/importers.mjs",
+      "sha256": "781ad6e7894a3e8c28afcc9d8e73c3b8a99718ea400b3c2c49fc8fef647da809",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/launch-ops.mjs",
+      "status": 200,
+      "bytes": 5222,
+      "canonicalPath": "/assets/launch-ops.mjs",
+      "sha256": "af5f7c7045a0daad6e3d62b67980b361497278e5dd56ecf760eed3f905f2fc58",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "assets/scoring-rules.html",
+      "status": 200,
+      "bytes": 21622,
+      "canonicalPath": "/assets/scoring-rules",
+      "sha256": "b99f152f6da23ab18b9ca82bf0f5bffcfca568ed2011b84e348783e4aa4d16f0",
+      "matchesTestedBuild": false
+    },
+    {
+      "path": "assets/sync-safety.mjs",
+      "status": 200,
+      "bytes": 15520,
+      "canonicalPath": "/assets/sync-safety.mjs",
+      "sha256": "5e805074d42eba416dd17fbe7616a683f8eecbb7e4666110f8d71c2987497665",
+      "matchesTestedBuild": true
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "bytes": 38794,
+      "canonicalPath": "/",
+      "sha256": "3977478bfdff56488621554cbbea84740ae9fb41b99a6f1574272256a18336e1",
+      "matchesTestedBuild": false
+    },
+    {
+      "path": "styles.css",
+      "status": 200,
+      "bytes": 147636,
+      "canonicalPath": "/styles.css",
+      "sha256": "e15e5560ec50e00199f2bf45fcf4fbd220b3630890331813003def33ce0ece79",
+      "matchesTestedBuild": true
+    }
+  ],
+  "matched": 16,
+  "total": 19,
+  "anonymousStatus": 403
+}

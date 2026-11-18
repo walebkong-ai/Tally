@@ -1,0 +1,110 @@
+[
+  {
+    "path": "index.html",
+    "onlyAdditions": true,
+    "changes": [
+      {
+        "kind": "insert",
+        "localRange": [
+          37585,
+          37585
+        ],
+        "remoteRange": [
+          37585,
+          38699
+        ],
+        "remoteChars": 1114,
+        "sha256": "e6d2a9be9c9875fbcb17fee889fb30e08356d5b16dc42d6607184a5f84f5b4ce",
+        "tags": [
+          {
+            "tag": "script",
+            "attributeNames": [
+              "src",
+              "type"
+            ],
+            "sourceHost": null,
+            "sourcePath": "app.js"
+          },
+          {
+            "tag": "script",
+            "attributeNames": []
+          }
+        ]
+      }
+    ],
+    "hasApp47": true,
+    "hasCss42": true,
+    "hasTodayProgress": true
+  },
+  {
+    "path": "assets/beta-check.html",
+    "onlyAdditions": true,
+    "changes": [
+      {
+        "kind": "insert",
+        "localRange": [
+          5203,
+          5203
+        ],
+        "remoteRange": [
+          5203,
+          6317
+        ],
+        "remoteChars": 1114,
+        "sha256": "98cc535eb8de499de638b742f7593090d02b1a082cfed3ec84ac9aa7677eca12",
+        "tags": [
+          {
+            "tag": "script",
+            "attributeNames": [
+              "type",
+              "src"
+            ],
+            "sourceHost": null,
+            "sourcePath": "beta-check.mjs"
+          },
+          {
+            "tag": "script",
+            "attributeNames": []
+          }
+        ]
+      }
+    ],
+    "hasApp47": false,
+    "hasCss42": false,
+    "hasTodayProgress": false
+  },
+  {
+    "path": "assets/scoring-rules.html",
+    "onlyAdditions": true,
+    "changes": [
+      {
+        "kind": "insert",
+        "localRange": [
+          20353,
+          20353
+        ],
+        "remoteRange": [
+          20353,
+          21467
+        ],
+        "remoteChars": 1114,
+        "sha256": "a8ded08e10ecc078a74564b196bcaf34394a03d5569746331029864ff9db1cdb",
+        "tags": [
+          {
+            "tag": "a",
+            "attributeNames": [
+              "href"
+            ]
+          },
+          {
+            "tag": "script",
+            "attributeNames": []
+          }
+        ]
+      }
+    ],
+    "hasApp47": false,
+    "hasCss42": false,
+    "hasTodayProgress": false
+  }
+]

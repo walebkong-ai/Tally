@@ -145,3 +145,7 @@ For a later authorized controlled deployment, commit/review this local work, rer
 Before: [Desktop](../QA/today-dashboard/before-desktop.png) · [Mobile viewport](../QA/today-dashboard/before-mobile.png)
 
 After: [Desktop](../QA/today-dashboard/after-desktop.png) · [Mobile viewport](../QA/today-dashboard/after-mobile.png) · [Zero pins](../QA/today-dashboard/zero-pins.png)
+
+## Subsequent production review
+
+The local implementation record above describes the original development phase. A later authorized review added the friend-cache availability notice and regression, plus actual emulator account-switch/offline dashboard coverage. The candidate was committed and published as **v78**: 288 application, 27 security-rule and 4 Auth/Firestore integration tests passed. See [production review](../QA/TODAY_DASHBOARD_PRODUCTION_REVIEW.md) and [v78 deployment/provenance and rollback](../QA/DEPLOYMENT_V78.md) for the current release state and the remaining production/native verification limits.
